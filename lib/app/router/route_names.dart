@@ -76,8 +76,7 @@ class RouteNames {
   static const sellerDashboard = '/seller/dashboard';
   static const sellerProductNew = '/seller/products/new';
   static const sellerProductEdit = '/seller/products/:productId/edit';
-  static String sellerProductEditPath(String productId) =>
-      '/seller/products/$productId/edit';
+  static String sellerProductEditPath(String productId) => '/seller/products/$productId/edit';
 
   static const adminDashboard = '/admin/dashboard';
 

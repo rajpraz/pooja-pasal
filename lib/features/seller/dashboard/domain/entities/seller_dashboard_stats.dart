@@ -1,5 +1,5 @@
 /// Pure aggregation over already-fetched seller product/order streams —
-/// deliberately not backed by any new Cloud Function or Firestore query.
+/// no extra request.
 class SellerDashboardStats {
   final int totalProducts;
   final int lowStockProducts;

@@ -1,22 +1,25 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/features/addresses/data/datasources/address_remote_data_source.dart';
-import 'package:untitled3/features/addresses/data/repositories/address_repository_impl.dart';
-import 'package:untitled3/features/addresses/domain/entities/address.dart';
-import 'package:untitled3/features/addresses/domain/repositories/address_repository.dart';
+import 'package:pooja_pasal/core/network/api_client.dart';
+import 'package:pooja_pasal/features/addresses/data/datasources/address_remote_data_source.dart';
+import 'package:pooja_pasal/features/addresses/data/repositories/address_repository_impl.dart';
+import 'package:pooja_pasal/features/addresses/domain/entities/address.dart';
+import 'package:pooja_pasal/features/addresses/domain/repositories/address_repository.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
 
 final addressRepositoryProvider = Provider<AddressRepository>((ref) {
-  return AddressRepositoryImpl(AddressRemoteDataSource());
+  return AddressRepositoryImpl(AddressRemoteDataSource(ref.watch(apiClientProvider)));
 });
 
 /// Live saved-address list for one signed-in user. Mirrors `cartProvider`/
 /// `wishlistProvider`'s per-uid `StreamProvider.family` shape.
 final addressesProvider = StreamProvider.family<List<Address>, String>((ref, uid) {
+  if (!watchSignedIn(ref)) return const Stream.empty();
   return ref.watch(addressRepositoryProvider).streamAddresses(uid);
 });
 
-/// Wraps address mutations so widgets never call Firestore directly.
+/// Wraps address mutations so widgets never call the API directly.
 class AddressController extends AsyncNotifier<void> {
   late final AddressRepository _repository;
 
@@ -70,4 +73,5 @@ class AddressController extends AsyncNotifier<void> {
   }
 }
 
-final addressControllerProvider = AsyncNotifierProvider<AddressController, void>(AddressController.new);
+final addressControllerProvider =
+    AsyncNotifierProvider<AddressController, void>(AddressController.new);

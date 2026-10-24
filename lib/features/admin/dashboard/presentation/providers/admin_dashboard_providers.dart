@@ -1,16 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/features/admin/dashboard/data/datasources/admin_dashboard_data_source.dart';
-import 'package:untitled3/features/admin/dashboard/data/repositories/admin_dashboard_repository_impl.dart';
-import 'package:untitled3/features/admin/dashboard/domain/entities/admin_dashboard_stats.dart';
-import 'package:untitled3/features/admin/dashboard/domain/repositories/admin_dashboard_repository.dart';
+import 'package:pooja_pasal/core/network/api_client.dart';
+import 'package:pooja_pasal/features/admin/dashboard/data/datasources/admin_dashboard_data_source.dart';
+import 'package:pooja_pasal/features/admin/dashboard/data/repositories/admin_dashboard_repository_impl.dart';
+import 'package:pooja_pasal/features/admin/dashboard/domain/entities/admin_dashboard_stats.dart';
+import 'package:pooja_pasal/features/admin/dashboard/domain/repositories/admin_dashboard_repository.dart';
 
 final adminDashboardRepositoryProvider = Provider<AdminDashboardRepository>((ref) {
-  return AdminDashboardRepositoryImpl(AdminDashboardDataSource());
+  return AdminDashboardRepositoryImpl(AdminDashboardDataSource(ref.watch(apiClientProvider)));
 });
 
-/// A one-shot fetch, not a live stream — dashboard stats are aggregation
-/// queries (see AdminDashboardDataSource), which are cheap enough to
-/// re-fetch on pull-to-refresh but don't need a permanently open listener.
-final adminDashboardStatsProvider = FutureProvider.autoDispose<AdminDashboardStats>((ref) {
-  return ref.watch(adminDashboardRepositoryProvider).fetchStats();
+/// Dashboard counts (computed in SQL by the API). Re-fetched whenever the
+/// admin changes something they summarise — approving a seller, moving an
+/// order, toggling a product — and on pull-to-refresh.
+final adminDashboardStatsProvider = StreamProvider.autoDispose<AdminDashboardStats>((ref) {
+  final repository = ref.watch(adminDashboardRepositoryProvider);
+  return ref.watch(apiClientProvider).watch(
+    {ApiTopics.orders, ApiTopics.users, ApiTopics.sellerApplications, ApiTopics.products},
+    repository.fetchStats,
+    pollEvery: const Duration(minutes: 1),
+  );
 });

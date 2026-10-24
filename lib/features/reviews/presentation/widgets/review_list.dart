@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/features/reviews/presentation/providers/review_providers.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/features/reviews/presentation/providers/review_providers.dart';
 
 /// Review list for a product's detail page — average rating + count comes
-/// from `Product.ratingAverage`/`ratingCount` (denormalized server-side by
-/// functions/src/reviews/createReview.ts), this widget just reads the
-/// review documents themselves for the list below it.
+/// from `Product.ratingAverage`/`ratingCount` (maintained by the API), this
+/// widget just lists the reviews themselves below it.
 class ReviewList extends ConsumerWidget {
   final String productId;
 
@@ -32,12 +31,12 @@ class ReviewList extends ConsumerWidget {
       ),
       error: (err, st) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Text('Could not load reviews: $err', style: const TextStyle(color: AppColors.muted)),
+        child: Text('Could not load reviews: $err', style: TextStyle(color: AppColors.muted)),
       ),
       data: (reviews) {
         if (reviews.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
             child: Text('No reviews yet. Be the first to review this product.',
                 style: TextStyle(color: AppColors.muted)),
           );
@@ -75,13 +74,13 @@ class ReviewList extends ConsumerWidget {
                                 decoration: BoxDecoration(
                                     color: AppColors.success.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(6)),
-                                child: const Text('Verified Purchase',
+                                child: Text('Verified Purchase',
                                     style: TextStyle(fontSize: 10, color: AppColors.success)),
                               ),
                             ],
                             const Spacer(),
                             Text(_timeAgo(review.createdAt),
-                                style: const TextStyle(fontSize: 11, color: AppColors.muted)),
+                                style: TextStyle(fontSize: 11, color: AppColors.muted)),
                           ],
                         ),
                         const SizedBox(height: 6),

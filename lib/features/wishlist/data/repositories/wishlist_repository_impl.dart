@@ -1,6 +1,6 @@
-import 'package:untitled3/features/wishlist/data/datasources/wishlist_remote_data_source.dart';
-import 'package:untitled3/features/wishlist/domain/entities/wishlist_item.dart';
-import 'package:untitled3/features/wishlist/domain/repositories/wishlist_repository.dart';
+import 'package:pooja_pasal/features/wishlist/data/datasources/wishlist_remote_data_source.dart';
+import 'package:pooja_pasal/features/wishlist/domain/entities/wishlist_item.dart';
+import 'package:pooja_pasal/features/wishlist/domain/repositories/wishlist_repository.dart';
 
 class WishlistRepositoryImpl implements WishlistRepository {
   final WishlistRemoteDataSource _dataSource;

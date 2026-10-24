@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/core/constants/support_contact.dart';
+import 'package:pooja_pasal/core/widgets/feedback.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HelpSupportPage extends StatelessWidget {
   const HelpSupportPage({super.key});
@@ -16,13 +18,22 @@ class HelpSupportPage extends StatelessWidget {
     },
     {
       'q': 'Can I return a product?',
-      'a': 'Yes, most items can be returned within 3 days of delivery if unused and in original packaging.',
+      'a':
+          'Yes, most items can be returned within 3 days of delivery if unused and in original packaging.',
     },
     {
       'q': 'How do I become a seller?',
       'a': 'Log out and choose "Seller" on the login screen, then create a seller account.',
     },
   ];
+
+  /// Opens the dialer / mail app; says so when the device has none.
+  Future<void> _open(BuildContext context, Uri uri) async {
+    final opened = await launchUrl(uri).catchError((_) => false);
+    if (!opened && context.mounted) {
+      showMessage(context, 'No app available to open ${uri.path}.');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,16 +61,15 @@ class HelpSupportPage extends StatelessWidget {
                     childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
                     expandedCrossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(faq['a']!, style: const TextStyle(color: AppColors.muted)),
+                      Text(faq['a']!, style: TextStyle(color: AppColors.muted)),
                     ],
                   ),
                 ),
               )),
           const SizedBox(height: 20),
-          const Text('Contact Us',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const Text('Contact Us', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
-          Container(
+          DecoratedBox(
             decoration: BoxDecoration(
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(14),
@@ -68,24 +78,24 @@ class HelpSupportPage extends StatelessWidget {
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.phone_outlined, color: AppColors.accent),
+                  leading: Icon(Icons.phone_outlined, color: AppColors.accent),
                   title: const Text('Call us'),
-                  subtitle: const Text('+977 98XXXXXXXX'),
-                  onTap: () => Fluttertoast.showToast(msg: 'Opening dialer...'),
+                  subtitle: const Text(SupportContact.phoneLabel),
+                  onTap: () => _open(context, Uri(scheme: 'tel', path: SupportContact.phone)),
                 ),
-                const Divider(height: 1, color: AppColors.border),
+                Divider(height: 1, color: AppColors.border),
                 ListTile(
-                  leading: const Icon(Icons.email_outlined, color: AppColors.accent),
+                  leading: Icon(Icons.email_outlined, color: AppColors.accent),
                   title: const Text('Email us'),
-                  subtitle: const Text('support@poojapasal.com'),
-                  onTap: () => Fluttertoast.showToast(msg: 'Opening email app...'),
-                ),
-                const Divider(height: 1, color: AppColors.border),
-                ListTile(
-                  leading: const Icon(Icons.chat_outlined, color: AppColors.accent),
-                  title: const Text('Live chat'),
-                  subtitle: const Text('Chat with our support team'),
-                  onTap: () => Fluttertoast.showToast(msg: 'Live chat coming soon.'),
+                  subtitle: const Text(SupportContact.email),
+                  onTap: () => _open(
+                    context,
+                    Uri(
+                      scheme: 'mailto',
+                      path: SupportContact.email,
+                      query: 'subject=Pooja Pasal support',
+                    ),
+                  ),
                 ),
               ],
             ),

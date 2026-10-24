@@ -1,8 +1,8 @@
-import 'package:untitled3/features/products/data/datasources/product_remote_data_source.dart';
-import 'package:untitled3/features/products/domain/entities/product.dart';
-import 'package:untitled3/features/products/domain/entities/product_page.dart';
-import 'package:untitled3/features/products/domain/entities/product_sort.dart';
-import 'package:untitled3/features/products/domain/repositories/product_repository.dart';
+import 'package:pooja_pasal/features/products/data/datasources/product_remote_data_source.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product_page.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product_sort.dart';
+import 'package:pooja_pasal/features/products/domain/repositories/product_repository.dart';
 
 class ProductRepositoryImpl implements ProductRepository {
   final ProductRemoteDataSource _dataSource;
@@ -30,6 +30,9 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<Product?> getProduct(String productId) => _dataSource.getProduct(productId);
+
+  @override
+  Future<List<Product>> search(String query) => _dataSource.search(query);
 
   @override
   Future<String> addProduct(Product product) => _dataSource.addProduct(product);

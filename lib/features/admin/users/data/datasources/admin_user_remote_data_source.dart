@@ -1,15 +1,14 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:untitled3/features/auth/domain/entities/app_user.dart';
+import 'package:pooja_pasal/core/network/api_client.dart';
+import 'package:pooja_pasal/features/auth/domain/entities/app_user.dart';
 
 class AdminUserRemoteDataSource {
-  final CollectionReference<Map<String, dynamic>> _users =
-      FirebaseFirestore.instance.collection('users');
+  AdminUserRemoteDataSource(this._api);
 
-  Stream<List<AppUser>> streamUsers({int limit = 200}) {
-    return _users
-        .orderBy('createdAt', descending: true)
-        .limit(limit)
-        .snapshots()
-        .map((snap) => snap.docs.map((d) => AppUser.fromMap(d.id, d.data())).toList());
-  }
+  final ApiClient _api;
+
+  Stream<List<AppUser>> streamUsers({int limit = 200}) => _api.watch(
+        {ApiTopics.users},
+        () async =>
+            asJsonList(await _api.get('/admin/users')).map(AppUser.fromJson).take(limit).toList(),
+      );
 }

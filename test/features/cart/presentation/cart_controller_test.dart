@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:untitled3/features/cart/domain/entities/cart_item.dart';
-import 'package:untitled3/features/cart/domain/repositories/cart_repository.dart';
-import 'package:untitled3/features/cart/presentation/providers/cart_providers.dart';
-import 'package:untitled3/features/products/domain/entities/product.dart';
+import 'package:pooja_pasal/features/cart/domain/entities/cart_item.dart';
+import 'package:pooja_pasal/features/cart/domain/repositories/cart_repository.dart';
+import 'package:pooja_pasal/features/cart/presentation/providers/cart_providers.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product.dart';
 
 /// Records every call it receives instead of touching Firestore — the same
 /// fake-repository-over-a-real-provider pattern already used in

@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:untitled3/app/router/route_names.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/utils/error_mapper.dart';
-import 'package:untitled3/core/widgets/app_bottom_nav.dart';
-import 'package:untitled3/features/auth/presentation/providers/auth_providers.dart';
-import 'package:untitled3/features/products/domain/entities/product.dart';
-import 'package:untitled3/features/products/presentation/providers/product_providers.dart';
-import 'package:untitled3/features/wishlist/domain/entities/wishlist_item.dart';
-import 'package:untitled3/features/wishlist/presentation/providers/wishlist_providers.dart';
-import 'package:untitled3/shared/widgets/empty_view.dart';
-import 'package:untitled3/shared/widgets/loading_view.dart';
+import 'package:pooja_pasal/app/router/route_names.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/core/utils/error_mapper.dart';
+import 'package:pooja_pasal/core/widgets/app_bottom_nav.dart';
+import 'package:pooja_pasal/core/widgets/product_image.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product.dart';
+import 'package:pooja_pasal/features/products/presentation/providers/product_providers.dart';
+import 'package:pooja_pasal/features/wishlist/domain/entities/wishlist_item.dart';
+import 'package:pooja_pasal/features/wishlist/presentation/providers/wishlist_providers.dart';
+import 'package:pooja_pasal/shared/widgets/empty_view.dart';
+import 'package:pooja_pasal/shared/widgets/loading_view.dart';
 
 class WishlistPage extends ConsumerWidget {
   const WishlistPage({super.key});
@@ -54,9 +55,9 @@ class WishlistPage extends ConsumerWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Wishlist'),
-        actions: const [
+        actions: [
           Padding(
-            padding: EdgeInsets.only(right: 16.0),
+            padding: const EdgeInsets.only(right: 16.0),
             child: Icon(Icons.favorite, color: AppColors.accent),
           ),
         ],
@@ -77,7 +78,7 @@ class WishlistPage extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Favorites',
+                Text('Favorites',
                     style: TextStyle(
                         fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.text)),
                 const SizedBox(height: 14),
@@ -126,8 +127,8 @@ class _WishlistTile extends ConsumerWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(color: const Color.fromRGBO(0, 0, 0, 0.06), blurRadius: 8, spreadRadius: 1),
+        boxShadow: const [
+          BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.06), blurRadius: 8, spreadRadius: 1),
         ],
       ),
       child: productAsync.when(
@@ -148,17 +149,15 @@ class _WishlistTile extends ConsumerWidget {
         Expanded(
           child: Container(
             width: double.infinity,
-            decoration: BoxDecoration(
-                color: AppColors.card, borderRadius: BorderRadius.circular(12)),
+            decoration:
+                BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
             alignment: Alignment.center,
-            child: const Icon(Icons.remove_shopping_cart_outlined,
-                color: AppColors.muted, size: 32),
+            child: Icon(Icons.remove_shopping_cart_outlined, color: AppColors.muted, size: 32),
           ),
         ),
         const SizedBox(height: 8),
         Text(message,
-            maxLines: 2,
-            style: const TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600)),
+            maxLines: 2, style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600)),
         const SizedBox(height: 6),
         SizedBox(
           width: double.infinity,
@@ -181,18 +180,11 @@ class _WishlistTile extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(12),
                   child: SizedBox(
                     width: double.infinity,
-                    child: product.image.isEmpty
-                        ? Container(
-                            color: AppColors.card,
-                            alignment: Alignment.center,
-                            child: const Icon(Icons.temple_hindu, color: AppColors.primary))
-                        : Image.network(product.image,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                                color: AppColors.card,
-                                alignment: Alignment.center,
-                                child:
-                                    const Icon(Icons.temple_hindu, color: AppColors.primary))),
+                    child: ProductImage(
+                        url: product.image,
+                        category: product.category,
+                        name: product.name,
+                        borderRadius: BorderRadius.zero),
                   ),
                 ),
                 if (product.stock == 0)
@@ -220,7 +212,7 @@ class _WishlistTile extends ConsumerWidget {
                       padding: EdgeInsets.zero,
                       style: IconButton.styleFrom(
                           backgroundColor: AppColors.surface, minimumSize: const Size(44, 44)),
-                      icon: const Icon(Icons.favorite, size: 16, color: AppColors.accent),
+                      icon: Icon(Icons.favorite, size: 16, color: AppColors.accent),
                     ),
                   ),
                 ),
@@ -234,7 +226,7 @@ class _WishlistTile extends ConsumerWidget {
               style: const TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
           Text('Rs.${product.price.toStringAsFixed(0)}',
-              style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+              style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
         ],
       ),
     );

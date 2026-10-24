@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pooja_pasal/core/network/json_reader.dart';
 
 class OrderItem {
   final String productId;
@@ -7,6 +7,7 @@ class OrderItem {
   final int qty;
   final String sellerId;
   final String sellerName;
+  final String image;
 
   const OrderItem({
     required this.productId,
@@ -15,30 +16,19 @@ class OrderItem {
     required this.qty,
     required this.sellerId,
     this.sellerName = '',
+    this.image = '',
   });
 
   factory OrderItem.fromMap(Map<String, dynamic> map) {
     return OrderItem(
-      productId: map['productId'] ?? '',
-      name: map['name'] ?? '',
-      price: (map['price'] as num?)?.toDouble() ?? 0.0,
-      qty: (map['qty'] as num?)?.toInt() ?? 1,
-      sellerId: map['sellerId'] ?? '',
-      // Empty for orders placed before this field existed — display
-      // fallback text, don't crash.
-      sellerName: map['sellerName'] ?? '',
+      productId: map.str('productId'),
+      name: map.str('name'),
+      price: map.dbl('price'),
+      qty: map.integer('qty', 1),
+      sellerId: map.str('sellerId'),
+      sellerName: map.str('sellerName'),
+      image: map.str('image'),
     );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'productId': productId,
-      'name': name,
-      'price': price,
-      'qty': qty,
-      'sellerId': sellerId,
-      'sellerName': sellerName,
-    };
   }
 }
 
@@ -58,7 +48,7 @@ const List<String> orderStatuses = [
 ];
 
 /// Payment lifecycle, independent of [orderStatuses]. Mirrors
-/// functions/src/types.ts `PaymentStatus` — keep both in sync.
+/// `Order::PAYMENT_STATUSES` in the Laravel API — keep both in sync.
 const List<String> paymentStatuses = [
   'pending',
   'processing',
@@ -83,20 +73,11 @@ class StatusHistoryEntry {
 
   factory StatusHistoryEntry.fromMap(Map<String, dynamic> map) {
     return StatusHistoryEntry(
-      status: map['status'] ?? '',
-      changedBy: map['changedBy'] ?? '',
-      note: map['note'] ?? '',
-      timestamp: (map['timestamp'] as Timestamp?)?.toDate(),
+      status: map.str('status'),
+      changedBy: map.str('changedBy'),
+      note: map.str('note'),
+      timestamp: map.date('timestamp'),
     );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'status': status,
-      'changedBy': changedBy,
-      'note': note,
-      'timestamp': timestamp == null ? Timestamp.now() : Timestamp.fromDate(timestamp!),
-    };
   }
 }
 
@@ -117,6 +98,7 @@ class PoojaOrder {
   final String shippingAddress;
   final List<StatusHistoryEntry> statusHistory;
   final DateTime? createdAt;
+  final String? couponCode;
 
   const PoojaOrder({
     required this.id,
@@ -135,58 +117,34 @@ class PoojaOrder {
     this.paymentRef,
     this.statusHistory = const [],
     this.createdAt,
+    this.couponCode,
   });
 
-  factory PoojaOrder.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final map = doc.data() ?? {};
+  factory PoojaOrder.fromJson(Map<String, dynamic> map) {
     return PoojaOrder(
-      id: doc.id,
-      buyerId: map['buyerId'] ?? '',
-      sellerIds: List<String>.from(map['sellerIds'] ?? const []),
-      items: (map['items'] as List<dynamic>? ?? [])
-          .map((e) => OrderItem.fromMap(Map<String, dynamic>.from(e)))
-          .toList(),
-      subtotal: (map['subtotal'] as num?)?.toDouble() ?? 0.0,
-      deliveryFee: (map['deliveryFee'] as num?)?.toDouble() ?? 0.0,
-      discount: (map['discount'] as num?)?.toDouble() ?? 0.0,
-      tax: (map['tax'] as num?)?.toDouble() ?? 0.0,
-      totalAmount: (map['totalAmount'] as num?)?.toDouble() ?? 0.0,
-      status: map['status'] ?? 'pending',
-      paymentStatus: map['paymentStatus'] ?? 'pending',
-      paymentMethod: map['paymentMethod'] ?? 'cod',
-      paymentRef: map['paymentRef'],
-      shippingAddress: map['shippingAddress'] ?? '',
-      statusHistory: (map['statusHistory'] as List<dynamic>? ?? [])
-          .map((e) => StatusHistoryEntry.fromMap(Map<String, dynamic>.from(e)))
-          .toList(),
-      createdAt: (map['createdAt'] as Timestamp?)?.toDate(),
+      id: map.str('id'),
+      buyerId: map.str('buyerId'),
+      sellerIds: map.strings('sellerIds'),
+      items: map.objects('items').map(OrderItem.fromMap).toList(),
+      subtotal: map.dbl('subtotal'),
+      deliveryFee: map.dbl('deliveryFee'),
+      discount: map.dbl('discount'),
+      tax: map.dbl('tax'),
+      totalAmount: map.dbl('totalAmount'),
+      status: map.str('status', 'pending'),
+      paymentStatus: map.str('paymentStatus', 'pending'),
+      paymentMethod: map.str('paymentMethod', 'cod'),
+      paymentRef: map.strOrNull('paymentRef'),
+      shippingAddress: map.str('shippingAddress'),
+      statusHistory: map.objects('statusHistory').map(StatusHistoryEntry.fromMap).toList(),
+      createdAt: map.date('createdAt'),
+      couponCode: map.strOrNull('couponCode'),
     );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'buyerId': buyerId,
-      'sellerIds': sellerIds,
-      'items': items.map((e) => e.toMap()).toList(),
-      'subtotal': subtotal,
-      'deliveryFee': deliveryFee,
-      'discount': discount,
-      'tax': tax,
-      'totalAmount': totalAmount,
-      'status': status,
-      'paymentStatus': paymentStatus,
-      'paymentMethod': paymentMethod,
-      'paymentRef': paymentRef,
-      'shippingAddress': shippingAddress,
-      'statusHistory': statusHistory.map((e) => e.toMap()).toList(),
-      'createdAt': createdAt == null ? FieldValue.serverTimestamp() : Timestamp.fromDate(createdAt!),
-    };
   }
 }
 
-/// Result of the trusted `createOrder` Cloud Function call — carries the
-/// server-computed authoritative total back to the client (e.g. so
-/// checkout can pass the exact amount to the Khalti SDK).
+/// Result of `POST /orders` — carries the server-computed authoritative
+/// total back to the client (e.g. so checkout can show what COD will cost).
 class CreateOrderResult {
   final String orderId;
   final double totalAmount;

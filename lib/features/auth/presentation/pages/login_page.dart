@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
-import 'package:untitled3/app/router/route_names.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/errors/app_exception.dart';
-import 'package:untitled3/core/utils/error_mapper.dart';
-import 'package:untitled3/features/auth/presentation/providers/auth_providers.dart';
+import 'package:pooja_pasal/app/router/route_names.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/core/errors/app_exception.dart';
+import 'package:pooja_pasal/core/widgets/feedback.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   final String role;
@@ -38,23 +37,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     context.push(RouteNames.forgotPassword);
   }
 
-  Future<void> _continueWithGoogle() async {
-    setState(() => _isloading = true);
-    final authRepository = ref.read(authRepositoryProvider);
-    try {
-      await authRepository.signInWithGoogle(role: currentRole);
-      if (!mounted) return;
-      final user = authRepository.currentUser;
-      final appUser = user == null ? null : await authRepository.getUserDoc(user.uid);
-      if (!mounted) return;
-      _routeAfterLogin(appUser?.role ?? currentRole);
-    } catch (e) {
-      Fluttertoast.showToast(msg: 'Google sign-in failed: ${friendlyErrorMessage(e)}');
-    } finally {
-      if (mounted) setState(() => _isloading = false);
-    }
-  }
-
   void _routeAfterLogin(String role) {
     if (role == 'admin') {
       context.go(RouteNames.adminDashboard);
@@ -70,7 +52,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      Fluttertoast.showToast(msg: 'Please enter your email and password');
+      showMessage(context, 'Please enter your email and password');
       return;
     }
 
@@ -84,14 +66,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
       if (!mounted) return;
       if (appUser == null) {
-        Fluttertoast.showToast(msg: 'Account profile not found. Please sign up again.');
+        showMessage(context, 'Account profile not found. Please sign up again.');
         return;
       }
       _routeAfterLogin(appUser.role);
     } on AuthException catch (e) {
-      Fluttertoast.showToast(msg: e.message);
+      showMessage(context, e.message);
     } catch (e) {
-      Fluttertoast.showToast(msg: 'Something went wrong. Please try again.');
+      showMessage(context, 'Something went wrong. Please try again.');
     } finally {
       if (mounted) setState(() => _isloading = false);
     }
@@ -103,21 +85,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: _isloading
-            ? const Center(
-                child: SpinKitCircle(color: AppColors.accent, size: 60))
+            ? Center(child: SpinKitCircle(color: AppColors.accent, size: 60))
             : SingleChildScrollView(
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 20),
-                    const Text('Welcome Back!',
+                    Text('Welcome Back!',
                         style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary)),
+                            fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.primary)),
                     const SizedBox(height: 6),
-                    const Text('Login to continue',
+                    Text('Login to continue',
                         style: TextStyle(fontSize: 15, color: AppColors.muted)),
                     const SizedBox(height: 20),
 
@@ -141,9 +120,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                     const SizedBox(height: 24),
 
-                    const Text('Email',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600, color: AppColors.text)),
+                    Text('Email',
+                        style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.text)),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _emailController,
@@ -154,9 +132,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text('Password',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600, color: AppColors.text)),
+                    Text('Password',
+                        style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.text)),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _passwordController,
@@ -165,9 +142,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: GestureDetector(
                           onTap: () => setState(() => _obsecure = !_obsecure),
-                          child: Icon(_obsecure
-                              ? Icons.remove_red_eye
-                              : Icons.remove_red_eye_outlined),
+                          child: Icon(
+                              _obsecure ? Icons.remove_red_eye : Icons.remove_red_eye_outlined),
                         ),
                         hintText: 'Enter your password',
                       ),
@@ -176,8 +152,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: _forgetPassword,
-                        child: const Text('Forgot password?',
-                            style: TextStyle(color: AppColors.accent)),
+                        child: Text('Forgot password?', style: TextStyle(color: AppColors.accent)),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -187,35 +162,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       child: ElevatedButton(
                         onPressed: _login,
                         child: const Text('Login',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w600)),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: const [
-                        Expanded(child: Divider(color: AppColors.border)),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
-                          child: Text('OR', style: TextStyle(color: AppColors.muted)),
-                        ),
-                        Expanded(child: Divider(color: AppColors.border)),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: OutlinedButton.icon(
-                        onPressed: _continueWithGoogle,
-                        icon: const Icon(Icons.g_mobiledata,
-                            size: 28, color: AppColors.text),
-                        label: const Text('Continue with Google',
-                            style: TextStyle(color: AppColors.text)),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppColors.border),
-                          foregroundColor: AppColors.text,
-                        ),
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -227,9 +174,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           onTap: _signUp,
                           child: Text(
                             'Create ${currentRole == 'seller' ? 'seller' : 'a buyer'} account',
-                            style: const TextStyle(
-                                color: AppColors.accent,
-                                fontWeight: FontWeight.w600),
+                            style: TextStyle(color: AppColors.accent, fontWeight: FontWeight.w600),
                           ),
                         ),
                       ],

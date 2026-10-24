@@ -1,7 +1,7 @@
-import 'package:untitled3/features/cart/domain/entities/cart_item.dart';
-import 'package:untitled3/features/orders/data/datasources/order_remote_data_source.dart';
-import 'package:untitled3/features/orders/domain/entities/order.dart';
-import 'package:untitled3/features/orders/domain/repositories/order_repository.dart';
+import 'package:pooja_pasal/features/cart/domain/entities/cart_item.dart';
+import 'package:pooja_pasal/features/orders/data/datasources/order_remote_data_source.dart';
+import 'package:pooja_pasal/features/orders/domain/entities/order.dart';
+import 'package:pooja_pasal/features/orders/domain/repositories/order_repository.dart';
 
 class OrderRepositoryImpl implements OrderRepository {
   final OrderRemoteDataSource _dataSource;
@@ -29,12 +29,14 @@ class OrderRepositoryImpl implements OrderRepository {
     required String shippingAddress,
     required String paymentMethod,
     required String idempotencyKey,
+    String? couponCode,
   }) {
     return _dataSource.createOrder(
       items: items,
       shippingAddress: shippingAddress,
       paymentMethod: paymentMethod,
       idempotencyKey: idempotencyKey,
+      couponCode: couponCode,
     );
   }
 
@@ -46,6 +48,10 @@ class OrderRepositoryImpl implements OrderRepository {
   }) {
     return _dataSource.updateOrderStatus(orderId: orderId, status: status, note: note);
   }
+
+  @override
+  Future<void> updatePaymentStatus({required String orderId, required String paymentStatus}) =>
+      _dataSource.updatePaymentStatus(orderId: orderId, paymentStatus: paymentStatus);
 
   @override
   Future<void> cancelOrder(String orderId, {String? note}) =>

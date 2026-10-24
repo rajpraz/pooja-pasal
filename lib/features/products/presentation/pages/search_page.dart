@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/features/products/presentation/providers/search_providers.dart';
-import 'package:untitled3/features/products/presentation/widgets/product_card.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/features/products/presentation/providers/search_providers.dart';
+import 'package:pooja_pasal/features/products/presentation/widgets/product_card.dart';
 
 class SearchPage extends ConsumerStatefulWidget {
   const SearchPage({super.key});
@@ -28,7 +28,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Container(
+        title: DecoratedBox(
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(12),
@@ -60,7 +60,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           ),
         ),
       ),
-      body: debouncedQuery.isEmpty ? _buildHistory(context) : _buildResults(context, debouncedQuery),
+      body:
+          debouncedQuery.isEmpty ? _buildHistory(context) : _buildResults(context, debouncedQuery),
     );
   }
 
@@ -71,9 +72,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       error: (err, st) => const SizedBox.shrink(),
       data: (recent) {
         if (recent.isEmpty) {
-          return const Center(
+          return Center(
             child: Padding(
-              padding: EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
               child: Text('Search for pooja items, idols, incense and more.',
                   textAlign: TextAlign.center, style: TextStyle(color: AppColors.muted)),
             ),
@@ -128,12 +129,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.search_off, size: 56, color: AppColors.muted),
+                  Icon(Icons.search_off, size: 56, color: AppColors.muted),
                   const SizedBox(height: 12),
                   Text('No results for "$query"',
                       style: const TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 4),
-                  const Text('Try a different keyword.', style: TextStyle(color: AppColors.muted)),
+                  Text('Try a different keyword.', style: TextStyle(color: AppColors.muted)),
                 ],
               ),
             ),
@@ -143,12 +144,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           padding: const EdgeInsets.all(16),
           child: GridView.builder(
             itemCount: results.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 14,
-              crossAxisSpacing: 14,
-              childAspectRatio: 0.68,
-            ),
+            gridDelegate: const ProductGridDelegate(),
             itemBuilder: (context, index) => ProductCard(product: results[index]),
           ),
         );

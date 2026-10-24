@@ -1,7 +1,7 @@
-import 'package:untitled3/features/cart/data/datasources/cart_remote_data_source.dart';
-import 'package:untitled3/features/cart/domain/entities/cart_item.dart';
-import 'package:untitled3/features/cart/domain/repositories/cart_repository.dart';
-import 'package:untitled3/features/products/domain/entities/product.dart';
+import 'package:pooja_pasal/features/cart/data/datasources/cart_remote_data_source.dart';
+import 'package:pooja_pasal/features/cart/domain/entities/cart_item.dart';
+import 'package:pooja_pasal/features/cart/domain/repositories/cart_repository.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product.dart';
 
 class CartRepositoryImpl implements CartRepository {
   final CartRemoteDataSource _dataSource;
@@ -20,8 +20,7 @@ class CartRepositoryImpl implements CartRepository {
       _dataSource.updateQty(uid, productId, qty);
 
   @override
-  Future<void> removeItem(String uid, String productId) =>
-      _dataSource.removeItem(uid, productId);
+  Future<void> removeItem(String uid, String productId) => _dataSource.removeItem(uid, productId);
 
   @override
   Future<void> clearCart(String uid) => _dataSource.clearCart(uid);

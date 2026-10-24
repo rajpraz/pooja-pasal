@@ -1,29 +1,26 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/core/utils/error_mapper.dart';
+import 'package:pooja_pasal/features/payments/domain/entities/esewa_initiation.dart';
+import 'package:pooja_pasal/features/payments/presentation/providers/payment_providers.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/utils/error_mapper.dart';
-import 'package:untitled3/features/payments/domain/entities/esewa_initiation.dart';
-import 'package:untitled3/features/payments/presentation/providers/payment_providers.dart';
 
 /// eSewa's ePay v2 API takes a *form POST* of signed fields, not a plain
-/// GET URL — there's no native eSewa SDK for Flutter (unlike Khalti, which
-/// ships `khalti_flutter`), so the standard mobile-integration approach is
-/// to load a tiny self-submitting HTML form into a WebView pointed at
-/// eSewa's hosted payment page, then watch for the redirect back to a
-/// (non-resolving, purely-recognized) success/failure marker URL.
+/// GET URL — there's no native eSewa SDK for Flutter, so the standard
+/// mobile approach is to load a tiny self-submitting HTML form into a
+/// WebView pointed at eSewa's hosted payment page, then watch for the
+/// redirect back to the success/failure URLs.
 ///
-/// **Sandbox only.** `_formUrl` below is eSewa's rc- (release-candidate/
-/// test) endpoint. Swap it for `https://epay.esewa.com.np/api/epay/main/v2/form`
-/// before a production deploy — this file has no environment-awareness of
-/// its own (the client has no build-time env concept the way
-/// functions/src/config.ts does), so this is a manual step, called out here
-/// deliberately rather than silently defaulting to sandbox in production.
+/// The API (`POST /orders/{id}/pay`) signs the fields for the order's own
+/// total and supplies the form URL (sandbox or live, per the server's
+/// config) and its own success/failure URLs, which this page intercepts.
 ///
-/// Server-side verification (`verifyEsewaPayment`) is what actually confirms
-/// payment — reaching the success marker URL only means eSewa *reported*
-/// success in its own redirect, which this page never trusts on its own,
-/// exactly like the Khalti flow never trusts the SDK's `onSuccess` alone.
+/// Server-side verification (`verifyEsewa`) is what actually confirms
+/// payment — reaching the success URL only means eSewa *reported* success
+/// in its own redirect, which this page never trusts on its own.
 class EsewaPaymentPage extends ConsumerStatefulWidget {
   final String orderId;
 
@@ -34,11 +31,8 @@ class EsewaPaymentPage extends ConsumerStatefulWidget {
 }
 
 class _EsewaPaymentPageState extends ConsumerState<EsewaPaymentPage> {
-  static const _formUrl = 'https://rc-epay.esewa.com.np/api/epay/main/v2/form';
-  static const _successMarker = 'https://poojapasal.app/esewa/success';
-  static const _failureMarker = 'https://poojapasal.app/esewa/failure';
-
   WebViewController? _controller;
+  EsewaInitiation? _fields;
   bool _initiating = true;
   bool _verifying = false;
   String? _error;
@@ -54,13 +48,15 @@ class _EsewaPaymentPageState extends ConsumerState<EsewaPaymentPage> {
       final EsewaInitiation fields =
           await ref.read(paymentControllerProvider.notifier).initiateEsewa(widget.orderId);
       if (!mounted) return;
-      final controller = WebViewController()
-        ..setJavaScriptMode(JavaScriptMode.unrestricted)
-        ..setNavigationDelegate(NavigationDelegate(
-          onNavigationRequest: _handleNavigation,
-        ))
-        ..loadHtmlString(_buildAutoSubmitHtml(fields), baseUrl: _formUrl);
+      final controller = WebViewController();
+      await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+      await controller.setNavigationDelegate(NavigationDelegate(
+        onNavigationRequest: _handleNavigation,
+      ));
+      await controller.loadHtmlString(_buildAutoSubmitHtml(fields), baseUrl: fields.formUrl);
+      if (!mounted) return;
       setState(() {
+        _fields = fields;
         _controller = controller;
         _initiating = false;
       });
@@ -77,35 +73,40 @@ class _EsewaPaymentPageState extends ConsumerState<EsewaPaymentPage> {
     // amount + tax_amount + service/delivery charges must sum to
     // total_amount per eSewa's own validation; only total_amount,
     // transaction_uuid, and product_code are actually signed (see
-    // functions/src/payments/esewaVerify.ts), so the rest are zeroed.
+    // the API's PaymentService), so the rest are zeroed.
     return '''
 <!DOCTYPE html>
 <html>
 <body onload="document.forms[0].submit()">
-  <form action="$_formUrl" method="POST">
-    <input type="hidden" name="amount" value="${fields.totalAmount}" />
+  <form action="${_attr(fields.formUrl)}" method="POST">
+    <input type="hidden" name="amount" value="${_attr(fields.totalAmount)}" />
     <input type="hidden" name="tax_amount" value="0" />
-    <input type="hidden" name="total_amount" value="${fields.totalAmount}" />
-    <input type="hidden" name="transaction_uuid" value="${fields.transactionUuid}" />
-    <input type="hidden" name="product_code" value="${fields.productCode}" />
+    <input type="hidden" name="total_amount" value="${_attr(fields.totalAmount)}" />
+    <input type="hidden" name="transaction_uuid" value="${_attr(fields.transactionUuid)}" />
+    <input type="hidden" name="product_code" value="${_attr(fields.productCode)}" />
     <input type="hidden" name="product_service_charge" value="0" />
     <input type="hidden" name="product_delivery_charge" value="0" />
-    <input type="hidden" name="success_url" value="$_successMarker" />
-    <input type="hidden" name="failure_url" value="$_failureMarker" />
-    <input type="hidden" name="signed_field_names" value="${fields.signedFieldNames}" />
-    <input type="hidden" name="signature" value="${fields.signature}" />
+    <input type="hidden" name="success_url" value="${_attr(fields.successUrl)}" />
+    <input type="hidden" name="failure_url" value="${_attr(fields.failureUrl)}" />
+    <input type="hidden" name="signed_field_names" value="${_attr(fields.signedFieldNames)}" />
+    <input type="hidden" name="signature" value="${_attr(fields.signature)}" />
   </form>
 </body>
 </html>
 ''';
   }
 
+  /// Escapes a value for an HTML attribute.
+  static String _attr(String value) => const HtmlEscape(HtmlEscapeMode.attribute).convert(value);
+
   NavigationDecision _handleNavigation(NavigationRequest request) {
-    if (request.url.startsWith(_successMarker)) {
+    final fields = _fields;
+    if (fields == null) return NavigationDecision.navigate;
+    if (fields.successUrl.isNotEmpty && request.url.startsWith(fields.successUrl)) {
       _onRedirectSucceeded();
       return NavigationDecision.prevent;
     }
-    if (request.url.startsWith(_failureMarker)) {
+    if (fields.failureUrl.isNotEmpty && request.url.startsWith(fields.failureUrl)) {
       Navigator.of(context).pop(false);
       return NavigationDecision.prevent;
     }
@@ -143,7 +144,7 @@ class _EsewaPaymentPageState extends ConsumerState<EsewaPaymentPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, color: AppColors.error, size: 48),
+                    Icon(Icons.error_outline, color: AppColors.error, size: 48),
                     const SizedBox(height: 12),
                     Text(_error!, textAlign: TextAlign.center),
                     const SizedBox(height: 16),
@@ -159,7 +160,7 @@ class _EsewaPaymentPageState extends ConsumerState<EsewaPaymentPage> {
               children: [
                 if (_controller != null) WebViewWidget(controller: _controller!),
                 if (_initiating || _verifying)
-                  Container(
+                  ColoredBox(
                     color: Colors.black26,
                     child: Center(
                       child: Column(

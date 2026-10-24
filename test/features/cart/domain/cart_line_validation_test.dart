@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:untitled3/features/cart/domain/entities/cart_item.dart';
-import 'package:untitled3/features/cart/domain/entities/cart_line_validation.dart';
-import 'package:untitled3/features/products/domain/entities/product.dart';
+import 'package:pooja_pasal/features/cart/domain/entities/cart_item.dart';
+import 'package:pooja_pasal/features/cart/domain/entities/cart_line_validation.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product.dart';
 
 CartItem _item({double price = 100, int qty = 1}) => CartItem(
       productId: 'p1',
@@ -59,7 +59,7 @@ void main() {
     });
 
     test('out-of-stock (stock == 0) is never purchasable regardless of qty', () {
-      final line = CartLineValidation(item: _item(qty: 1), product: _product(stock: 0));
+      final line = CartLineValidation(item: _item(), product: _product(stock: 0));
       expect(line.inStock, isFalse);
       expect(line.isPurchasable, isFalse);
     });
@@ -67,31 +67,31 @@ void main() {
 
   group('CartLineValidation.priceChanged / effectivePrice', () {
     test('false when the live price matches what was captured at add-to-cart time', () {
-      final line = CartLineValidation(item: _item(price: 100), product: _product(price: 100));
+      final line = CartLineValidation(item: _item(), product: _product());
       expect(line.priceChanged, isFalse);
       expect(line.effectivePrice, 100);
     });
 
     test('true when the live price has increased since add-to-cart', () {
-      final line = CartLineValidation(item: _item(price: 100), product: _product(price: 130));
+      final line = CartLineValidation(item: _item(), product: _product(price: 130));
       expect(line.priceChanged, isTrue);
       expect(line.effectivePrice, 130);
     });
 
     test('true when the live price has decreased since add-to-cart', () {
-      final line = CartLineValidation(item: _item(price: 100), product: _product(price: 80));
+      final line = CartLineValidation(item: _item(), product: _product(price: 80));
       expect(line.priceChanged, isTrue);
       expect(line.effectivePrice, 80);
     });
 
     test('priceChanged is false (not a crash) when the product has been deleted', () {
-      final line = CartLineValidation(item: _item(price: 100), product: null);
+      final line = CartLineValidation(item: _item(), product: null);
       expect(line.priceChanged, isFalse);
       expect(line.effectivePrice, 100); // falls back to the cart item's captured price
     });
 
     test('effectiveSubtotal uses the live price times quantity', () {
-      final line = CartLineValidation(item: _item(price: 100, qty: 3), product: _product(price: 90));
+      final line = CartLineValidation(item: _item(qty: 3), product: _product(price: 90));
       expect(line.effectiveSubtotal, 270);
     });
   });

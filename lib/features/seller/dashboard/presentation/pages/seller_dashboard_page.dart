@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:untitled3/app/router/route_names.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/utils/error_mapper.dart';
-import 'package:untitled3/core/widgets/stat_card.dart';
-import 'package:untitled3/features/auth/presentation/providers/auth_providers.dart';
-import 'package:untitled3/features/products/domain/entities/product.dart';
-import 'package:untitled3/features/products/presentation/providers/product_providers.dart';
-import 'package:untitled3/features/seller/dashboard/domain/entities/seller_dashboard_stats.dart';
-import 'package:untitled3/features/seller/dashboard/presentation/providers/seller_dashboard_stats_provider.dart';
-import 'package:untitled3/features/seller/orders/presentation/pages/seller_orders_page.dart';
+import 'package:pooja_pasal/app/router/route_names.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/app/theme/appearance_sheet.dart';
+import 'package:pooja_pasal/core/utils/error_mapper.dart';
+import 'package:pooja_pasal/core/widgets/product_image.dart';
+import 'package:pooja_pasal/core/widgets/stat_card.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product.dart';
+import 'package:pooja_pasal/features/products/presentation/providers/product_providers.dart';
+import 'package:pooja_pasal/features/seller/dashboard/domain/entities/seller_dashboard_stats.dart';
+import 'package:pooja_pasal/features/seller/dashboard/presentation/providers/seller_dashboard_stats_provider.dart';
+import 'package:pooja_pasal/features/seller/orders/presentation/pages/seller_orders_page.dart';
 
 class SellerDashboardPage extends ConsumerStatefulWidget {
   const SellerDashboardPage({super.key});
@@ -22,33 +24,9 @@ class SellerDashboardPage extends ConsumerStatefulWidget {
 class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
   int _tab = 0;
 
-  Widget buildImage(String imagePath) {
-    if (imagePath.isEmpty) {
-      return Container(
-        color: AppColors.card,
-        alignment: Alignment.center,
-        child:
-            const Icon(Icons.temple_hindu, color: AppColors.primary, size: 36),
-      );
-    }
-    return Image.network(
-      imagePath,
-      fit: BoxFit.cover,
-      width: double.infinity,
-      height: double.infinity,
-      errorBuilder: (_, __, ___) => Container(
-        color: Colors.orange.shade100,
-        alignment: Alignment.center,
-        child: const Icon(Icons.temple_hindu, color: Colors.deepOrange, size: 36),
-      ),
-    );
-  }
-
-  /// A seller can no longer hard-delete a product directly (see
-  /// firestore.rules: `products.delete` is admin-only, since a deleted
-  /// product could still be referenced by historical orders) — this
-  /// toggles `isActive` instead, which sellers are still allowed to update
-  /// on their own products.
+  /// Sellers can't hard-delete a product (that's admin-only, since a
+  /// deleted product could still be referenced by historical orders) —
+  /// this toggles `isActive` instead.
   Future<void> _confirmToggleActive(Product product) async {
     final activating = !product.isActive;
     final confirmed = await showDialog<bool>(
@@ -60,8 +38,7 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
             : '"${product.name}" will be hidden from buyers. You can reactivate it any time.'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Cancel')),
+              onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(activating ? 'Reactivate' : 'Deactivate',
@@ -73,22 +50,19 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
     if (confirmed != true) return;
 
     try {
-      await ref
-          .read(productRepositoryProvider)
-          .updateProduct(product.id, {'isActive': activating});
+      await ref.read(productRepositoryProvider).updateProduct(product.id, {'isActive': activating});
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(activating ? 'Product reactivated.' : 'Product deactivated.')),
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
     }
   }
 
   Future<void> logout() async {
-    await ref.read(authRepositoryProvider).signOut();
+    await ref.read(signOutActionProvider)();
     if (!mounted) return;
     context.go('${RouteNames.login}?role=seller');
   }
@@ -108,6 +82,7 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
       appBar: AppBar(
         title: Text(_tab == 0 ? 'Sell Pooja Items' : 'Incoming Orders'),
         actions: [
+          const AppearanceButton(),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: logout,
@@ -117,7 +92,6 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
       ),
       floatingActionButton: _tab == 0
           ? FloatingActionButton(
-              backgroundColor: AppColors.primary,
               onPressed: () => context.push(RouteNames.sellerProductNew),
               child: const Icon(Icons.add),
             )
@@ -138,13 +112,17 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  GridView.count(
+                  GridView(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    childAspectRatio: 2.6,
+                    // A fixed tile height (not an aspect ratio) so the value and label
+                    // always fit, whatever the screen width.
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 10,
+                      mainAxisExtent: StatCard.height,
+                    ),
                     children: [
                       StatCard(
                           icon: Icons.today_outlined,
@@ -183,7 +161,7 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
                           return Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.storefront_outlined, size: 70, color: AppColors.primary),
+                              Icon(Icons.storefront_outlined, size: 70, color: AppColors.primary),
                               const SizedBox(height: 16),
                               const Text('No products yet',
                                   textAlign: TextAlign.center,
@@ -203,6 +181,8 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
                           );
                         }
                         return ListView.builder(
+                          // Room for the "+" button over the last row.
+                          padding: const EdgeInsets.only(bottom: 88),
                           itemCount: products.length,
                           itemBuilder: (context, index) {
                             final product = products[index];
@@ -212,13 +192,14 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
                                 opacity: product.isActive ? 1 : 0.6,
                                 child: ListTile(
                                   contentPadding: const EdgeInsets.all(12),
-                                  leading: ClipRRect(
+                                  // ListTile caps leading height, so keep it a true square.
+                                  leading: ProductImage(
+                                    url: product.image,
+                                    category: product.category,
+                                    name: product.name,
+                                    width: 48,
+                                    height: 48,
                                     borderRadius: BorderRadius.circular(10),
-                                    child: SizedBox(
-                                      width: 70,
-                                      height: 70,
-                                      child: buildImage(product.image),
-                                    ),
                                   ),
                                   title: Row(
                                     children: [
@@ -239,7 +220,7 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       IconButton(
-                                        icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
+                                        icon: Icon(Icons.edit_outlined, color: AppColors.primary),
                                         tooltip: 'Edit product',
                                         onPressed: () => context
                                             .push(RouteNames.sellerProductEditPath(product.id)),
@@ -276,10 +257,9 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
     return Container(
       margin: const EdgeInsets.only(left: 6),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration:
-          BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20)),
-      child: Text(label,
-          style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w600)),
+      decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20)),
+      child: Text(label, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w600)),
     );
   }
 }

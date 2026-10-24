@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pooja_pasal/core/network/json_reader.dart';
 
 class CartItem {
   final String productId;
@@ -8,6 +8,10 @@ class CartItem {
   final String image;
   final String sellerId;
 
+  /// Live stock the server reports for this line (0 when the product was
+  /// deactivated); null for lines built on the device.
+  final int? availableStock;
+
   const CartItem({
     required this.productId,
     required this.name,
@@ -15,30 +19,20 @@ class CartItem {
     required this.qty,
     required this.image,
     required this.sellerId,
+    this.availableStock,
   });
 
   double get subtotal => price * qty;
 
-  factory CartItem.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final map = doc.data() ?? {};
+  factory CartItem.fromJson(Map<String, dynamic> map) {
     return CartItem(
-      productId: doc.id,
-      name: map['name'] ?? '',
-      price: (map['price'] as num?)?.toDouble() ?? 0.0,
-      qty: (map['qty'] as num?)?.toInt() ?? 1,
-      image: map['image'] ?? '',
-      sellerId: map['sellerId'] ?? '',
+      productId: map.str('productId'),
+      name: map.str('name'),
+      price: map.dbl('price'),
+      qty: map.integer('qty', 1),
+      image: map.str('image'),
+      sellerId: map.str('sellerId'),
+      availableStock: map.intOrNull('availableStock'),
     );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'productId': productId,
-      'name': name,
-      'price': price,
-      'qty': qty,
-      'image': image,
-      'sellerId': sellerId,
-    };
   }
 }

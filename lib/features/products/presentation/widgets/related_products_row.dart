@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/features/products/domain/entities/product.dart';
-import 'package:untitled3/features/products/presentation/providers/product_providers.dart';
-import 'package:untitled3/features/products/presentation/widgets/product_card.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product.dart';
+import 'package:pooja_pasal/features/products/presentation/providers/product_providers.dart';
+import 'package:pooja_pasal/features/products/presentation/widgets/product_card.dart';
 
 /// Same-category products, excluding the one being viewed. Reuses whatever
 /// `activeProductsProvider` already has loaded elsewhere in the app rather
@@ -31,11 +31,11 @@ class RelatedProductsRow extends ConsumerWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('You may also like',
+            Text('You may also like',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.text)),
             const SizedBox(height: 10),
             SizedBox(
-              height: 210,
+              height: ProductCard.heightFor(150),
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: related.length,

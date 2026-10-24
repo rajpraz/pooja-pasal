@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/utils/error_mapper.dart';
-import 'package:untitled3/features/orders/domain/entities/order.dart';
-import 'package:untitled3/features/orders/presentation/providers/order_providers.dart';
-import 'package:untitled3/features/orders/presentation/widgets/reorder_action.dart';
-import 'package:untitled3/features/orders/presentation/widgets/retry_payment_action.dart';
-import 'package:untitled3/features/reviews/presentation/widgets/review_dialog.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/core/utils/error_mapper.dart';
+import 'package:pooja_pasal/core/widgets/feedback.dart';
+import 'package:pooja_pasal/features/orders/domain/entities/order.dart';
+import 'package:pooja_pasal/features/orders/presentation/providers/order_providers.dart';
+import 'package:pooja_pasal/features/orders/presentation/widgets/reorder_action.dart';
+import 'package:pooja_pasal/features/orders/presentation/widgets/retry_payment_action.dart';
+import 'package:pooja_pasal/features/reviews/presentation/widgets/review_dialog.dart';
 
 class TrackOrderStep {
   final String title;
@@ -18,11 +19,10 @@ class TrackOrderStep {
       {required this.title, this.done = false, this.isCurrent = false, this.timestamp});
 }
 
-/// The backend's actual state machine (functions/src/types.ts
-/// ORDER_STATUS_TRANSITIONS) only supports these statuses — deliberately
-/// does NOT include an "out for delivery" step, since the backend has no
-/// such status and inventing one client-side would show a step that never
-/// really completes.
+/// The API's state machine (`Order::TRANSITIONS`) only supports these
+/// statuses — deliberately does NOT include an "out for delivery" step,
+/// since the backend has no such status and inventing one client-side
+/// would show a step that never really completes.
 const _forwardStatuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
 const _forwardTitles = {
   'pending': 'Order Placed',
@@ -43,7 +43,8 @@ List<TrackOrderStep> _stepsForOrder(PoojaOrder order) {
   if (order.status == 'cancelled') {
     return [
       TrackOrderStep(title: 'Order Placed', done: true, timestamp: order.createdAt),
-      TrackOrderStep(title: 'Cancelled', done: true, isCurrent: true, timestamp: timestampFor('cancelled')),
+      TrackOrderStep(
+          title: 'Cancelled', done: true, isCurrent: true, timestamp: timestampFor('cancelled')),
     ];
   }
   if (order.status == 'returned' || order.status == 'refunded') {
@@ -64,7 +65,9 @@ List<TrackOrderStep> _stepsForOrder(PoojaOrder order) {
         title: _forwardTitles[_forwardStatuses[i]]!,
         done: i <= currentIndex,
         isCurrent: i == currentIndex,
-        timestamp: i == 0 ? (timestampFor(_forwardStatuses[i]) ?? order.createdAt) : timestampFor(_forwardStatuses[i]),
+        timestamp: i == 0
+            ? (timestampFor(_forwardStatuses[i]) ?? order.createdAt)
+            : timestampFor(_forwardStatuses[i]),
       ),
   ];
 }
@@ -112,10 +115,11 @@ class _OrderTrackBody extends ConsumerWidget {
         content: const Text('This can\'t be undone. Any stock reserved for it will be released.'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Keep Order')),
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Keep Order')),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Cancel Order', style: TextStyle(color: AppColors.error)),
+            child: Text('Cancel Order', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -125,11 +129,48 @@ class _OrderTrackBody extends ConsumerWidget {
     try {
       await ref.read(orderControllerProvider.notifier).cancelOrder(order.id);
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Order cancelled.')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Order cancelled.')));
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+    }
+  }
+
+  /// Asks why, then moves the delivered order to `returned` (the API
+  /// restocks it and lets the seller and admin know).
+  Future<void> _requestReturn(BuildContext context, WidgetRef ref) async {
+    final reason = TextEditingController();
+    final submitted = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Request a return?'),
+        content: TextField(
+          controller: reason,
+          autofocus: true,
+          maxLines: 3,
+          decoration: const InputDecoration(hintText: 'What went wrong? (damaged, wrong item…)'),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Not now')),
+          TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Request Return')),
+        ],
+      ),
+    );
+    final note = reason.text.trim();
+    reason.dispose();
+    if (submitted != true || !context.mounted) return;
+    try {
+      await ref.read(orderControllerProvider.notifier).updateStatus(
+            orderId: order.id,
+            status: 'returned',
+            note: note.isEmpty ? 'Return requested by buyer' : note,
+          );
+      if (context.mounted) showMessage(context, 'Return requested. The seller will be in touch.');
+    } catch (e) {
+      if (context.mounted) showMessage(context, friendlyErrorMessage(e));
     }
   }
 
@@ -137,30 +178,43 @@ class _OrderTrackBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final steps = _stepsForOrder(order);
     final placedOn = order.createdAt == null ? '' : 'Placed on ${_formatTime(order.createdAt)}';
-    // Matches functions/src/orders/stateMachine.ts: a buyer may only cancel
-    // while the order is still pending (before a seller starts fulfilling
-    // it) — the backend rejects any other attempt, so the button is hidden
-    // rather than offered and failed.
+    // Matches the API's OrderService: a buyer may only cancel while the
+    // order is still pending (before a seller starts fulfilling it) — the
+    // backend rejects any other attempt, so the button is hidden rather
+    // than offered and failed.
     final canCancel = order.status == 'pending';
+    // Returns open once the order is delivered (OrderService allows the
+    // buyer `delivered → returned` only).
+    final canReturn = order.status == 'delivered';
 
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: ListView(
         children: [
           Text('Order ID: #${order.id.substring(0, order.id.length.clamp(0, 8))}',
-              style: const TextStyle(
-                  fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.text)),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.text)),
           const SizedBox(height: 4),
-          Text(placedOn, style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+          Text(placedOn, style: TextStyle(color: AppColors.muted, fontSize: 13)),
           const SizedBox(height: 8),
           Text('Rs.${order.totalAmount.toStringAsFixed(2)} • ${order.items.length} item(s)',
               style: const TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
-          Text('Payment: ${order.paymentMethod.toUpperCase()} • ${order.paymentStatus.toUpperCase()}',
-              style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+          // How the total adds up, so a coupon or delivery fee is never a surprise.
+          Text(
+              [
+                'Items Rs.${order.subtotal.toStringAsFixed(2)}',
+                if (order.discount > 0)
+                  '${order.couponCode == null ? 'Discount' : 'Coupon ${order.couponCode}'} −Rs.${order.discount.toStringAsFixed(2)}',
+                'Delivery Rs.${order.deliveryFee.toStringAsFixed(2)}',
+              ].join(' • '),
+              style: TextStyle(color: AppColors.muted, fontSize: 13)),
+          const SizedBox(height: 4),
+          Text(
+              'Payment: ${order.paymentMethod.toUpperCase()} • ${order.paymentStatus.toUpperCase()}',
+              style: TextStyle(color: AppColors.muted, fontSize: 13)),
           const SizedBox(height: 8),
           Text('Shipping to: ${order.shippingAddress}',
-              style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+              style: TextStyle(color: AppColors.muted, fontSize: 13)),
           const SizedBox(height: 26),
           for (int i = 0; i < steps.length; i++) _buildStep(steps[i], i == steps.length - 1),
           const SizedBox(height: 12),
@@ -179,6 +233,14 @@ class _OrderTrackBody extends ConsumerWidget {
                   ),
                 ),
               if (canCancel) const SizedBox(width: 10),
+              if (canReturn)
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => _requestReturn(context, ref),
+                    child: const Text('Request Return'),
+                  ),
+                ),
+              if (canReturn) const SizedBox(width: 10),
               Expanded(
                 child: OutlinedButton(
                   onPressed: () => reorder(context, ref, order),
@@ -201,7 +263,8 @@ class _OrderTrackBody extends ConsumerWidget {
                   if (order.status == 'delivered') ...[
                     const SizedBox(width: 8),
                     TextButton(
-                      onPressed: () => showReviewDialog(context, ref, orderId: order.id, item: item),
+                      onPressed: () =>
+                          showReviewDialog(context, ref, orderId: order.id, item: item),
                       child: const Text('Review'),
                     ),
                   ],
@@ -233,8 +296,7 @@ class _OrderTrackBody extends ConsumerWidget {
                       : AppColors.border,
                 ),
                 child: step.done
-                    ? Icon(isNegative ? Icons.close : Icons.check,
-                        size: 14, color: Colors.white)
+                    ? Icon(isNegative ? Icons.close : Icons.check, size: 14, color: Colors.white)
                     : null,
               ),
               if (!isLast)
@@ -264,7 +326,7 @@ class _OrderTrackBody extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: 2),
                     child: Text(_formatTime(step.timestamp),
-                        style: const TextStyle(fontSize: 11, color: AppColors.muted)),
+                        style: TextStyle(fontSize: 11, color: AppColors.muted)),
                   ),
               ],
             ),

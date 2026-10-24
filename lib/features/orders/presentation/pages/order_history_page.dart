@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:untitled3/app/router/route_names.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/features/auth/presentation/providers/auth_providers.dart';
-import 'package:untitled3/features/orders/presentation/providers/order_providers.dart';
-import 'package:untitled3/shared/widgets/empty_view.dart';
-import 'package:untitled3/shared/widgets/loading_view.dart';
+import 'package:pooja_pasal/app/router/route_names.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
+import 'package:pooja_pasal/features/orders/presentation/providers/order_providers.dart';
+import 'package:pooja_pasal/shared/widgets/empty_view.dart';
+import 'package:pooja_pasal/shared/widgets/loading_view.dart';
 
 class OrderHistoryPage extends ConsumerWidget {
   const OrderHistoryPage({super.key});
@@ -46,7 +46,18 @@ class OrderHistoryPage extends ConsumerWidget {
   String _formatDate(DateTime? date) {
     if (date == null) return '';
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
@@ -116,11 +127,12 @@ class OrderHistoryPage extends ConsumerWidget {
                         Row(
                           children: [
                             Text(_formatDate(order.createdAt),
-                                style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                                style: TextStyle(color: AppColors.muted, fontSize: 12)),
                             const Spacer(),
                             Icon(Icons.circle, size: 6, color: _paymentColor(order.paymentStatus)),
                             const SizedBox(width: 4),
-                            Text('Payment: ${order.paymentStatus.replaceAll('_', ' ').toUpperCase()}',
+                            Text(
+                                'Payment: ${order.paymentStatus.replaceAll('_', ' ').toUpperCase()}',
                                 style: TextStyle(
                                     color: _paymentColor(order.paymentStatus),
                                     fontSize: 11,

@@ -1,25 +1,21 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pooja_pasal/app/app.dart';
+import 'package:pooja_pasal/features/auth/domain/entities/app_user.dart';
+import 'package:pooja_pasal/features/auth/domain/entities/auth_session.dart';
+import 'package:pooja_pasal/features/auth/domain/repositories/auth_repository.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:untitled3/app/app.dart';
-import 'package:untitled3/features/auth/domain/entities/app_user.dart';
-import 'package:untitled3/features/auth/domain/repositories/auth_repository.dart';
-import 'package:untitled3/features/auth/presentation/providers/auth_providers.dart';
 
-/// Stands in for the real Firebase-backed [AuthRepository] so this test
-/// never touches actual Firebase (which isn't initialized in the test
-/// environment — `FirebaseAuth.instance` throws `[core/no-app]` if a real
-/// AuthRepository is constructed here). This is exactly what wrapping
-/// Firebase behind a repository interface in the architecture refactor was
-/// for: the app's root widget can be pumped in a test using a fake
+/// Stands in for the real API-backed [AuthRepository] so this test never
+/// makes network calls: the app's root widget is pumped with a fake
 /// implementation instead of a live backend.
 class _FakeAuthRepository implements AuthRepository {
   @override
-  Stream<User?> authStateChanges() => Stream.value(null);
+  Stream<AuthSession?> authStateChanges() => Stream.value(null);
 
   @override
-  User? get currentUser => null;
+  AuthSession? get currentUser => null;
 
   @override
   Stream<AppUser?> userDocStream(String uid) => Stream.value(null);
@@ -35,13 +31,15 @@ class _FakeAuthRepository implements AuthRepository {
     required String phone,
     required String address,
     required String role,
+    String? shopName,
   }) async {}
 
   @override
-  Future<void> signIn({required String email, required String password}) async {}
+  Future<void> applyToSell(
+      {required String shopName, required String phone, String? reason}) async {}
 
   @override
-  Future<void> signInWithGoogle({String role = 'buyer'}) async {}
+  Future<void> signIn({required String email, required String password}) async {}
 
   @override
   Future<void> sendPasswordResetEmail(String email) async {}
@@ -60,8 +58,7 @@ class _FakeAuthRepository implements AuthRepository {
 }
 
 void main() {
-  testWidgets('shows the pooja store branding on launch',
-      (WidgetTester tester) async {
+  testWidgets('shows the pooja store branding on launch', (WidgetTester tester) async {
     // SplashPage reads SharedPreferences (for "seen_onboarding") as part of
     // resolving where to navigate after the splash delay.
     SharedPreferences.setMockInitialValues({});

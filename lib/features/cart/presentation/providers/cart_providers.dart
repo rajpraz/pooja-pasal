@@ -1,19 +1,22 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/features/cart/data/datasources/cart_remote_data_source.dart';
-import 'package:untitled3/features/cart/data/repositories/cart_repository_impl.dart';
-import 'package:untitled3/features/cart/domain/entities/cart_item.dart';
-import 'package:untitled3/features/cart/domain/entities/cart_line_validation.dart';
-import 'package:untitled3/features/cart/domain/repositories/cart_repository.dart';
-import 'package:untitled3/features/products/domain/entities/product.dart';
-import 'package:untitled3/features/products/presentation/providers/product_providers.dart';
+import 'package:pooja_pasal/core/network/api_client.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
+import 'package:pooja_pasal/features/cart/data/datasources/cart_remote_data_source.dart';
+import 'package:pooja_pasal/features/cart/data/repositories/cart_repository_impl.dart';
+import 'package:pooja_pasal/features/cart/domain/entities/cart_item.dart';
+import 'package:pooja_pasal/features/cart/domain/entities/cart_line_validation.dart';
+import 'package:pooja_pasal/features/cart/domain/repositories/cart_repository.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product.dart';
+import 'package:pooja_pasal/features/products/presentation/providers/product_providers.dart';
 
 final cartRepositoryProvider = Provider<CartRepository>((ref) {
-  return CartRepositoryImpl(CartRemoteDataSource());
+  return CartRepositoryImpl(CartRemoteDataSource(ref.watch(apiClientProvider)));
 });
 
 final cartProvider = StreamProvider.family<List<CartItem>, String>((ref, uid) {
+  if (!watchSignedIn(ref)) return const Stream.empty();
   return ref.watch(cartRepositoryProvider).streamCart(uid);
 });
 
@@ -37,7 +40,7 @@ final cartValidationProvider =
 });
 
 /// Wraps cart mutations so widgets (home, product detail, cart page) never
-/// call Firestore directly — only through this controller.
+/// call the API directly — only through this controller.
 class CartController extends AsyncNotifier<void> {
   late final CartRepository _repository;
 

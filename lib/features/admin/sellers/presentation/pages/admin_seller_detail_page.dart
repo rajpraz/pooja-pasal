@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/utils/error_mapper.dart';
-import 'package:untitled3/features/admin/sellers/presentation/providers/admin_seller_providers.dart';
-import 'package:untitled3/features/auth/domain/entities/app_user.dart';
-import 'package:untitled3/features/auth/presentation/providers/auth_providers.dart';
-import 'package:untitled3/features/orders/presentation/providers/order_providers.dart';
-import 'package:untitled3/features/products/presentation/providers/product_providers.dart';
-import 'package:untitled3/shared/widgets/loading_view.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/core/utils/error_mapper.dart';
+import 'package:pooja_pasal/features/admin/sellers/presentation/providers/admin_seller_providers.dart';
+import 'package:pooja_pasal/features/auth/domain/entities/app_user.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
+import 'package:pooja_pasal/features/orders/presentation/providers/order_providers.dart';
+import 'package:pooja_pasal/features/products/presentation/providers/product_providers.dart';
+import 'package:pooja_pasal/shared/widgets/loading_view.dart';
 
 /// "Deactivate"/"Restore" here is honestly a role demotion/promotion via
-/// the existing `setUserRole` Cloud Function — there is no separate
-/// suspension flag on `AppUser`/`users/{uid}` and this batch doesn't add
-/// one (see the phase report). The UI copy says so explicitly rather than
-/// implying a dedicated suspension feature.
+/// `setUserRole` — there is no separate suspension flag, and the UI copy
+/// says so explicitly rather than implying a dedicated suspension feature.
 class AdminSellerDetailPage extends ConsumerWidget {
   final String uid;
 
@@ -26,14 +24,15 @@ class AdminSellerDetailPage extends ConsumerWidget {
         title: const Text('Demote to buyer?'),
         content: Text(
             '"${seller.name.isEmpty ? seller.email : seller.name}" will lose seller access immediately '
-            '(their custom claim changes to "buyer"). Their existing products stay in Firestore but they '
+            '(their role changes to "buyer"). Their existing products stay in the catalog but they '
             'will no longer be able to manage them until restored to seller. This does not cancel or '
             'affect any of their existing orders.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Demote to Buyer', style: TextStyle(color: AppColors.error)),
+            child: Text('Demote to Buyer', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -85,8 +84,9 @@ class AdminSellerDetailPage extends ConsumerWidget {
                 Text(user.name.isEmpty ? user.email : user.name,
                     style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
-                Text(user.email, style: const TextStyle(color: AppColors.muted)),
-                if (user.phone.isNotEmpty) Text(user.phone, style: const TextStyle(color: AppColors.muted)),
+                Text(user.email, style: TextStyle(color: AppColors.muted)),
+                if (user.phone.isNotEmpty)
+                  Text(user.phone, style: TextStyle(color: AppColors.muted)),
                 const SizedBox(height: 16),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -96,7 +96,9 @@ class AdminSellerDetailPage extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                      user.role == 'seller' ? 'ACTIVE SELLER' : 'NOT CURRENTLY A SELLER (${user.role.toUpperCase()})',
+                      user.role == 'seller'
+                          ? 'ACTIVE SELLER'
+                          : 'NOT CURRENTLY A SELLER (${user.role.toUpperCase()})',
                       style: TextStyle(
                           color: user.role == 'seller' ? AppColors.success : AppColors.muted,
                           fontWeight: FontWeight.w600,
@@ -112,8 +114,10 @@ class AdminSellerDetailPage extends ConsumerWidget {
                           child: Column(
                             children: [
                               Text('${productsAsync.value?.length ?? 0}',
-                                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                              const Text('Products', style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                                  style:
+                                      const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                              Text('Products',
+                                  style: TextStyle(color: AppColors.muted, fontSize: 12)),
                             ],
                           ),
                         ),
@@ -127,8 +131,10 @@ class AdminSellerDetailPage extends ConsumerWidget {
                           child: Column(
                             children: [
                               Text('${ordersAsync.value?.length ?? 0}',
-                                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                              const Text('Orders', style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                                  style:
+                                      const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                              Text('Orders',
+                                  style: TextStyle(color: AppColors.muted, fontSize: 12)),
                             ],
                           ),
                         ),

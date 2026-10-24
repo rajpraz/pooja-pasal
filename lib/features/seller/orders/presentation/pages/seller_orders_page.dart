@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/utils/error_mapper.dart';
-import 'package:untitled3/features/auth/presentation/providers/auth_providers.dart';
-import 'package:untitled3/features/orders/domain/entities/order.dart';
-import 'package:untitled3/features/orders/presentation/providers/order_providers.dart';
-import 'package:untitled3/features/payments/presentation/providers/payment_providers.dart';
-import 'package:untitled3/shared/widgets/empty_view.dart';
-import 'package:untitled3/shared/widgets/loading_view.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/core/utils/error_mapper.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
+import 'package:pooja_pasal/features/orders/domain/entities/order.dart';
+import 'package:pooja_pasal/features/orders/presentation/providers/order_providers.dart';
+import 'package:pooja_pasal/features/payments/presentation/providers/payment_providers.dart';
+import 'package:pooja_pasal/shared/widgets/empty_view.dart';
+import 'package:pooja_pasal/shared/widgets/loading_view.dart';
 
 /// Local UI-only filter over the already-loaded `sellerOrdersProvider`
-/// stream — a seller's order volume doesn't warrant a server-side query
-/// per filter tab (no new Firestore index needed for this).
+/// stream — a seller's order volume doesn't warrant a request per filter
+/// tab.
 class _SellerOrderStatusFilter extends Notifier<String?> {
   @override
   String? build() => null;
@@ -22,26 +22,30 @@ class _SellerOrderStatusFilter extends Notifier<String?> {
 final _sellerOrderStatusFilterProvider =
     NotifierProvider.autoDispose<_SellerOrderStatusFilter, String?>(_SellerOrderStatusFilter.new);
 
-const _filterTabs = <String?>[null, 'pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+const _filterTabs = <String?>[
+  null,
+  'pending',
+  'confirmed',
+  'processing',
+  'shipped',
+  'delivered',
+  'cancelled'
+];
 
-String _filterLabel(String? status) => status == null ? 'All' : status[0].toUpperCase() + status.substring(1);
+String _filterLabel(String? status) =>
+    status == null ? 'All' : status[0].toUpperCase() + status.substring(1);
 
 /// Embeddable body (no own Scaffold/AppBar) showing orders that contain at
 /// least one of this seller's products, with the ability to advance status
 /// or cancel. Status changes, cancellation, and Cash-on-Delivery payment
-/// confirmation are requested through Cloud Functions (see
-/// order_providers.dart and payment_providers.dart) — the backend
-/// validates the transition/ownership per
-/// functions/src/orders/stateMachine.ts and sends the buyer's notification
-/// itself. This widget never writes order status/notifications directly to
-/// Firestore.
+/// confirmation go through the API (see order_providers.dart and
+/// payment_providers.dart), which validates the transition/ownership in
+/// `OrderService` and notifies the buyer itself.
 ///
 /// A seller only ever sees their own line items and the buyer's shipping
-/// address for fulfillment purposes — never another seller's items on the
-/// same multi-seller order (filtered via `item.sellerId == uid` below,
-/// matching how `orders/{orderId}` rules already scope seller read access
-/// to orders that merely *contain* one of their products, not full
-/// visibility into every line).
+/// address for fulfillment purposes — the API's seller order endpoints
+/// return only that seller's lines of a multi-seller order (and the
+/// `item.sellerId == uid` filter below keeps it that way regardless).
 class SellerOrdersPage extends ConsumerWidget {
   const SellerOrdersPage({super.key});
 
@@ -78,7 +82,7 @@ class SellerOrdersPage extends ConsumerWidget {
     }
   }
 
-  /// Mirrors functions/src/orders/stateMachine.ts's seller cancel window:
+  /// Mirrors the API's seller cancel window (`OrderService`):
   /// pending/confirmed/processing only, never once shipped.
   bool _canCancel(String status) =>
       status == 'pending' || status == 'confirmed' || status == 'processing';
@@ -87,7 +91,9 @@ class SellerOrdersPage extends ConsumerWidget {
     final next = _nextStatus(order.status);
     if (next == null) return;
     try {
-      await ref.read(orderControllerProvider.notifier).updateStatus(orderId: order.id, status: next);
+      await ref
+          .read(orderControllerProvider.notifier)
+          .updateStatus(orderId: order.id, status: next);
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Order marked as $next')),
@@ -109,10 +115,11 @@ class SellerOrdersPage extends ConsumerWidget {
             'Order #${order.id.substring(0, order.id.length.clamp(0, 8))} will be cancelled and the buyer notified. This can\'t be undone.'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Keep order')),
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Keep order')),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Cancel order', style: TextStyle(color: AppColors.error)),
+            child: Text('Cancel order', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -120,10 +127,11 @@ class SellerOrdersPage extends ConsumerWidget {
     if (confirmed != true || !context.mounted) return;
 
     try {
-      await ref.read(orderControllerProvider.notifier).cancelOrder(order.id, note: 'Cancelled by seller');
+      await ref
+          .read(orderControllerProvider.notifier)
+          .cancelOrder(order.id, note: 'Cancelled by seller');
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Order cancelled')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Order cancelled')));
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
@@ -187,8 +195,7 @@ class SellerOrdersPage extends ConsumerWidget {
                   return ChoiceChip(
                     label: Text('${_filterLabel(tab)} ($count)'),
                     selected: selected,
-                    onSelected: (_) =>
-                        ref.read(_sellerOrderStatusFilterProvider.notifier).set(tab),
+                    onSelected: (_) => ref.read(_sellerOrderStatusFilterProvider.notifier).set(tab),
                     selectedColor: AppColors.accent.withValues(alpha: 0.2),
                     labelStyle: TextStyle(
                         color: selected ? AppColors.accent : AppColors.muted,
@@ -211,7 +218,14 @@ class SellerOrdersPage extends ConsumerWidget {
                       itemBuilder: (context, index) {
                         final order = orders[index];
                         final myItems = order.items.where((item) => item.sellerId == uid).toList();
-                        final next = _nextStatus(order.status);
+                        // An unpaid Khalti/eSewa order is confirmed by its
+                        // payment verification, not by the seller.
+                        final awaitingPayment =
+                            (order.paymentMethod == 'khalti' || order.paymentMethod == 'esewa') &&
+                                order.paymentStatus != 'paid';
+                        final next = awaitingPayment && order.status == 'pending'
+                            ? null
+                            : _nextStatus(order.status);
                         final canCancel = _canCancel(order.status);
                         final needsCodConfirmation = order.paymentMethod == 'cod' &&
                             order.status == 'delivered' &&
@@ -256,10 +270,10 @@ class SellerOrdersPage extends ConsumerWidget {
                                   ),
                                 const SizedBox(height: 6),
                                 Text('Ship to: ${order.shippingAddress}',
-                                    style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                                    style: TextStyle(color: AppColors.muted, fontSize: 12)),
                                 Text(
                                     'Payment: ${order.paymentMethod.toUpperCase()} • ${order.paymentStatus.toUpperCase()}',
-                                    style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                                    style: TextStyle(color: AppColors.muted, fontSize: 12)),
                                 if (next != null) ...[
                                   const SizedBox(height: 10),
                                   SizedBox(
@@ -267,7 +281,8 @@ class SellerOrdersPage extends ConsumerWidget {
                                     child: OutlinedButton(
                                       onPressed:
                                           isBusy ? null : () => _advanceStatus(context, ref, order),
-                                      child: Text('Mark as ${next[0].toUpperCase()}${next.substring(1)}'),
+                                      child: Text(
+                                          'Mark as ${next[0].toUpperCase()}${next.substring(1)}'),
                                     ),
                                   ),
                                 ],

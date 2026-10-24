@@ -1,14 +1,21 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pooja_pasal/core/network/json_reader.dart';
 
 class AppUser {
   final String uid;
   final String name;
   final String email;
   final String phone;
-  final String role; // 'seller' or 'buyer'
+  final String role; // 'buyer' | 'seller' | 'admin'
   final String address;
   final String photoUrl;
   final DateTime? createdAt;
+
+  /// Status of this account's seller application (`pending`, `approved`,
+  /// `rejected`), or null when it never applied.
+  final String? sellerStatus;
+  final String? shopName;
+  final bool isActive;
+  final bool emailVerified;
 
   const AppUser({
     required this.uid,
@@ -19,32 +26,30 @@ class AppUser {
     required this.address,
     this.photoUrl = '',
     this.createdAt,
+    this.sellerStatus,
+    this.shopName,
+    this.isActive = true,
+    this.emailVerified = false,
   });
 
   bool get isSeller => role == 'seller';
+  bool get isAdmin => role == 'admin';
+  bool get hasPendingSellerApplication => sellerStatus == 'pending';
 
-  factory AppUser.fromMap(String uid, Map<String, dynamic> map) {
+  factory AppUser.fromJson(Map<String, dynamic> json) {
     return AppUser(
-      uid: uid,
-      name: map['name'] ?? '',
-      email: map['email'] ?? '',
-      phone: map['phone'] ?? '',
-      role: map['role'] ?? 'buyer',
-      address: map['address'] ?? '',
-      photoUrl: map['photoUrl'] ?? '',
-      createdAt: (map['createdAt'] as Timestamp?)?.toDate(),
+      uid: json.str('id'),
+      name: json.str('name'),
+      email: json.str('email'),
+      phone: json.str('phone'),
+      role: json.str('role', 'buyer'),
+      address: json.str('address'),
+      photoUrl: json.str('photoUrl'),
+      createdAt: json.date('createdAt'),
+      sellerStatus: json.strOrNull('sellerStatus'),
+      shopName: json.strOrNull('shopName'),
+      isActive: json.flag('isActive', true),
+      emailVerified: json.flag('emailVerified'),
     );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'name': name,
-      'email': email,
-      'phone': phone,
-      'role': role,
-      'address': address,
-      'photoUrl': photoUrl,
-      'createdAt': createdAt == null ? FieldValue.serverTimestamp() : Timestamp.fromDate(createdAt!),
-    };
   }
 }

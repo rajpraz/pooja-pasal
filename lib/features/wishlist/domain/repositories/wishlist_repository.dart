@@ -1,4 +1,4 @@
-import 'package:untitled3/features/wishlist/domain/entities/wishlist_item.dart';
+import 'package:pooja_pasal/features/wishlist/domain/entities/wishlist_item.dart';
 
 abstract class WishlistRepository {
   Stream<List<WishlistItem>> streamWishlist(String uid);

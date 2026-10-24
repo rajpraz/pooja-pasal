@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Local UI-only status filter over the already-loaded
-/// `adminAllOrdersProvider` list (`null` = all) — no new Firestore
-/// query/index per filter tab, matching the seller order filter pattern.
+/// `adminAllOrdersProvider` list (`null` = all) — no extra request per
+/// filter tab, matching the seller order filter pattern.
 class AdminOrderStatusFilterNotifier extends Notifier<String?> {
   @override
   String? build() => null;

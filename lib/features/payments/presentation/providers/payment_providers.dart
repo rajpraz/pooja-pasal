@@ -1,13 +1,25 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/features/payments/data/datasources/payment_remote_data_source.dart';
-import 'package:untitled3/features/payments/data/repositories/payment_repository_impl.dart';
-import 'package:untitled3/features/payments/domain/entities/esewa_initiation.dart';
-import 'package:untitled3/features/payments/domain/repositories/payment_repository.dart';
+import 'package:pooja_pasal/core/network/api_client.dart';
+import 'package:pooja_pasal/features/payments/data/datasources/payment_remote_data_source.dart';
+import 'package:pooja_pasal/features/payments/data/repositories/payment_repository_impl.dart';
+import 'package:pooja_pasal/features/payments/domain/entities/esewa_initiation.dart';
+import 'package:pooja_pasal/features/payments/domain/entities/khalti_initiation.dart';
+import 'package:pooja_pasal/features/payments/domain/repositories/payment_repository.dart';
 
 final paymentRepositoryProvider = Provider<PaymentRepository>((ref) {
-  return PaymentRepositoryImpl(PaymentRemoteDataSource());
+  return PaymentRepositoryImpl(PaymentRemoteDataSource(ref.watch(apiClientProvider)));
+});
+
+/// Payment methods checkout may offer; falls back to Cash on Delivery
+/// alone when the server can't be asked.
+final availablePaymentMethodsProvider = FutureProvider<List<String>>((ref) async {
+  try {
+    return await ref.watch(paymentRepositoryProvider).availableMethods();
+  } catch (_) {
+    return const ['cod'];
+  }
 });
 
 /// Riverpod-first payment actions. Every method here maps to a Cloud
@@ -20,6 +32,18 @@ class PaymentController extends AsyncNotifier<void> {
   @override
   FutureOr<void> build() {
     _repository = ref.watch(paymentRepositoryProvider);
+  }
+
+  Future<KhaltiInitiation> initiateKhalti(String orderId) async {
+    state = const AsyncLoading();
+    try {
+      final result = await _repository.initiateKhalti(orderId);
+      state = const AsyncData(null);
+      return result;
+    } catch (error, stackTrace) {
+      state = AsyncError(error, stackTrace);
+      rethrow;
+    }
   }
 
   Future<void> verifyKhalti({required String orderId, required String pidx}) async {

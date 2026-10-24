@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:untitled3/app/router/route_names.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/widgets/app_bottom_nav.dart';
-import 'package:untitled3/features/auth/presentation/providers/auth_providers.dart';
-import 'package:untitled3/features/cart/presentation/providers/cart_providers.dart';
-import 'package:untitled3/features/notifications/presentation/providers/notification_providers.dart';
-import 'package:untitled3/features/products/presentation/providers/product_providers.dart';
-import 'package:untitled3/features/products/presentation/widgets/product_card.dart';
+import 'package:pooja_pasal/app/router/route_names.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/core/widgets/app_bottom_nav.dart';
+import 'package:pooja_pasal/core/widgets/product_image.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
+import 'package:pooja_pasal/features/cart/presentation/providers/cart_providers.dart';
+import 'package:pooja_pasal/features/notifications/presentation/providers/notification_providers.dart';
+import 'package:pooja_pasal/features/products/presentation/pages/festival_collection_page.dart';
+import 'package:pooja_pasal/features/products/presentation/providers/product_providers.dart';
+import 'package:pooja_pasal/features/products/presentation/widgets/product_card.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -20,23 +22,21 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   final int _navIndex = 0;
 
-  final List<Map<String, dynamic>> quickCategories = const [
-    {'name': 'Pooja Kits', 'icon': Icons.card_giftcard},
-    {'name': 'Flowers', 'icon': Icons.local_florist},
-    {'name': 'Incense', 'icon': Icons.spa},
-    {'name': 'Idols', 'icon': Icons.temple_hindu},
-    {'name': 'Diyas', 'icon': Icons.local_fire_department},
-    {'name': 'Prasad', 'icon': Icons.food_bank},
-    {'name': 'Brass Items', 'icon': Icons.emoji_objects_outlined},
-    {'name': 'More', 'icon': Icons.grid_view_outlined},
+  /// Category shortcuts (each with its own CategoryBadge look), followed
+  /// by a "More" tile that lists every category.
+  static const _quickCategories = [
+    'Pooja Kits',
+    'Flowers',
+    'Incense',
+    'Idols',
+    'Diyas',
+    'Prasad',
+    'Brass Items',
   ];
+  static const _moreLabel = 'More';
 
-  final List<Map<String, dynamic>> festivalCollections = const [
-    {'name': 'Dashain', 'color': AppColors.accent},
-    {'name': 'Tihar', 'color': AppColors.primary},
-    {'name': 'Shivaratri', 'color': AppColors.festivalShivaratri},
-    {'name': 'Teej', 'color': AppColors.festivalTeej},
-  ];
+  /// Festival collections and their colours, in display order.
+  static final _festivals = FestivalCollectionPage.colors.entries.toList();
 
   Widget _buildDrawer(BuildContext context) {
     final user = ref.read(authRepositoryProvider).currentUser;
@@ -59,20 +59,19 @@ class _HomePageState extends ConsumerState<HomePage> {
           children: [
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(color: AppColors.primary),
+              decoration: const BoxDecoration(color: AppColors.brand),
               child: Row(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 22,
                     backgroundColor: AppColors.accentLight,
-                    child: Icon(Icons.person, color: Colors.white),
+                    child: const Icon(Icons.person, color: Colors.white),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       user?.email ?? 'Welcome',
-                      style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.w600),
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -81,19 +80,16 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
             const SizedBox(height: 8),
             tile(Icons.person_outline, 'Profile', () => context.push(RouteNames.profile)),
-            tile(Icons.grid_view_outlined, 'Categories',
-                () => context.push(RouteNames.categories)),
+            tile(Icons.grid_view_outlined, 'Categories', () => context.push(RouteNames.categories)),
             tile(Icons.favorite_border, 'Wishlist', () => context.push(RouteNames.wishlist)),
             tile(Icons.receipt_long_outlined, 'Order History',
                 () => context.push(RouteNames.orders)),
-            tile(Icons.location_on_outlined, 'Addresses',
-                () => context.push(RouteNames.addresses)),
-            tile(Icons.help_outline, 'Help & Support',
-                () => context.push(RouteNames.helpSupport)),
+            tile(Icons.location_on_outlined, 'Addresses', () => context.push(RouteNames.addresses)),
+            tile(Icons.help_outline, 'Help & Support', () => context.push(RouteNames.helpSupport)),
             const Spacer(),
             const Divider(height: 1),
             tile(Icons.logout, 'Log out', () async {
-              await ref.read(authRepositoryProvider).signOut();
+              await ref.read(signOutActionProvider)();
               if (!context.mounted) return;
               context.go(RouteNames.login);
             }),
@@ -109,10 +105,8 @@ class _HomePageState extends ConsumerState<HomePage> {
     final featuredAsync = ref.watch(homeFeaturedProductsProvider);
     final cartAsync = uid == null ? null : ref.watch(cartProvider(uid));
     final cartCount = cartAsync?.value?.length ?? 0;
-    final notificationsAsync =
-        uid == null ? null : ref.watch(notificationsProvider(uid));
-    final unreadCount =
-        notificationsAsync?.value?.where((n) => !n.read).length ?? 0;
+    final notificationsAsync = uid == null ? null : ref.watch(notificationsProvider(uid));
+    final unreadCount = notificationsAsync?.value?.where((n) => !n.read).length ?? 0;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -130,16 +124,14 @@ class _HomePageState extends ConsumerState<HomePage> {
                     Builder(
                       builder: (context) => IconButton(
                         onPressed: () => Scaffold.of(context).openDrawer(),
-                        icon: const Icon(Icons.menu, color: AppColors.text),
+                        icon: Icon(Icons.menu, color: AppColors.text),
                         tooltip: 'Menu',
                       ),
                     ),
                     const Spacer(),
-                    const Text('Pooja Pasal',
+                    Text('Pooja Pasal',
                         style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary)),
+                            fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.primary)),
                     const Spacer(),
                     IconButton(
                       onPressed: () => context.push(RouteNames.notifications),
@@ -147,11 +139,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                           ? Badge(
                               label: Text('$unreadCount'),
                               backgroundColor: AppColors.accent,
-                              child: const Icon(Icons.notifications_none,
-                                  color: AppColors.text),
+                              child: Icon(Icons.notifications_none, color: AppColors.text),
                             )
-                          : const Icon(Icons.notifications_none,
-                              color: AppColors.text),
+                          : Icon(Icons.notifications_none, color: AppColors.text),
                       tooltip: 'Notifications',
                     ),
                   ],
@@ -165,16 +155,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                     padding: const EdgeInsets.symmetric(vertical: 6),
                     child: Row(
                       children: [
-                        const Icon(Icons.location_on_outlined,
-                            size: 18, color: AppColors.accent),
+                        Icon(Icons.location_on_outlined, size: 18, color: AppColors.accent),
                         const SizedBox(width: 4),
-                        const Text('Deliver to',
-                            style:
-                                TextStyle(fontSize: 12, color: AppColors.muted)),
+                        Text('Deliver to', style: TextStyle(fontSize: 12, color: AppColors.muted)),
                         const SizedBox(width: 6),
                         const Text('Kathmandu, Nepal',
-                            style: TextStyle(
-                                fontSize: 13, fontWeight: FontWeight.w600)),
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                         const Icon(Icons.keyboard_arrow_down, size: 18),
                       ],
                     ),
@@ -193,10 +179,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                       border: Border.all(color: AppColors.border),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    child: const Row(
+                    child: Row(
                       children: [
                         Icon(Icons.search, color: AppColors.muted),
-                        SizedBox(width: 10),
+                        const SizedBox(width: 10),
                         Text('Search for pooja items, brands...',
                             style: TextStyle(color: AppColors.muted)),
                       ],
@@ -212,7 +198,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18),
                     gradient: const LinearGradient(
-                      colors: [AppColors.primary, AppColors.primaryDark],
+                      colors: [AppColors.brand, AppColors.brandDeep],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -230,26 +216,22 @@ class _HomePageState extends ConsumerState<HomePage> {
                                     fontWeight: FontWeight.bold)),
                             const SizedBox(height: 6),
                             const Text('Up to 20% OFF',
-                                style: TextStyle(
-                                    color: Colors.white70, fontSize: 13)),
+                                style: TextStyle(color: Colors.white70, fontSize: 13)),
                             const SizedBox(height: 10),
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                               decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(20)),
+                                  color: Colors.white, borderRadius: BorderRadius.circular(20)),
                               child: const Text('Shop Now',
                                   style: TextStyle(
-                                      color: AppColors.primary,
+                                      color: AppColors.brand,
                                       fontWeight: FontWeight.w600,
                                       fontSize: 12)),
                             ),
                           ],
                         ),
                       ),
-                      const Icon(Icons.temple_hindu,
-                          size: 64, color: Colors.white24),
+                      const Icon(Icons.temple_hindu, size: 64, color: Colors.white24),
                     ],
                   ),
                 ),
@@ -259,15 +241,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Categories',
+                    Text('Categories',
                         style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.text)),
+                            fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.text)),
                     GestureDetector(
                       onTap: () => context.push(RouteNames.categories),
-                      child: const Text('View All',
-                          style: TextStyle(fontSize: 12, color: AppColors.accent)),
+                      child:
+                          Text('View All', style: TextStyle(fontSize: 12, color: AppColors.accent)),
                     ),
                   ],
                 ),
@@ -275,32 +255,34 @@ class _HomePageState extends ConsumerState<HomePage> {
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: quickCategories.length,
+                  itemCount: _quickCategories.length + 1,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 4,
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 8,
-                    childAspectRatio: 0.85,
+                    mainAxisExtent: 84,
                   ),
                   itemBuilder: (context, index) {
-                    final cat = quickCategories[index];
-                    return GestureDetector(
-                      onTap: () => context.push(RouteNames.categories),
+                    final isMore = index == _quickCategories.length;
+                    final name = isMore ? _moreLabel : _quickCategories[index];
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      // Each tile opens its own category; "More" lists them all.
+                      onTap: () => context.push(
+                          isMore ? RouteNames.categories : RouteNames.categoryProductsPath(name)),
                       child: Column(
                         children: [
-                          CircleAvatar(
-                            radius: 24,
-                            backgroundColor: AppColors.card,
-                            child: Icon(cat['icon'] as IconData,
-                                color: AppColors.primary, size: 22),
-                          ),
+                          CategoryBadge(
+                              category: name, icon: isMore ? Icons.grid_view_outlined : null),
                           const SizedBox(height: 6),
-                          Text(cat['name'] as String,
+                          Text(name,
                               textAlign: TextAlign.center,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                  fontSize: 10, color: AppColors.muted)),
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.text)),
                         ],
                       ),
                     );
@@ -312,15 +294,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Festival Collections',
+                    Text('Festival Collections',
                         style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.text)),
+                            fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.text)),
                     GestureDetector(
                       onTap: () => context.push(RouteNames.festivals),
-                      child: const Text('View All',
-                          style: TextStyle(fontSize: 12, color: AppColors.accent)),
+                      child:
+                          Text('View All', style: TextStyle(fontSize: 12, color: AppColors.accent)),
                     ),
                   ],
                 ),
@@ -329,18 +309,17 @@ class _HomePageState extends ConsumerState<HomePage> {
                   height: 110,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
-                    itemCount: festivalCollections.length,
+                    itemCount: _festivals.length,
                     separatorBuilder: (_, __) => const SizedBox(width: 12),
                     itemBuilder: (context, index) {
-                      final fest = festivalCollections[index];
+                      final MapEntry(key: festival, value: color) = _festivals[index];
                       return GestureDetector(
-                        onTap: () => context
-                            .push(RouteNames.festivalCollectionPath(fest['name'] as String)),
+                        onTap: () => context.push(RouteNames.festivalCollectionPath(festival)),
                         child: Container(
                           width: 90,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(14),
-                            color: fest['color'] as Color,
+                            color: color,
                           ),
                           child: Stack(
                             children: [
@@ -356,7 +335,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 left: 8,
                                 right: 8,
                                 child: Text(
-                                  '${fest['name']}\nCollection',
+                                  '$festival\nCollection',
                                   style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 11,
@@ -377,15 +356,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Featured Products',
+                    Text('Featured Products',
                         style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.text)),
+                            fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.text)),
                     GestureDetector(
                       onTap: () => context.push(RouteNames.products),
-                      child: const Text('View All',
-                          style: TextStyle(fontSize: 12, color: AppColors.accent)),
+                      child:
+                          Text('View All', style: TextStyle(fontSize: 12, color: AppColors.accent)),
                     ),
                   ],
                 ),
@@ -399,12 +376,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     child: Center(
                         child: Text('Could not load products: $err',
-                            style: const TextStyle(color: AppColors.muted))),
+                            style: TextStyle(color: AppColors.muted))),
                   ),
                   data: (page) {
                     if (page.items.isEmpty) {
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16),
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
                         child: Center(
                             child: Text('No products yet. Check back soon!',
                                 style: TextStyle(color: AppColors.muted))),
@@ -415,12 +392,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: page.items.length,
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 14,
-                        crossAxisSpacing: 14,
-                        childAspectRatio: 0.68,
-                      ),
+                      gridDelegate: const ProductGridDelegate(),
                       itemBuilder: (context, index) => ProductCard(product: page.items[index]),
                     );
                   },

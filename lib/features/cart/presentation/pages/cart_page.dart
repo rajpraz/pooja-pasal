@@ -1,42 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:untitled3/app/router/route_names.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/utils/error_mapper.dart';
-import 'package:untitled3/core/widgets/app_bottom_nav.dart';
-import 'package:untitled3/features/auth/presentation/providers/auth_providers.dart';
-import 'package:untitled3/features/cart/domain/entities/cart_line_validation.dart';
-import 'package:untitled3/features/cart/domain/pricing_service.dart';
-import 'package:untitled3/features/cart/presentation/providers/cart_providers.dart';
+import 'package:pooja_pasal/app/router/route_names.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/core/utils/error_mapper.dart';
+import 'package:pooja_pasal/core/widgets/app_bottom_nav.dart';
+import 'package:pooja_pasal/core/widgets/product_image.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
+import 'package:pooja_pasal/features/cart/domain/entities/cart_line_validation.dart';
+import 'package:pooja_pasal/features/cart/domain/pricing_service.dart';
+import 'package:pooja_pasal/features/cart/presentation/providers/cart_providers.dart';
 
 class CartPage extends ConsumerWidget {
   const CartPage({super.key});
-
-  Widget buildCartImage(String imagePath) {
-    if (imagePath.isEmpty) {
-      return Container(
-        width: 56,
-        height: 56,
-        color: AppColors.card,
-        child: const Icon(Icons.temple_hindu, color: AppColors.primary),
-      );
-    }
-    return Image.network(
-      imagePath,
-      width: 56,
-      height: 56,
-      fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) {
-        return Container(
-          width: 56,
-          height: 56,
-          color: Colors.orange.shade100,
-          child: const Icon(Icons.temple_hindu, color: Colors.deepOrange),
-        );
-      },
-    );
-  }
 
   Future<void> _updateQty(
       BuildContext context, WidgetRef ref, String uid, CartLineValidation line, int delta) async {
@@ -46,12 +22,13 @@ class CartPage extends ConsumerWidget {
           .updateQty(uid, line.item.productId, line.item.qty + delta);
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Could not update cart: ${friendlyErrorMessage(e)}')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not update cart: ${friendlyErrorMessage(e)}')));
     }
   }
 
-  Future<void> _removeItem(BuildContext context, WidgetRef ref, String uid, String productId) async {
+  Future<void> _removeItem(
+      BuildContext context, WidgetRef ref, String uid, String productId) async {
     try {
       await ref.read(cartControllerProvider.notifier).removeItem(uid, productId);
       if (!context.mounted) return;
@@ -59,13 +36,13 @@ class CartPage extends ConsumerWidget {
           .showSnackBar(const SnackBar(content: Text('Item removed from cart')));
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Could not remove item: ${friendlyErrorMessage(e)}')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not remove item: ${friendlyErrorMessage(e)}')));
     }
   }
 
   void _confirmClearCart(BuildContext context, WidgetRef ref, String uid) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Clear cart?'),
@@ -80,31 +57,17 @@ class CartPage extends ConsumerWidget {
               ScaffoldMessenger.of(context)
                   .showSnackBar(const SnackBar(content: Text('Cart cleared')));
             },
-            child: const Text('Clear', style: TextStyle(color: AppColors.error)),
+            child: Text('Clear', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
     );
   }
 
+  /// Checkout is just the next screen (nothing is placed until "Place
+  /// Order" there), so there's no "are you sure?" step here.
   void _checkout(BuildContext context, double totalPrice) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Checkout'),
-        content: const Text('Proceed to checkout for your puja order?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context.push(RouteNames.checkoutPath(totalPrice));
-            },
-            child: const Text('Proceed'),
-          ),
-        ],
-      ),
-    );
+    context.push(RouteNames.checkoutPath(totalPrice));
   }
 
   @override
@@ -143,13 +106,12 @@ class CartPage extends ConsumerWidget {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.shopping_cart_outlined,
-                                size: 60, color: AppColors.accent),
+                            Icon(Icons.shopping_cart_outlined, size: 60, color: AppColors.accent),
                             const SizedBox(height: 10),
                             const Text('Your cart is empty',
                                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
                             const SizedBox(height: 4),
-                            const Text('Add puja essentials to start your order.',
+                            Text('Add puja essentials to start your order.',
                                 style: TextStyle(color: AppColors.muted)),
                             const SizedBox(height: 16),
                             ElevatedButton(
@@ -168,7 +130,6 @@ class CartPage extends ConsumerWidget {
                             onIncrease: () => _updateQty(context, ref, uid, line, 1),
                             onDecrease: () => _updateQty(context, ref, uid, line, -1),
                             onRemove: () => _removeItem(context, ref, uid, line.item.productId),
-                            buildImage: buildCartImage,
                           );
                         },
                       ),
@@ -176,14 +137,14 @@ class CartPage extends ConsumerWidget {
               if (lines.isNotEmpty)
                 Container(
                   padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
-                          color: const Color.fromRGBO(158, 158, 158, 0.4),
+                          color: Color.fromRGBO(158, 158, 158, 0.4),
                           spreadRadius: 1,
                           blurRadius: 6,
-                          offset: const Offset(0, -2))
+                          offset: Offset(0, -2))
                     ],
                   ),
                   child: Column(
@@ -196,10 +157,10 @@ class CartPage extends ConsumerWidget {
                             color: AppColors.error.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: const Row(
+                          child: Row(
                             children: [
                               Icon(Icons.error_outline, color: AppColors.error, size: 18),
-                              SizedBox(width: 8),
+                              const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                     'Some items are unavailable or low on stock. Remove or adjust them to continue.',
@@ -208,10 +169,10 @@ class CartPage extends ConsumerWidget {
                             ],
                           ),
                         ),
-                      const Row(
+                      Row(
                         children: [
                           Icon(Icons.local_shipping_outlined, size: 16, color: AppColors.muted),
-                          SizedBox(width: 6),
+                          const SizedBox(width: 6),
                           Text('Estimated delivery: 2-4 days',
                               style: TextStyle(fontSize: 12, color: AppColors.muted)),
                         ],
@@ -222,12 +183,16 @@ class CartPage extends ConsumerWidget {
                         Text('Rs.${totalPrice.toStringAsFixed(2)}',
                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600))
                       ]),
-                      const SizedBox(height: 6),
-                      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                        const Text('Discount', style: TextStyle(fontSize: 16)),
-                        Text('- Rs.${PricingService.discount.toStringAsFixed(0)}',
-                            style: const TextStyle(fontSize: 16))
-                      ]),
+                      // Coupons are applied at checkout; only show a row here
+                      // when there is something to take off.
+                      if (PricingService.discount > 0) ...[
+                        const SizedBox(height: 6),
+                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                          const Text('Discount', style: TextStyle(fontSize: 16)),
+                          Text('- Rs.${PricingService.discount.toStringAsFixed(0)}',
+                              style: const TextStyle(fontSize: 16))
+                        ]),
+                      ],
                       const SizedBox(height: 6),
                       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                         const Text('Delivery Charge', style: TextStyle(fontSize: 16)),
@@ -239,8 +204,7 @@ class CartPage extends ConsumerWidget {
                         const Text('Total',
                             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                         Text('Rs.${PricingService.totalFromValidated(lines).toStringAsFixed(2)}',
-                            style:
-                                const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))
                       ]),
                       const SizedBox(height: 10),
                       SizedBox(
@@ -269,14 +233,12 @@ class _CartLineTile extends StatelessWidget {
   final VoidCallback onIncrease;
   final VoidCallback onDecrease;
   final VoidCallback onRemove;
-  final Widget Function(String imagePath) buildImage;
 
   const _CartLineTile({
     required this.line,
     required this.onIncrease,
     required this.onDecrease,
     required this.onRemove,
-    required this.buildImage,
   });
 
   String? get _issue {
@@ -300,13 +262,16 @@ class _CartLineTile extends StatelessWidget {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(14),
         border: issue != null ? Border.all(color: AppColors.error.withValues(alpha: 0.4)) : null,
-        boxShadow: [
-          BoxShadow(color: const Color.fromRGBO(0, 0, 0, 0.05), blurRadius: 8, spreadRadius: 1),
-        ],
+        boxShadow: [BoxShadow(color: AppColors.shadow, blurRadius: 8)],
       ),
       child: Row(
         children: [
-          ClipRRect(borderRadius: BorderRadius.circular(10), child: buildImage(line.item.image)),
+          ProductImage(
+              url: line.item.image,
+              name: line.item.name,
+              width: 56,
+              height: 56,
+              borderRadius: BorderRadius.circular(10)),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -317,12 +282,11 @@ class _CartLineTile extends StatelessWidget {
                 Row(
                   children: [
                     Text('Rs.${line.effectivePrice.toStringAsFixed(0)}',
-                        style: const TextStyle(
-                            color: AppColors.primary, fontWeight: FontWeight.w600)),
+                        style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
                     if (line.priceChanged) ...[
                       const SizedBox(width: 6),
                       Text('(was Rs.${line.item.price.toStringAsFixed(0)})',
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: AppColors.muted,
                               fontSize: 11,
                               decoration: TextDecoration.lineThrough)),
@@ -333,7 +297,7 @@ class _CartLineTile extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(issue,
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: AppColors.error, fontSize: 12, fontWeight: FontWeight.w600)),
                   ),
                 const SizedBox(height: 8),
@@ -367,7 +331,7 @@ class _CartLineTile extends StatelessWidget {
             ),
           ),
           IconButton(
-              icon: const Icon(Icons.delete_outline, color: AppColors.primary),
+              icon: Icon(Icons.delete_outline, color: AppColors.primary),
               tooltip: 'Remove item',
               onPressed: onRemove),
         ],

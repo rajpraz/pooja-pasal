@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:untitled3/app/router/route_names.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/utils/error_mapper.dart';
-import 'package:untitled3/features/admin/sellers/domain/entities/seller_application.dart';
-import 'package:untitled3/features/admin/sellers/presentation/providers/admin_seller_providers.dart';
-import 'package:untitled3/features/auth/domain/entities/app_user.dart';
-import 'package:untitled3/shared/widgets/empty_view.dart';
-import 'package:untitled3/shared/widgets/loading_view.dart';
+import 'package:pooja_pasal/app/router/route_names.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/core/utils/error_mapper.dart';
+import 'package:pooja_pasal/features/admin/sellers/domain/entities/seller_application.dart';
+import 'package:pooja_pasal/features/admin/sellers/presentation/providers/admin_seller_providers.dart';
+import 'package:pooja_pasal/features/auth/domain/entities/app_user.dart';
+import 'package:pooja_pasal/shared/widgets/empty_view.dart';
+import 'package:pooja_pasal/shared/widgets/loading_view.dart';
 
 /// Two tabs: pending seller-application review (approve/reject via the
 /// existing `approveSellerApplication`/`rejectSellerApplication` Cloud
@@ -60,11 +60,11 @@ class _AllSellersTab extends ConsumerWidget {
             return Card(
               margin: const EdgeInsets.only(bottom: 10),
               child: ListTile(
-                leading: const Icon(Icons.storefront_outlined, color: AppColors.primary),
+                leading: Icon(Icons.storefront_outlined, color: AppColors.primary),
                 title: Text(seller.name.isEmpty ? seller.email : seller.name,
                     style: const TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: Text(seller.email, style: const TextStyle(color: AppColors.muted)),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.muted),
+                subtitle: Text(seller.email, style: TextStyle(color: AppColors.muted)),
+                trailing: Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.muted),
                 onTap: () => context.push(RouteNames.adminSellerDetailPath(seller.uid)),
               ),
             );
@@ -85,10 +85,11 @@ class _PendingApplicationsTab extends ConsumerWidget {
         title: const Text('Approve seller?'),
         content: Text('"${app.shopName}" will be granted seller access immediately.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Approve', style: TextStyle(color: AppColors.success)),
+            child: Text('Approve', style: TextStyle(color: AppColors.success)),
           ),
         ],
       ),
@@ -125,10 +126,11 @@ class _PendingApplicationsTab extends ConsumerWidget {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Reject', style: TextStyle(color: AppColors.error)),
+            child: Text('Reject', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -176,12 +178,17 @@ class _PendingApplicationsTab extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(app.shopName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(app.shopName,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     const SizedBox(height: 4),
-                    Text('Phone: ${app.phone}', style: const TextStyle(color: AppColors.muted)),
+                    // Who is applying, not just the shop they want to open.
+                    if (app.name.isNotEmpty || app.email.isNotEmpty)
+                      Text([app.name, app.email].where((part) => part.isNotEmpty).join(' • '),
+                          style: TextStyle(color: AppColors.muted)),
+                    Text('Phone: ${app.phone}', style: TextStyle(color: AppColors.muted)),
                     if (app.reason.isNotEmpty) ...[
                       const SizedBox(height: 4),
-                      Text(app.reason, style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                      Text(app.reason, style: TextStyle(color: AppColors.muted, fontSize: 13)),
                     ],
                     const SizedBox(height: 12),
                     Row(

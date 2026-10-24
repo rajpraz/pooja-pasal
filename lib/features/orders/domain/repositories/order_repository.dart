@@ -1,5 +1,5 @@
-import 'package:untitled3/features/cart/domain/entities/cart_item.dart';
-import 'package:untitled3/features/orders/domain/entities/order.dart';
+import 'package:pooja_pasal/features/cart/domain/entities/cart_item.dart';
+import 'package:pooja_pasal/features/orders/domain/entities/order.dart';
 
 abstract class OrderRepository {
   Stream<List<PoojaOrder>> streamBuyerOrders(String buyerId);
@@ -9,21 +9,20 @@ abstract class OrderRepository {
   Stream<PoojaOrder?> streamOrder(String orderId);
 
   /// Admin-only: every order across every buyer, most recent first,
-  /// bounded (not the whole collection) — authorized by firestore.rules'
-  /// `isAdmin()` branch on the `orders` read rule.
+  /// bounded (not the whole table).
   Stream<List<PoojaOrder>> streamAllOrders({int limit});
 
-  /// Creates an order via the trusted `createOrder` Cloud Function — the
-  /// server re-reads product price/stock/seller and computes the
-  /// authoritative total; nothing here decides pricing.
-  /// [idempotencyKey] should be generated once per checkout attempt (not
-  /// per network call) by the caller, so a retry after a timeout reuses the
-  /// same key and can't create a duplicate order.
+  /// Creates an order through the API — the server re-reads product
+  /// price/stock/seller and computes the authoritative total; nothing here
+  /// decides pricing. [idempotencyKey] should be generated once per
+  /// checkout attempt (not per network call) by the caller, so a retry
+  /// after a timeout reuses the same key and can't create a duplicate.
   Future<CreateOrderResult> createOrder({
     required List<CartItem> items,
     required String shippingAddress,
     required String paymentMethod,
     required String idempotencyKey,
+    String? couponCode,
   });
 
   /// Requests a status change; the backend validates whether the
@@ -36,4 +35,9 @@ abstract class OrderRepository {
   });
 
   Future<void> cancelOrder(String orderId, {String? note});
+
+  /// Admin: records a payment's state — typically `refunded` once money for
+  /// a cancelled or returned order was sent back from the gateway's
+  /// dashboard.
+  Future<void> updatePaymentStatus({required String orderId, required String paymentStatus});
 }

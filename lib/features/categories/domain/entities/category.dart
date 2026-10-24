@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pooja_pasal/core/network/json_reader.dart';
 
 class Category {
   final String id;
@@ -15,14 +15,13 @@ class Category {
     this.sortOrder = 0,
   });
 
-  factory Category.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final map = doc.data() ?? {};
+  factory Category.fromJson(Map<String, dynamic> map) {
     return Category(
-      id: doc.id,
-      name: (map['name'] as String?) ?? '',
-      imageUrl: (map['imageUrl'] as String?) ?? '',
-      isActive: map['isActive'] as bool? ?? true,
-      sortOrder: (map['sortOrder'] as num?)?.toInt() ?? 0,
+      id: map.str('id'),
+      name: map.str('name'),
+      imageUrl: map.str('imageUrl'),
+      isActive: map.flag('isActive', true),
+      sortOrder: map.integer('sortOrder'),
     );
   }
 }

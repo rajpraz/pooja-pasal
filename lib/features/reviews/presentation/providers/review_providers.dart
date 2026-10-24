@@ -1,13 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/features/reviews/data/datasources/review_remote_data_source.dart';
-import 'package:untitled3/features/reviews/data/repositories/review_repository_impl.dart';
-import 'package:untitled3/features/reviews/domain/entities/review.dart';
-import 'package:untitled3/features/reviews/domain/repositories/review_repository.dart';
+import 'package:pooja_pasal/core/network/api_client.dart';
+import 'package:pooja_pasal/features/reviews/data/datasources/review_remote_data_source.dart';
+import 'package:pooja_pasal/features/reviews/data/repositories/review_repository_impl.dart';
+import 'package:pooja_pasal/features/reviews/domain/entities/review.dart';
+import 'package:pooja_pasal/features/reviews/domain/repositories/review_repository.dart';
 
 final reviewRepositoryProvider = Provider<ReviewRepository>((ref) {
-  return ReviewRepositoryImpl(ReviewRemoteDataSource());
+  return ReviewRepositoryImpl(ReviewRemoteDataSource(ref.watch(apiClientProvider)));
 });
 
 final reviewsForProductProvider =

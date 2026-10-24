@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:untitled3/app/router/route_names.dart';
-import 'package:untitled3/features/auth/presentation/providers/auth_providers.dart';
+import 'package:pooja_pasal/app/router/route_names.dart';
+import 'package:pooja_pasal/features/auth/domain/entities/app_user.dart';
+import 'package:pooja_pasal/features/auth/domain/entities/auth_session.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
 
 /// Bridges a plain auth-state [Stream] into a [Listenable] GoRouter can use
 /// as `refreshListenable`, so it re-evaluates [routeGuard] whenever
@@ -34,23 +36,31 @@ const Set<String> _publicPaths = {
 };
 
 /// This is a navigation-UX guard ONLY — it decides which screen to *show*,
-/// nothing more. It is emphatically not the security boundary: whether a
-/// request actually succeeds is enforced by Firestore rules (role-locked
-/// `users/{uid}.role`, ownership checks) and the Cloud Functions
-/// custom-claims/role checks already built (see firestore.rules,
-/// functions/src/utils/auth.ts `requireRole`). A buyer who somehow reaches
-/// a seller screen still can't do anything a seller could there — every
-/// write still goes through the same trusted backend checks. This guard
-/// just avoids showing them that screen in the first place.
+/// nothing more. It is emphatically not the security boundary: the Laravel
+/// API checks the caller's role and ownership on every request
+/// (`role:admin,seller` middleware, `OrderService`, …). A buyer who somehow
+/// reaches a seller screen still can't do anything a seller could there.
+/// This guard just avoids showing them that screen in the first place.
 ///
 /// Loop-prevention: every branch below either returns `null` (stay put) or
 /// redirects to a path that itself evaluates to `null` on the next pass —
 /// login/signup/onboarding only redirect *away* once actually signed in
 /// (never redirect *to* themselves), and the seller check only fires for
 /// `/seller/...` paths, which `RouteNames.home` never matches.
-String? routeGuard(Ref ref, GoRouterState state) {
-  final path = state.matchedLocation;
+String? routeGuard(Ref ref, GoRouterState state) => redirectFor(
+      path: state.matchedLocation,
+      session: ref.read(authStateProvider),
+      profile: ref.read(currentUserDocProvider).value,
+    );
 
+/// The guard's decision as a pure function (so it can be unit tested):
+/// where to send someone on [path], given the [session] state and their
+/// loaded [profile]; null means stay.
+String? redirectFor({
+  required String path,
+  required AsyncValue<AuthSession?> session,
+  required AppUser? profile,
+}) {
   // Splash owns the very first navigation decision — it already resolves
   // onboarding-seen + auth state + role asynchronously (see
   // splash_page.dart) before choosing where to go. Never redirect away
@@ -58,41 +68,41 @@ String? routeGuard(Ref ref, GoRouterState state) {
   // destination before splash's own resolution finishes.
   if (path == RouteNames.splash) return null;
 
-  final authState = ref.read(authStateProvider);
-  if (!authState.hasValue) {
-    // Still resolving the persisted session — don't redirect yet, or a
-    // signed-in user would flash through /login for a frame.
-    return null;
-  }
+  // Still resolving the persisted session — don't redirect yet, or a
+  // signed-in user would flash through /login for a frame.
+  if (!session.hasValue) return null;
 
-  final user = authState.value;
-  final isPublic = _publicPaths.contains(path);
-
+  final user = session.value;
   if (user == null) {
-    return isPublic ? null : RouteNames.login;
+    return _publicPaths.contains(path) ? null : RouteNames.login;
   }
 
-  // Signed in from here on — public/auth screens don't make sense anymore.
+  // The loaded profile only counts if it belongs to this session: right
+  // after switching accounts it can still be the previous user's, whose
+  // role must not decide where the new user goes.
+  final role = profile != null && profile.uid == user.uid ? profile.role : null;
+
+  // Signed in: auth screens make no sense any more. Send each role to its
+  // own start screen; until the profile has loaded, splash resolves it.
   if (path == RouteNames.login || path == RouteNames.signup || path == RouteNames.onboarding) {
-    return RouteNames.home;
+    return role == null ? RouteNames.splash : homeForRole(role);
   }
 
+  // UX guards only: the API's role middleware is the real boundary.
   if (path.startsWith('/seller')) {
-    final roleAsync = ref.read(currentUserDocProvider);
-    if (!roleAsync.hasValue) return null; // wait for the role doc to resolve
-    if (roleAsync.value?.role != 'seller') return RouteNames.home;
+    if (role == null) return null; // wait for this user's profile
+    if (role != 'seller') return RouteNames.home;
   }
-
-  // Same pattern as the seller guard above: a UX guard only. The real
-  // authorization boundary is firestore.rules' isAdmin() (checked against
-  // request.auth.token.role, the custom claim — never the client-editable
-  // users/{uid}.role Firestore field) and the Cloud Functions' own
-  // requireRole(request, ["admin"]) checks, neither of which this touches.
   if (path.startsWith('/admin')) {
-    final roleAsync = ref.read(currentUserDocProvider);
-    if (!roleAsync.hasValue) return null; // wait for the role doc to resolve
-    if (roleAsync.value?.role != 'admin') return RouteNames.home;
+    if (role == null) return null; // wait for this user's profile
+    if (role != 'admin') return RouteNames.home;
   }
-
   return null;
 }
+
+/// Where each role starts after signing in.
+String homeForRole(String role) => switch (role) {
+      'admin' => RouteNames.adminDashboard,
+      'seller' => RouteNames.sellerDashboard,
+      _ => RouteNames.home,
+    };

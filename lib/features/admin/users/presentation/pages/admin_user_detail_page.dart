@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/utils/error_mapper.dart';
-import 'package:untitled3/features/admin/sellers/presentation/providers/admin_seller_providers.dart';
-import 'package:untitled3/features/auth/domain/entities/app_user.dart';
-import 'package:untitled3/features/auth/presentation/providers/auth_providers.dart';
-import 'package:untitled3/shared/widgets/loading_view.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/core/utils/error_mapper.dart';
+import 'package:pooja_pasal/features/admin/sellers/presentation/providers/admin_seller_providers.dart';
+import 'package:pooja_pasal/features/auth/domain/entities/app_user.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
+import 'package:pooja_pasal/shared/widgets/loading_view.dart';
 
 /// Promoting a buyer/seller straight to admin is a genuinely sensitive
 /// action (full backend trust), so it lives here behind an explicit,
@@ -29,10 +29,11 @@ class AdminUserDetailPage extends ConsumerWidget {
             'promote/demote any other account, including this one. This cannot be undone from this '
             'screen once granted (only another admin, or the manual bootstrap script, can reverse it).'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Grant Admin Access', style: TextStyle(color: AppColors.error)),
+            child: Text('Grant Admin Access', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -58,7 +59,7 @@ class AdminUserDetailPage extends ConsumerWidget {
         children: [
           SizedBox(
               width: 90,
-              child: Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12))),
+              child: Text(label, style: TextStyle(color: AppColors.muted, fontSize: 12))),
           Expanded(child: Text(value.isEmpty ? '—' : value)),
         ],
       ),
@@ -86,10 +87,9 @@ class AdminUserDetailPage extends ConsumerWidget {
                   child: CircleAvatar(
                     radius: 40,
                     backgroundColor: AppColors.card,
-                    backgroundImage:
-                        user.photoUrl.isNotEmpty ? NetworkImage(user.photoUrl) : null,
+                    backgroundImage: user.photoUrl.isNotEmpty ? NetworkImage(user.photoUrl) : null,
                     child: user.photoUrl.isEmpty
-                        ? const Icon(Icons.person, size: 40, color: AppColors.primary)
+                        ? Icon(Icons.person, size: 40, color: AppColors.primary)
                         : null,
                   ),
                 ),
@@ -105,8 +105,11 @@ class AdminUserDetailPage extends ConsumerWidget {
                         _row('Phone', user.phone),
                         _row('Address', user.address),
                         _row('Role', user.role.toUpperCase()),
-                        _row('Joined',
-                            user.createdAt == null ? '' : user.createdAt!.toString().substring(0, 10)),
+                        _row(
+                            'Joined',
+                            user.createdAt == null
+                                ? ''
+                                : user.createdAt!.toString().substring(0, 10)),
                       ],
                     ),
                   ),
@@ -117,14 +120,13 @@ class AdminUserDetailPage extends ConsumerWidget {
                     width: double.infinity,
                     child: OutlinedButton.icon(
                       onPressed: isBusy ? null : () => _confirmPromoteToAdmin(context, ref, user),
-                      icon: const Icon(Icons.admin_panel_settings_outlined, color: AppColors.error),
-                      label: const Text('Grant Admin Access',
-                          style: TextStyle(color: AppColors.error)),
-                      style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.error)),
+                      icon: Icon(Icons.admin_panel_settings_outlined, color: AppColors.error),
+                      label: Text('Grant Admin Access', style: TextStyle(color: AppColors.error)),
+                      style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.error)),
                     ),
                   )
                 else
-                  const Center(
+                  Center(
                     child: Text('This user already has admin access.',
                         style: TextStyle(color: AppColors.muted)),
                   ),

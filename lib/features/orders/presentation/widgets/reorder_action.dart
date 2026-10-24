@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/features/auth/presentation/providers/auth_providers.dart';
-import 'package:untitled3/features/cart/presentation/providers/cart_providers.dart';
-import 'package:untitled3/features/orders/domain/entities/order.dart';
-import 'package:untitled3/features/products/presentation/providers/product_providers.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
+import 'package:pooja_pasal/features/cart/presentation/providers/cart_providers.dart';
+import 'package:pooja_pasal/features/orders/domain/entities/order.dart';
+import 'package:pooja_pasal/features/products/presentation/providers/product_providers.dart';
 
 /// Adds every item from a past [order] back to the cart. Each product is
-/// re-checked against its *current* Firestore state (it may have changed
-/// price, gone out of stock, or been deleted since the order was placed) —
-/// items that are no longer purchasable are skipped and reported back to
-/// the buyer by name rather than silently dropped. `createOrder` still
-/// re-validates everything again at checkout regardless.
+/// re-checked against its *current* state (it may have changed price, gone
+/// out of stock, or been deleted since the order was placed) — items that
+/// are no longer purchasable are skipped and reported back to the buyer by
+/// name rather than silently dropped. The API still re-validates
+/// everything again at checkout regardless.
 Future<void> reorder(BuildContext context, WidgetRef ref, PoojaOrder order) async {
   final uid = ref.read(authRepositoryProvider).currentUser?.uid;
   if (uid == null) return;
@@ -37,8 +37,8 @@ Future<void> reorder(BuildContext context, WidgetRef ref, PoojaOrder order) asyn
 
   if (!context.mounted) return;
   if (addedCount == 0) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('None of these items are available to reorder right now.')));
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('None of these items are available to reorder right now.')));
     return;
   }
   final message = unavailable.isEmpty

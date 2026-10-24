@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
 
 /// Small icon+value+label stat tile used on dashboard grids (seller,
 /// admin). Extracted so both dashboards share one implementation instead
 /// of duplicating the same widget tree.
 class StatCard extends StatelessWidget {
+  /// Height grids should give each card (padding + value + label, with
+  /// headroom for larger system fonts).
+  static const double height = 84;
+
   final IconData icon;
   final String label;
   final String value;
@@ -38,13 +42,16 @@ class StatCard extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(value,
-                    style: const TextStyle(
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
                         fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.text)),
                 Text(label,
-                    style: const TextStyle(fontSize: 11, color: AppColors.muted),
+                    style: TextStyle(fontSize: 11, color: AppColors.muted),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis),
               ],

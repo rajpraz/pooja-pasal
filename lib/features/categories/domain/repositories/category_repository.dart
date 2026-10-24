@@ -1,4 +1,4 @@
-import 'package:untitled3/features/categories/domain/entities/category.dart';
+import 'package:pooja_pasal/features/categories/domain/entities/category.dart';
 
 abstract class CategoryRepository {
   Stream<List<Category>> streamActiveCategories();

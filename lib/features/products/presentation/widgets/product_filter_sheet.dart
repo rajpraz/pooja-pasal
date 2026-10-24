@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/features/categories/presentation/providers/category_providers.dart';
-import 'package:untitled3/features/products/domain/entities/product_filter.dart';
-import 'package:untitled3/features/products/domain/entities/product_sort.dart';
-import 'package:untitled3/features/products/presentation/providers/product_filter_providers.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/features/categories/presentation/providers/category_providers.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product_filter.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product_sort.dart';
+import 'package:pooja_pasal/features/products/presentation/providers/product_filter_providers.dart';
 
 Future<void> showProductFilterSheet(BuildContext context) {
   return showModalBottomSheet(
@@ -92,12 +92,14 @@ class _ProductFilterSheetState extends ConsumerState<_ProductFilterSheet> {
                   ChoiceChip(
                     label: const Text('All'),
                     selected: _draft.category == null,
-                    onSelected: (_) => setState(() => _draft = _draft.copyWith(clearCategory: true)),
+                    onSelected: (_) =>
+                        setState(() => _draft = _draft.copyWith(clearCategory: true)),
                   ),
                   ...categories.map((c) => ChoiceChip(
                         label: Text(c.name),
                         selected: _draft.category == c.name,
-                        onSelected: (_) => setState(() => _draft = _draft.copyWith(category: c.name)),
+                        onSelected: (_) =>
+                            setState(() => _draft = _draft.copyWith(category: c.name)),
                       )),
                 ],
               ),
@@ -106,11 +108,10 @@ class _ProductFilterSheetState extends ConsumerState<_ProductFilterSheet> {
             const Text('Price range', style: TextStyle(fontWeight: FontWeight.w600)),
             RangeSlider(
               values: _priceRange,
-              min: 0,
               max: _maxPrice,
               divisions: 20,
-              labels: RangeLabels(
-                  'Rs.${_priceRange.start.round()}', 'Rs.${_priceRange.end.round()}'),
+              labels:
+                  RangeLabels('Rs.${_priceRange.start.round()}', 'Rs.${_priceRange.end.round()}'),
               onChanged: (values) => setState(() {
                 _priceRange = values;
                 _draft = _draft.copyWith(minPrice: values.start, maxPrice: values.end);

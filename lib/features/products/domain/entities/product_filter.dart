@@ -1,5 +1,5 @@
-import 'package:untitled3/features/products/domain/entities/product.dart';
-import 'package:untitled3/features/products/domain/entities/product_sort.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product_sort.dart';
 
 /// Buyer-facing filter/sort selection, held centrally in Riverpod
 /// (`productFilterProvider`) rather than scattered across widget-local
@@ -52,11 +52,8 @@ class ProductFilter {
     );
   }
 
-  /// Applied client-side, on top of whatever a page fetch already returned
-  /// — see the batch-2 report for why category/price/rating/stock filters
-  /// are client-side this batch (composite-index cost vs. benefit for a
-  /// catalog this size) while [sort] is applied server-side via Firestore
-  /// `orderBy`.
+  /// Applied client-side, on top of whatever a page fetch already returned,
+  /// while [sort] is applied server-side (`GET /products?sort=`).
   bool matches(Product product) {
     if (category != null && product.category != category) return false;
     if (minPrice != null && product.price < minPrice!) return false;

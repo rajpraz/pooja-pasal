@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:untitled3/app/router/route_names.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/widgets/stat_card.dart';
-import 'package:untitled3/features/admin/dashboard/presentation/providers/admin_dashboard_providers.dart';
-import 'package:untitled3/features/auth/presentation/providers/auth_providers.dart';
+import 'package:pooja_pasal/app/router/route_names.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/app/theme/appearance_sheet.dart';
+import 'package:pooja_pasal/core/widgets/stat_card.dart';
+import 'package:pooja_pasal/features/admin/dashboard/presentation/providers/admin_dashboard_providers.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
 
 class AdminDashboardPage extends ConsumerWidget {
   const AdminDashboardPage({super.key});
 
   Future<void> _logout(BuildContext context, WidgetRef ref) async {
-    await ref.read(authRepositoryProvider).signOut();
+    await ref.read(signOutActionProvider)();
     if (!context.mounted) return;
     context.go(RouteNames.login);
   }
@@ -25,6 +26,7 @@ class AdminDashboardPage extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Admin Dashboard'),
         actions: [
+          const AppearanceButton(),
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Logout',
@@ -45,16 +47,21 @@ class AdminDashboardPage extends ConsumerWidget {
           data: (stats) => ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              const Text('Overview',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.text)),
+              Text('Overview',
+                  style:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.text)),
               const SizedBox(height: 10),
-              GridView.count(
+              GridView(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
-                childAspectRatio: 2.4,
+                // A fixed tile height (not an aspect ratio) so the value and label
+                // always fit, whatever the screen width.
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  mainAxisExtent: StatCard.height,
+                ),
                 children: [
                   StatCard(
                       icon: Icons.people_outline,
@@ -108,15 +115,17 @@ class AdminDashboardPage extends ConsumerWidget {
                       value: 'Rs.${stats.recentRevenue.toStringAsFixed(0)}'),
                 ],
               ),
-              const Padding(
-                padding: EdgeInsets.only(top: 4, bottom: 16),
+              Padding(
+                padding: const EdgeInsets.only(top: 4, bottom: 16),
                 child: Text(
-                  '"Recent Revenue" sums the last 200 paid orders, not an all-time total.',
-                  style: TextStyle(fontSize: 11, color: AppColors.muted, fontStyle: FontStyle.italic),
+                  '"Recent Revenue" is paid orders from the last 30 days, not an all-time total.',
+                  style:
+                      TextStyle(fontSize: 11, color: AppColors.muted, fontStyle: FontStyle.italic),
                 ),
               ),
-              const Text('Manage',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.text)),
+              Text('Manage',
+                  style:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.text)),
               const SizedBox(height: 10),
               _menuTile(
                 context,
@@ -182,7 +191,7 @@ class AdminDashboardPage extends ConsumerWidget {
       child: ListTile(
         leading: Icon(icon, color: AppColors.primary),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text(subtitle, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+        subtitle: Text(subtitle, style: TextStyle(color: AppColors.muted, fontSize: 12)),
         trailing: badge > 0
             ? Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -190,7 +199,7 @@ class AdminDashboardPage extends ConsumerWidget {
                     BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(20)),
                 child: Text('$badge', style: const TextStyle(color: Colors.white, fontSize: 11)),
               )
-            : const Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.muted),
+            : Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.muted),
         onTap: onTap,
       ),
     );

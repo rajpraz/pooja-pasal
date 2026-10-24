@@ -1,15 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/features/products/domain/entities/product.dart';
-import 'package:untitled3/features/products/presentation/providers/product_filter_providers.dart';
-import 'package:untitled3/features/products/presentation/providers/product_providers.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product.dart';
+import 'package:pooja_pasal/features/products/presentation/providers/product_filter_providers.dart';
+import 'package:pooja_pasal/features/products/presentation/providers/product_providers.dart';
 
 /// Raw, unfiltered page state — client-side filters (category/price/
 /// rating/in-stock, see `ProductFilter.matches`) are applied by whoever
 /// reads this, not baked into what's fetched, so toggling those filters
 /// never needs a refetch. Only `sort` changes what's fetched (it's a
-/// different Firestore `orderBy`), which is why [build] watches it.
+/// different server-side ordering), which is why [build] watches it.
 class ProductListState {
   final List<Product> rawItems;
   final Object? cursor;
@@ -42,13 +42,11 @@ class ProductListState {
 /// browsing surfaces that want infinite scroll instead of the unbounded
 /// `activeProductsProvider` stream).
 class ProductListController extends AsyncNotifier<ProductListState> {
-  static const _pageSize = 20;
-
   @override
   FutureOr<ProductListState> build() async {
     final repository = ref.watch(productRepositoryProvider);
     final sort = ref.watch(productFilterProvider.select((f) => f.sort));
-    final page = await repository.fetchActiveProductsPage(limit: _pageSize, sort: sort);
+    final page = await repository.fetchActiveProductsPage(sort: sort);
     return ProductListState(rawItems: page.items, cursor: page.cursor, hasMore: page.hasMore);
   }
 
@@ -62,7 +60,6 @@ class ProductListController extends AsyncNotifier<ProductListState> {
     try {
       final page = await repository.fetchActiveProductsPage(
         startAfter: current.cursor,
-        limit: _pageSize,
         sort: sort,
       );
       state = AsyncData(ProductListState(

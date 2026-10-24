@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/features/products/domain/entities/product_filter.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product_filter.dart';
 
 class ProductFilterNotifier extends Notifier<ProductFilter> {
   @override

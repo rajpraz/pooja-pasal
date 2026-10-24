@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:untitled3/app/router/route_names.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/features/admin/users/presentation/providers/admin_user_providers.dart';
-import 'package:untitled3/features/auth/domain/entities/app_user.dart';
-import 'package:untitled3/shared/widgets/empty_view.dart';
-import 'package:untitled3/shared/widgets/loading_view.dart';
+import 'package:pooja_pasal/app/router/route_names.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/features/admin/users/presentation/providers/admin_user_providers.dart';
+import 'package:pooja_pasal/features/auth/domain/entities/app_user.dart';
+import 'package:pooja_pasal/shared/widgets/empty_view.dart';
+import 'package:pooja_pasal/shared/widgets/loading_view.dart';
 
 /// Read-only user directory. Role changes are never made from this list —
 /// see `admin_user_detail_page.dart` for the one gated promote-to-admin
@@ -87,15 +87,13 @@ class _AdminUsersPageState extends ConsumerState<AdminUsersPage> {
                 child: ListTile(
                   leading: CircleAvatar(
                     backgroundColor: AppColors.card,
-                    backgroundImage:
-                        user.photoUrl.isNotEmpty ? NetworkImage(user.photoUrl) : null,
-                    child: user.photoUrl.isEmpty
-                        ? const Icon(Icons.person, color: AppColors.primary)
-                        : null,
+                    backgroundImage: user.photoUrl.isNotEmpty ? NetworkImage(user.photoUrl) : null,
+                    child:
+                        user.photoUrl.isEmpty ? Icon(Icons.person, color: AppColors.primary) : null,
                   ),
                   title: Text(user.name.isEmpty ? '(no name)' : user.name,
                       style: const TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: Text(user.email, style: const TextStyle(color: AppColors.muted)),
+                  subtitle: Text(user.email, style: TextStyle(color: AppColors.muted)),
                   trailing: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(

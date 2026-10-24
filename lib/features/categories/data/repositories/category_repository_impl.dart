@@ -1,6 +1,6 @@
-import 'package:untitled3/features/categories/data/datasources/category_remote_data_source.dart';
-import 'package:untitled3/features/categories/domain/entities/category.dart';
-import 'package:untitled3/features/categories/domain/repositories/category_repository.dart';
+import 'package:pooja_pasal/features/categories/data/datasources/category_remote_data_source.dart';
+import 'package:pooja_pasal/features/categories/domain/entities/category.dart';
+import 'package:pooja_pasal/features/categories/domain/repositories/category_repository.dart';
 
 class CategoryRepositoryImpl implements CategoryRepository {
   final CategoryRemoteDataSource _dataSource;

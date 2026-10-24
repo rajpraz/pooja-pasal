@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:untitled3/app/router/route_names.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/features/admin/orders/presentation/providers/admin_order_filter_provider.dart';
-import 'package:untitled3/features/orders/domain/entities/order.dart';
-import 'package:untitled3/features/orders/presentation/providers/order_providers.dart';
-import 'package:untitled3/shared/widgets/empty_view.dart';
-import 'package:untitled3/shared/widgets/loading_view.dart';
+import 'package:pooja_pasal/app/router/route_names.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/features/admin/orders/presentation/providers/admin_order_filter_provider.dart';
+import 'package:pooja_pasal/features/orders/domain/entities/order.dart';
+import 'package:pooja_pasal/features/orders/presentation/providers/order_providers.dart';
+import 'package:pooja_pasal/shared/widgets/empty_view.dart';
+import 'package:pooja_pasal/shared/widgets/loading_view.dart';
 
 String _filterLabel(String? status) =>
     status == null ? 'All' : status[0].toUpperCase() + status.substring(1);
@@ -71,8 +71,9 @@ class AdminOrdersPage extends ConsumerWidget {
                   itemBuilder: (context, index) {
                     final tab = adminOrderFilterTabs[index];
                     final selected = tab == activeFilter;
-                    final count =
-                        tab == null ? allOrders.length : allOrders.where((o) => o.status == tab).length;
+                    final count = tab == null
+                        ? allOrders.length
+                        : allOrders.where((o) => o.status == tab).length;
                     return ChoiceChip(
                       label: Text('${_filterLabel(tab)} ($count)'),
                       selected: selected,
@@ -101,7 +102,8 @@ class AdminOrdersPage extends ConsumerWidget {
                           return Card(
                             margin: const EdgeInsets.only(bottom: 10),
                             child: ListTile(
-                              title: Text('Order #${order.id.substring(0, order.id.length.clamp(0, 8))}',
+                              title: Text(
+                                  'Order #${order.id.substring(0, order.id.length.clamp(0, 8))}',
                                   style: const TextStyle(fontWeight: FontWeight.bold)),
                               subtitle: Text(
                                   '${order.items.length} item(s) • Rs.${order.totalAmount.toStringAsFixed(2)} • ${order.paymentStatus.toUpperCase()}'),

@@ -1,32 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:untitled3/app/router/route_names.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/widgets/app_bottom_nav.dart';
-import 'package:untitled3/features/categories/domain/entities/category.dart';
-import 'package:untitled3/features/categories/presentation/providers/category_providers.dart';
-import 'package:untitled3/features/products/presentation/providers/product_providers.dart';
-import 'package:untitled3/shared/widgets/empty_view.dart';
-import 'package:untitled3/shared/widgets/loading_view.dart';
+import 'package:pooja_pasal/app/router/route_names.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/core/widgets/app_bottom_nav.dart';
+import 'package:pooja_pasal/core/widgets/product_image.dart';
+import 'package:pooja_pasal/features/categories/domain/entities/category.dart';
+import 'package:pooja_pasal/features/categories/presentation/providers/category_providers.dart';
+import 'package:pooja_pasal/features/products/presentation/providers/product_providers.dart';
+import 'package:pooja_pasal/shared/widgets/empty_view.dart';
+import 'package:pooja_pasal/shared/widgets/loading_view.dart';
 
-/// Real Firestore-backed category grid (`categories` collection, admin-only
-/// writes per firestore.rules). Product counts are derived client-side from
-/// `activeProductsProvider` (see `productCountByCategoryProvider`) rather
-/// than a second per-category query or a denormalized counter field.
+/// Category grid (active categories, admin-managed). Product counts are
+/// derived client-side from `activeProductsProvider` (see
+/// `productCountByCategoryProvider`) rather than a request per category.
 class CategoriesPage extends ConsumerWidget {
   const CategoriesPage({super.key});
 
-  Widget _buildImage(String imageUrl) {
-    Widget fallback() => Container(
-          color: AppColors.card,
-          alignment: Alignment.center,
-          child: const Icon(Icons.temple_hindu, color: AppColors.primary, size: 22),
-        );
-    if (imageUrl.isEmpty) return fallback();
-    return ClipOval(
-      child: Image.network(imageUrl,
-          width: 44, height: 44, fit: BoxFit.cover, errorBuilder: (_, __, ___) => fallback()),
+  /// The category's own photo when an admin uploaded one, else its badge.
+  Widget _buildImage(Category category) {
+    final badge = CategoryBadge(category: category.name, size: 52);
+    if (category.imageUrl.isEmpty) return badge;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: Image.network(category.imageUrl,
+          width: 52, height: 52, fit: BoxFit.cover, errorBuilder: (_, __, ___) => badge),
     );
   }
 
@@ -83,18 +81,14 @@ class CategoriesPage extends ConsumerWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircleAvatar(
-                          radius: 22,
-                          backgroundColor: AppColors.accent.withAlpha((0.15 * 255).round()),
-                          child: _buildImage(category.imageUrl),
-                        ),
+                        _buildImage(category),
                         const SizedBox(height: 10),
                         Text(
                           category.name,
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: AppColors.text,
@@ -103,7 +97,7 @@ class CategoriesPage extends ConsumerWidget {
                         if (count > 0) ...[
                           const SizedBox(height: 2),
                           Text('$count item${count == 1 ? '' : 's'}',
-                              style: const TextStyle(fontSize: 10, color: AppColors.muted)),
+                              style: TextStyle(fontSize: 10, color: AppColors.muted)),
                         ],
                       ],
                     ),
@@ -140,12 +134,12 @@ class CategoryProductsPage extends ConsumerWidget {
           final items = products.where((p) => p.category == category).toList();
 
           if (items.isEmpty) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.search_off, size: 58, color: AppColors.muted),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   Text('No items found for this category',
                       style: TextStyle(color: AppColors.muted)),
                 ],
@@ -185,7 +179,7 @@ class CategoryProductsPage extends ConsumerWidget {
                                 width: 110,
                                 height: 110,
                                 color: AppColors.card,
-                                child: const Icon(Icons.temple_hindu, color: AppColors.primary),
+                                child: Icon(Icons.temple_hindu, color: AppColors.primary),
                               )
                             : Image.network(
                                 product.image,
@@ -196,7 +190,7 @@ class CategoryProductsPage extends ConsumerWidget {
                                   width: 110,
                                   height: 110,
                                   color: AppColors.card,
-                                  child: const Icon(Icons.temple_hindu, color: AppColors.primary),
+                                  child: Icon(Icons.temple_hindu, color: AppColors.primary),
                                 ),
                               ),
                       ),
@@ -215,11 +209,10 @@ class CategoryProductsPage extends ConsumerWidget {
                               Text(product.description,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                      color: AppColors.muted, fontSize: 13)),
+                                  style: TextStyle(color: AppColors.muted, fontSize: 13)),
                               const SizedBox(height: 8),
                               Text('Rs.${product.price.toStringAsFixed(2)}',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
                                       color: AppColors.primary)),

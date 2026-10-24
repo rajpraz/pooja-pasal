@@ -1,52 +1,45 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:untitled3/features/categories/domain/entities/category.dart';
+import 'package:pooja_pasal/core/network/api_client.dart';
+import 'package:pooja_pasal/features/categories/domain/entities/category.dart';
 
+/// Categories (`/categories`), sorted by `sortOrder` server-side. Writes
+/// are admin-only (`/admin/categories`), enforced by the API.
 class CategoryRemoteDataSource {
-  static final _categories = FirebaseFirestore.instance.collection('categories');
+  CategoryRemoteDataSource(this._api);
 
-  /// `isActive == true` + `orderBy sortOrder` — an equality filter combined
-  /// with an orderBy on a different field is served by Firestore's
-  /// automatic single-field indexes, so no composite index entry is needed
-  /// (same reasoning as the existing `products` isActive+createdAt query).
-  Stream<List<Category>> streamActiveCategories() {
-    return _categories
-        .where('isActive', isEqualTo: true)
-        .orderBy('sortOrder')
-        .snapshots()
-        .map((snap) => snap.docs.map(Category.fromDoc).toList());
-  }
+  final ApiClient _api;
 
-  /// Admin-only view (enforced by firestore.rules — `allow read: if
-  /// isSignedIn() && (resource.data.isActive == true || isAdmin());` — a
-  /// non-admin querying this unfiltered would simply have inactive docs
-  /// excluded from the result, not an error, but the UI route this feeds is
-  /// itself admin-gated).
-  Stream<List<Category>> streamAllCategories() {
-    return _categories
-        .orderBy('sortOrder')
-        .snapshots()
-        .map((snap) => snap.docs.map(Category.fromDoc).toList());
-  }
+  Stream<List<Category>> streamActiveCategories() => _api.watch(
+        {ApiTopics.categories},
+        () async => asJsonList(await _api.get('/categories')).map(Category.fromJson).toList(),
+      );
+
+  /// Includes inactive categories (the API only does so for staff).
+  Stream<List<Category>> streamAllCategories() => _api.watch(
+        {ApiTopics.categories},
+        () async => asJsonList(await _api.get('/categories', query: {'all': true}))
+            .map(Category.fromJson)
+            .toList(),
+      );
 
   Future<void> createCategory(Category category) async {
-    await _categories.add({
+    await _api.post('/admin/categories', {
       'name': category.name,
       'imageUrl': category.imageUrl,
       'isActive': category.isActive,
       'sortOrder': category.sortOrder,
-      'createdAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
     });
+    _api.notifyChanged(const [ApiTopics.categories]);
   }
 
+  /// [updates] uses the same keys as the API (`name`, `imageUrl`,
+  /// `isActive`, `sortOrder`) and must include `name`.
   Future<void> updateCategory(String id, Map<String, dynamic> updates) async {
-    await _categories.doc(id).update({
-      ...updates,
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+    await _api.put('/admin/categories/$id', updates);
+    _api.notifyChanged(const [ApiTopics.categories, ApiTopics.products]);
   }
 
   Future<void> setActive(String id, bool isActive) async {
-    await updateCategory(id, {'isActive': isActive});
+    await _api.patch('/admin/categories/$id/active', {'isActive': isActive});
+    _api.notifyChanged(const [ApiTopics.categories]);
   }
 }

@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pooja_pasal/core/network/json_reader.dart';
 
 class AppNotification {
   final String id;
@@ -19,16 +19,15 @@ class AppNotification {
     this.createdAt,
   });
 
-  factory AppNotification.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final map = doc.data() ?? {};
+  factory AppNotification.fromJson(Map<String, dynamic> map) {
     return AppNotification(
-      id: doc.id,
-      title: map['title'] ?? '',
-      body: map['body'] ?? '',
-      type: map['type'] ?? 'order_status',
-      orderId: map['orderId'],
-      read: map['read'] ?? false,
-      createdAt: (map['createdAt'] as Timestamp?)?.toDate(),
+      id: map.str('id'),
+      title: map.str('title'),
+      body: map.str('body'),
+      type: map.str('type', 'general'),
+      orderId: map.strOrNull('orderId'),
+      read: map.flag('read'),
+      createdAt: map.date('createdAt'),
     );
   }
 }

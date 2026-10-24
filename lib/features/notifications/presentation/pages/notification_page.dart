@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:untitled3/app/router/route_names.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/features/auth/presentation/providers/auth_providers.dart';
-import 'package:untitled3/features/notifications/domain/entities/app_notification.dart';
-import 'package:untitled3/features/notifications/presentation/providers/notification_providers.dart';
+import 'package:pooja_pasal/app/router/route_names.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
+import 'package:pooja_pasal/features/notifications/domain/entities/app_notification.dart';
+import 'package:pooja_pasal/features/notifications/presentation/providers/notification_providers.dart';
 
 class NotificationsPage extends ConsumerWidget {
   const NotificationsPage({super.key});
 
-  /// Covers every notification `type` the backend can actually emit — see
-  /// functions/src/notifications/onOrderWrite.ts (STATUS_MESSAGES keys plus
-  /// order_placed/payment_success/payment_failure/seller_new_order) and
-  /// lowStock.ts (low_stock/out_of_stock, seller-facing but the icon map
-  /// stays shared since a seller viewing this same page needs it too).
+  /// Covers every notification `type` the API emits (`NotificationService`:
+  /// order_placed, order_<status>, payment_success/failure/refunded,
+  /// seller_new_order, low_stock/out_of_stock, seller_application,
+  /// refund_needed) — the map is shared since sellers and admins use this
+  /// same page.
   IconData _iconFor(String type) {
     switch (type) {
       case 'order_placed':
@@ -37,6 +37,11 @@ class NotificationsPage extends ConsumerWidget {
         return Icons.check_circle_outline;
       case 'payment_failure':
         return Icons.error_outline;
+      case 'payment_refunded':
+      case 'refund_needed':
+        return Icons.currency_exchange_outlined;
+      case 'seller_application':
+        return Icons.how_to_reg_outlined;
       case 'seller_new_order':
         return Icons.storefront_outlined;
       case 'low_stock':
@@ -60,7 +65,10 @@ class NotificationsPage extends ConsumerWidget {
         return AppColors.accent;
       case 'order_delivered':
       case 'payment_success':
+      case 'payment_refunded':
         return AppColors.success;
+      case 'refund_needed':
+        return AppColors.error;
       default:
         return AppColors.accent;
     }
@@ -95,23 +103,19 @@ class NotificationsPage extends ConsumerWidget {
           ? const Center(child: Text('Please log in to view notifications'))
           : ref.watch(notificationsProvider(uid)).when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, st) =>
-                    Center(child: Text('Could not load notifications: $err')),
+                error: (err, st) => Center(child: Text('Could not load notifications: $err')),
                 data: (notifications) {
                   if (notifications.isEmpty) {
-                    return const Center(
+                    return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.notifications_none,
-                              size: 56, color: AppColors.muted),
-                          SizedBox(height: 12),
-                          Text('No notifications yet',
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.w600)),
-                          SizedBox(height: 4),
-                          Text(
-                              'Order updates and offers will show up here.',
+                          Icon(Icons.notifications_none, size: 56, color: AppColors.muted),
+                          const SizedBox(height: 12),
+                          const Text('No notifications yet',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 4),
+                          Text('Order updates and offers will show up here.',
                               style: TextStyle(color: AppColors.muted)),
                         ],
                       ),
@@ -139,8 +143,7 @@ class NotificationsPage extends ConsumerWidget {
                             children: [
                               CircleAvatar(
                                 backgroundColor: AppColors.surface,
-                                child: Icon(_iconFor(n.type),
-                                    color: _colorFor(n.type), size: 20),
+                                child: Icon(_iconFor(n.type), color: _colorFor(n.type), size: 20),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -151,28 +154,24 @@ class NotificationsPage extends ConsumerWidget {
                                       children: [
                                         Expanded(
                                           child: Text(n.title,
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.bold)),
+                                              style: const TextStyle(fontWeight: FontWeight.bold)),
                                         ),
                                         if (!n.read)
                                           Container(
                                             width: 8,
                                             height: 8,
                                             margin: const EdgeInsets.only(left: 6),
-                                            decoration: const BoxDecoration(
-                                                color: AppColors.accent,
-                                                shape: BoxShape.circle),
+                                            decoration: BoxDecoration(
+                                                color: AppColors.accent, shape: BoxShape.circle),
                                           ),
                                       ],
                                     ),
                                     const SizedBox(height: 4),
                                     Text(n.body,
-                                        style: const TextStyle(
-                                            color: AppColors.muted, fontSize: 13)),
+                                        style: TextStyle(color: AppColors.muted, fontSize: 13)),
                                     const SizedBox(height: 6),
                                     Text(_timeAgo(n.createdAt),
-                                        style: const TextStyle(
-                                            color: AppColors.muted, fontSize: 11)),
+                                        style: TextStyle(color: AppColors.muted, fontSize: 11)),
                                   ],
                                 ),
                               ),

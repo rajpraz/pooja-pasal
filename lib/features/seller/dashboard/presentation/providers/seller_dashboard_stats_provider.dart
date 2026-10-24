@@ -1,13 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/features/orders/presentation/providers/order_providers.dart';
-import 'package:untitled3/features/products/presentation/providers/product_providers.dart';
-import 'package:untitled3/features/seller/dashboard/domain/entities/seller_dashboard_stats.dart';
+import 'package:pooja_pasal/features/orders/presentation/providers/order_providers.dart';
+import 'package:pooja_pasal/features/products/presentation/providers/product_providers.dart';
+import 'package:pooja_pasal/features/seller/dashboard/domain/entities/seller_dashboard_stats.dart';
 
 /// Derives dashboard stats purely from the two streams the dashboard
 /// already watches (`sellerProductsProvider`, `sellerOrdersProvider`) — no
-/// new Firestore query, no Cloud Function. Recomputes whenever either
-/// source stream emits; cheap, since both lists are already small
-/// per-seller sets held in memory by their own providers.
+/// extra request. Recomputes whenever either source stream emits; cheap,
+/// since both lists are already small per-seller sets held in memory by
+/// their own providers.
 ///
 /// "Sales" sums only this seller's own line items within each order (an
 /// order can span multiple sellers — see OrderItem.sellerId). COD orders
@@ -26,7 +26,8 @@ final sellerDashboardStatsProvider =
   }
   final error = productsAsync.error ?? ordersAsync.error;
   if (error != null) {
-    return AsyncError(error, productsAsync.stackTrace ?? ordersAsync.stackTrace ?? StackTrace.empty);
+    return AsyncError(
+        error, productsAsync.stackTrace ?? ordersAsync.stackTrace ?? StackTrace.empty);
   }
 
   final products = productsAsync.value ?? const [];
@@ -53,7 +54,9 @@ final sellerDashboardStatsProvider =
         break;
     }
 
-    if (order.status == 'cancelled' || order.status == 'returned') continue;
+    if (order.status == 'cancelled' || order.status == 'returned' || order.status == 'refunded') {
+      continue;
+    }
     if (order.paymentStatus == 'refunded' || order.paymentStatus == 'partially_refunded') continue;
     final isOnlinePayment = order.paymentMethod == 'khalti' || order.paymentMethod == 'esewa';
     if (isOnlinePayment && order.paymentStatus != 'paid') continue;

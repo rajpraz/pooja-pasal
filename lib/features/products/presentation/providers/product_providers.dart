@@ -1,12 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/features/products/data/datasources/product_remote_data_source.dart';
-import 'package:untitled3/features/products/data/repositories/product_repository_impl.dart';
-import 'package:untitled3/features/products/domain/entities/product.dart';
-import 'package:untitled3/features/products/domain/entities/product_page.dart';
-import 'package:untitled3/features/products/domain/repositories/product_repository.dart';
+import 'package:pooja_pasal/core/network/api_client.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
+import 'package:pooja_pasal/features/products/data/datasources/product_remote_data_source.dart';
+import 'package:pooja_pasal/features/products/data/repositories/product_repository_impl.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product_page.dart';
+import 'package:pooja_pasal/features/products/domain/repositories/product_repository.dart';
 
 final productRepositoryProvider = Provider<ProductRepository>((ref) {
-  return ProductRepositoryImpl(ProductRemoteDataSource());
+  return ProductRepositoryImpl(ProductRemoteDataSource(ref.watch(apiClientProvider)));
 });
 
 final activeProductsProvider = StreamProvider<List<Product>>((ref) {
@@ -14,6 +16,7 @@ final activeProductsProvider = StreamProvider<List<Product>>((ref) {
 });
 
 final sellerProductsProvider = StreamProvider.family<List<Product>, String>((ref, sellerId) {
+  if (!watchSignedIn(ref)) return const Stream.empty();
   return ref.watch(productRepositoryProvider).streamSellerProducts(sellerId);
 });
 
@@ -35,5 +38,6 @@ final homeFeaturedProductsProvider = FutureProvider.autoDispose<ProductPage>((re
 /// Admin-only: every product (active/inactive), for the admin product
 /// moderation list.
 final adminAllProductsProvider = StreamProvider<List<Product>>((ref) {
+  if (!watchSignedIn(ref)) return const Stream.empty();
   return ref.watch(productRepositoryProvider).streamAllProductsForAdmin();
 });

@@ -1,31 +1,74 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:untitled3/core/errors/app_exception.dart';
-import 'package:untitled3/features/auth/domain/entities/app_user.dart';
+import 'dart:async';
 
-/// Talks directly to FirebaseAuth/GoogleSignIn/Firestore `users/{uid}`.
-/// `FirebaseAuthException` is caught and translated to [AuthException]
-/// here — the only place in the app that imports `package:firebase_auth`
-/// for its exception type — so presentation never needs to know about it.
+import 'package:pooja_pasal/core/errors/app_exception.dart';
+import 'package:pooja_pasal/core/network/api_client.dart';
+import 'package:pooja_pasal/features/auth/domain/entities/app_user.dart';
+import 'package:pooja_pasal/features/auth/domain/entities/auth_session.dart';
+
+/// Sanctum token auth against the Laravel API (`/auth/*`). The token lives
+/// in [ApiClient.tokenStore]; the session is restored from it on start-up
+/// and dropped whenever the API answers 401 (revoked or disabled account).
 class AuthRemoteDataSource {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
-
-  Stream<User?> authStateChanges() => _auth.authStateChanges();
-
-  User? get currentUser => _auth.currentUser;
-
-  Stream<AppUser?> userDocStream(String uid) {
-    return _db.collection('users').doc(uid).snapshots().map(
-        (doc) => doc.exists ? AppUser.fromMap(uid, doc.data()!) : null);
+  AuthRemoteDataSource(this._api) {
+    _api.onUnauthorized = () {
+      if (_session != null) unawaited(_clearSession());
+    };
+    _restored = _restore();
   }
 
+  final ApiClient _api;
+  final _sessions = StreamController<AuthSession?>.broadcast();
+  late final Future<void> _restored;
+  AuthSession? _session;
+
+  AuthSession? get currentUser => _session;
+
+  Stream<AuthSession?> authStateChanges() async* {
+    await _restored;
+    yield _session;
+    yield* _sessions.stream;
+  }
+
+  Future<void> _restore() async {
+    if (await _api.tokenStore.read() == null) return;
+    try {
+      _session = _sessionFrom(AppUser.fromJson(asJsonMap(await _api.get('/auth/me'))));
+    } on AppFunctionException catch (e) {
+      // Keep the token through a network blip; drop it only if rejected.
+      if (e.isAuthError) await _api.tokenStore.clear();
+    }
+  }
+
+  AuthSession _sessionFrom(AppUser user) => AuthSession(uid: user.uid, email: user.email);
+
+  Future<void> _startSession(dynamic payload) async {
+    final map = payload as Map<String, dynamic>;
+    await _api.tokenStore.write(map['token'] as String);
+    _session = _sessionFrom(AppUser.fromJson(map['user'] as Map<String, dynamic>));
+    _sessions.add(_session);
+  }
+
+  Future<void> _clearSession() async {
+    await _api.tokenStore.clear();
+    _session = null;
+    _sessions.add(null);
+  }
+
+  Stream<AppUser?> userDocStream(String uid) => _api.watch(
+        {ApiTopics.profile, ApiTopics.users},
+        () => getUserDoc(uid),
+        // Picks up an admin approving this account as a seller.
+        pollEvery: const Duration(minutes: 1),
+      );
+
   Future<AppUser?> getUserDoc(String uid) async {
-    final doc = await _db.collection('users').doc(uid).get();
-    if (!doc.exists) return null;
-    return AppUser.fromMap(uid, doc.data()!);
+    try {
+      final path = uid == _session?.uid ? '/auth/me' : '/admin/users/$uid';
+      return AppUser.fromJson(asJsonMap(await _api.get(path)));
+    } on AppFunctionException catch (e) {
+      if (e.code == 'not-found') return null;
+      rethrow;
+    }
   }
 
   Future<void> signUp({
@@ -35,88 +78,69 @@ class AuthRemoteDataSource {
     required String phone,
     required String address,
     required String role,
+    String? shopName,
   }) async {
     try {
-      final credential = await _auth.createUserWithEmailAndPassword(
-          email: email, password: password);
-      final uid = credential.user!.uid;
-
-      await _db.collection('users').doc(uid).set(AppUser(
-            uid: uid,
-            name: name,
-            email: email,
-            phone: phone,
-            role: role,
-            address: address,
-            createdAt: DateTime.now(),
-          ).toMap());
-    } on FirebaseAuthException catch (e) {
-      throw AuthException(e.code, e.message ?? 'Could not create account.');
+      final wantsToSell = role == 'seller';
+      await _startSession(await _api.post('/auth/register', {
+        'name': name,
+        'email': email,
+        'password': password,
+        'phone': phone,
+        'address': address,
+        if (wantsToSell) 'wantsToSell': true,
+        if (wantsToSell) 'shopName': shopName,
+      }));
+    } on AppFunctionException catch (e) {
+      throw AuthException(e.code, e.message);
     }
   }
 
   Future<void> signIn({required String email, required String password}) async {
     try {
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
-    } on FirebaseAuthException catch (e) {
-      throw AuthException(e.code, e.message ?? 'Login failed. Please try again.');
-    }
-  }
-
-  /// Signs in with Google. If this is the user's first time, creates a
-  /// `users/{uid}` doc with the given [role] (defaults to buyer).
-  Future<void> signInWithGoogle({String role = 'buyer'}) async {
-    try {
-      await _googleSignIn.initialize();
-      final account = await _googleSignIn.authenticate();
-      final auth = account.authentication;
-      final credential = GoogleAuthProvider.credential(idToken: auth.idToken);
-      final userCredential = await _auth.signInWithCredential(credential);
-      final user = userCredential.user!;
-
-      final doc = await _db.collection('users').doc(user.uid).get();
-      if (!doc.exists) {
-        await _db.collection('users').doc(user.uid).set(AppUser(
-              uid: user.uid,
-              name: user.displayName ?? '',
-              email: user.email ?? '',
-              phone: user.phoneNumber ?? '',
-              role: role,
-              address: '',
-              createdAt: DateTime.now(),
-            ).toMap());
-      }
-    } on FirebaseAuthException catch (e) {
-      throw AuthException(e.code, e.message ?? 'Google sign-in failed.');
+      await _startSession(await _api.post('/auth/login', {'email': email, 'password': password}));
+    } on AppFunctionException catch (e) {
+      throw AuthException(e.code, e.message);
     }
   }
 
   Future<void> sendPasswordResetEmail(String email) async {
     try {
-      await _auth.sendPasswordResetEmail(email: email);
-    } on FirebaseAuthException catch (e) {
-      throw AuthException(e.code, e.message ?? 'Could not send reset email.');
+      await _api.post('/auth/forgot-password', {'email': email});
+    } on AppFunctionException catch (e) {
+      throw AuthException(e.code, e.message);
     }
   }
 
-  Future<void> updateUserProfile({
-    required String uid,
-    String? name,
-    String? phone,
-    String? address,
-    String? photoUrl,
-  }) async {
-    final updates = <String, dynamic>{};
-    if (name != null) updates['name'] = name;
-    if (phone != null) updates['phone'] = phone;
-    if (address != null) updates['address'] = address;
-    if (photoUrl != null) updates['photoUrl'] = photoUrl;
+  Future<void> updateUserProfile(
+      {String? name, String? phone, String? address, String? photoUrl}) async {
+    final updates = <String, dynamic>{
+      if (name != null) 'name': name,
+      if (phone != null) 'phone': phone,
+      if (address != null) 'address': address,
+      if (photoUrl != null) 'photoUrl': photoUrl,
+    };
     if (updates.isEmpty) return;
-    await _db.collection('users').doc(uid).update(updates);
+    await _api.patch('/auth/profile', updates);
+    _api.notifyChanged(const [ApiTopics.profile]);
+  }
+
+  Future<void> applyToSell(
+      {required String shopName, required String phone, String? reason}) async {
+    await _api.post('/seller-application', {
+      'shopName': shopName,
+      'phone': phone,
+      if (reason != null && reason.isNotEmpty) 'reason': reason,
+    });
+    _api.notifyChanged(const [ApiTopics.profile]);
   }
 
   Future<void> signOut() async {
-    await _googleSignIn.signOut();
-    await _auth.signOut();
+    try {
+      await _api.post('/auth/logout');
+    } on AppFunctionException {
+      // Signing out locally still succeeds when the server can't be reached.
+    }
+    await _clearSession();
   }
 }

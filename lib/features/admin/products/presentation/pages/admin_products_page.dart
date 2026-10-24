@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/utils/error_mapper.dart';
-import 'package:untitled3/features/admin/products/presentation/providers/admin_product_filter_provider.dart';
-import 'package:untitled3/features/products/domain/entities/product.dart';
-import 'package:untitled3/features/products/presentation/providers/product_providers.dart';
-import 'package:untitled3/shared/widgets/empty_view.dart';
-import 'package:untitled3/shared/widgets/loading_view.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/core/utils/error_mapper.dart';
+import 'package:pooja_pasal/core/widgets/product_image.dart';
+import 'package:pooja_pasal/features/admin/products/presentation/providers/admin_product_filter_provider.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product.dart';
+import 'package:pooja_pasal/features/products/presentation/providers/product_providers.dart';
+import 'package:pooja_pasal/shared/widgets/empty_view.dart';
+import 'package:pooja_pasal/shared/widgets/loading_view.dart';
 
 /// Product moderation: view/filter every product (active + inactive, all
-/// sellers) and activate/deactivate. Activate/deactivate is a direct
-/// Firestore write via `ProductRepository.updateProduct` — the same
-/// mechanism sellers already use on their own products — authorized by
-/// firestore.rules' `isAdmin()` branch on the `products` update rule.
-/// Deliberately does NOT support reassigning a product's `sellerId` — that
-/// capability doesn't exist in the backend/repository and isn't added here.
+/// sellers) and activate/deactivate, via the same
+/// `ProductRepository.updateProduct` sellers use on their own products —
+/// the API lets admins manage any product. Deliberately does NOT support
+/// reassigning a product's seller.
 class AdminProductsPage extends ConsumerWidget {
   const AdminProductsPage({super.key});
 
@@ -48,7 +47,8 @@ class AdminProductsPage extends ConsumerWidget {
             ? '"${product.name}" will be visible to buyers again.'
             : '"${product.name}" will be hidden from buyers immediately.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(activating ? 'Reactivate' : 'Deactivate',
@@ -72,7 +72,7 @@ class AdminProductsPage extends ConsumerWidget {
   }
 
   void _showDetail(BuildContext context, WidgetRef ref, Product product) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       builder: (sheetContext) => Padding(
@@ -83,11 +83,12 @@ class AdminProductsPage extends ConsumerWidget {
           children: [
             Text(product.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
-            Text('Rs.${product.price.toStringAsFixed(0)} • Stock: ${product.stock} • ${product.category}',
-                style: const TextStyle(color: AppColors.muted)),
+            Text(
+                'Rs.${product.price.toStringAsFixed(0)} • Stock: ${product.stock} • ${product.category}',
+                style: TextStyle(color: AppColors.muted)),
             if (product.sellerName.isNotEmpty) ...[
               const SizedBox(height: 4),
-              Text('Sold by ${product.sellerName}', style: const TextStyle(color: AppColors.muted)),
+              Text('Sold by ${product.sellerName}', style: TextStyle(color: AppColors.muted)),
             ],
             const SizedBox(height: 10),
             Text(product.description.isEmpty ? 'No description.' : product.description),
@@ -169,19 +170,14 @@ class AdminProductsPage extends ConsumerWidget {
                                 child: SizedBox(
                                   width: 48,
                                   height: 48,
-                                  child: product.image.isEmpty
-                                      ? Container(
-                                          color: AppColors.card,
-                                          child: const Icon(Icons.temple_hindu, color: AppColors.primary))
-                                      : Image.network(product.image,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) => Container(
-                                              color: AppColors.card,
-                                              child: const Icon(Icons.temple_hindu,
-                                                  color: AppColors.primary))),
+                                  child: ProductImage(
+                                      url: product.image,
+                                      category: product.category,
+                                      name: product.name),
                                 ),
                               ),
-                              title: Text(product.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                              title: Text(product.name,
+                                  style: const TextStyle(fontWeight: FontWeight.w600)),
                               subtitle: Text(
                                   'Rs.${product.price.toStringAsFixed(0)} • Stock: ${product.stock}${product.isOutOfStock ? " (out)" : product.isLowStock ? " (low)" : ""}'),
                               trailing: Container(
@@ -193,7 +189,8 @@ class AdminProductsPage extends ConsumerWidget {
                                 ),
                                 child: Text(product.isActive ? 'ACTIVE' : 'INACTIVE',
                                     style: TextStyle(
-                                        color: product.isActive ? AppColors.success : AppColors.muted,
+                                        color:
+                                            product.isActive ? AppColors.success : AppColors.muted,
                                         fontWeight: FontWeight.w600,
                                         fontSize: 10)),
                               ),

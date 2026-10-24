@@ -1,6 +1,6 @@
-import 'package:untitled3/features/addresses/data/datasources/address_remote_data_source.dart';
-import 'package:untitled3/features/addresses/domain/entities/address.dart';
-import 'package:untitled3/features/addresses/domain/repositories/address_repository.dart';
+import 'package:pooja_pasal/features/addresses/data/datasources/address_remote_data_source.dart';
+import 'package:pooja_pasal/features/addresses/domain/entities/address.dart';
+import 'package:pooja_pasal/features/addresses/domain/repositories/address_repository.dart';
 
 class AddressRepositoryImpl implements AddressRepository {
   final AddressRemoteDataSource _dataSource;

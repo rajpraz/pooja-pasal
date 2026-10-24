@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:untitled3/features/cart/domain/entities/cart_item.dart';
-import 'package:untitled3/features/cart/domain/entities/cart_line_validation.dart';
-import 'package:untitled3/features/cart/domain/pricing_service.dart';
-import 'package:untitled3/features/products/domain/entities/product.dart';
+import 'package:pooja_pasal/features/cart/domain/entities/cart_item.dart';
+import 'package:pooja_pasal/features/cart/domain/entities/cart_line_validation.dart';
+import 'package:pooja_pasal/features/cart/domain/pricing_service.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product.dart';
 
 CartItem _item({
   String productId = 'p1',
@@ -54,27 +54,28 @@ void main() {
 
     test('multiple items sum correctly', () {
       final items = [
-        _item(productId: 'p1', price: 100, qty: 2), // 200
-        _item(productId: 'p2', price: 50, qty: 1), // 50
+        _item(qty: 2), // 200
+        _item(productId: 'p2', price: 50), // 50
         _item(productId: 'p3', price: 75.5, qty: 4), // 302
       ];
       expect(PricingService.subtotal(items), 552.0);
-      expect(PricingService.total(items), 552.0 + PricingService.deliveryFee - PricingService.discount);
+      expect(PricingService.total(items),
+          552.0 + PricingService.deliveryFee - PricingService.discount);
     });
 
     test('total always includes delivery fee even for a single low-value item', () {
-      final items = [_item(price: 10, qty: 1)];
-      expect(PricingService.total(items), 10 + PricingService.deliveryFee - PricingService.discount);
+      final items = [_item(price: 10)];
+      expect(
+          PricingService.total(items), 10 + PricingService.deliveryFee - PricingService.discount);
     });
   });
 
   group('PricingService.subtotalFromValidated / totalFromValidated', () {
     test('excludes unpurchasable lines (inactive product) from the total', () {
       final lines = [
-        CartLineValidation(item: _item(productId: 'p1', price: 100, qty: 1), product: _product(id: 'p1')),
+        CartLineValidation(item: _item(), product: _product()),
         CartLineValidation(
-            item: _item(productId: 'p2', price: 50, qty: 1),
-            product: _product(id: 'p2', isActive: false)),
+            item: _item(productId: 'p2', price: 50), product: _product(id: 'p2', isActive: false)),
       ];
       expect(PricingService.subtotalFromValidated(lines), 100);
     });
@@ -82,8 +83,7 @@ void main() {
     test('excludes out-of-stock lines (insufficient stock) from the total', () {
       final lines = [
         CartLineValidation(
-            item: _item(productId: 'p1', price: 100, qty: 5),
-            product: _product(id: 'p1', stock: 2)), // wants 5, only 2 left
+            item: _item(qty: 5), product: _product(stock: 2)), // wants 5, only 2 left
       ];
       expect(PricingService.subtotalFromValidated(lines), 0);
       expect(PricingService.totalFromValidated(lines), 0);
@@ -91,7 +91,7 @@ void main() {
 
     test('excludes deleted product (null product) lines from the total', () {
       final lines = [
-        CartLineValidation(item: _item(productId: 'p1', price: 100, qty: 1), product: null),
+        CartLineValidation(item: _item(), product: null),
       ];
       expect(PricingService.subtotalFromValidated(lines), 0);
     });
@@ -99,8 +99,8 @@ void main() {
     test('uses the live product price, not the stale cart-item price, when they differ', () {
       final lines = [
         CartLineValidation(
-            item: _item(productId: 'p1', price: 100, qty: 2), // stale price captured at add-to-cart time
-            product: _product(id: 'p1', price: 120)), // price has since gone up
+            item: _item(qty: 2), // stale price captured at add-to-cart time
+            product: _product(price: 120)), // price has since gone up
       ];
       expect(lines.first.priceChanged, isTrue);
       expect(lines.first.effectiveSubtotal, 240); // 120 * 2, not 100 * 2
@@ -109,17 +109,17 @@ void main() {
 
     test('totalFromValidated is zero (not just delivery fee) when nothing is purchasable', () {
       final lines = [
-        CartLineValidation(item: _item(productId: 'p1', qty: 1), product: null),
+        CartLineValidation(item: _item(), product: null),
       ];
       expect(PricingService.totalFromValidated(lines), 0);
     });
 
     test('totalFromValidated adds delivery fee once purchasable lines exist', () {
       final lines = [
-        CartLineValidation(
-            item: _item(productId: 'p1', price: 200, qty: 1), product: _product(id: 'p1', price: 200)),
+        CartLineValidation(item: _item(price: 200), product: _product(price: 200)),
       ];
-      expect(PricingService.totalFromValidated(lines), 200 + PricingService.deliveryFee - PricingService.discount);
+      expect(PricingService.totalFromValidated(lines),
+          200 + PricingService.deliveryFee - PricingService.discount);
     });
   });
 }

@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/utils/error_mapper.dart';
-import 'package:untitled3/features/admin/orders/presentation/pages/admin_orders_page.dart' show statusColor;
-import 'package:untitled3/features/orders/presentation/providers/order_providers.dart';
-import 'package:untitled3/shared/widgets/loading_view.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/core/utils/error_mapper.dart';
+import 'package:pooja_pasal/core/widgets/feedback.dart';
+import 'package:pooja_pasal/features/admin/orders/presentation/pages/admin_orders_page.dart'
+    show statusColor;
+import 'package:pooja_pasal/features/orders/domain/entities/order.dart';
+import 'package:pooja_pasal/features/orders/presentation/providers/order_providers.dart';
+import 'package:pooja_pasal/shared/widgets/loading_view.dart';
 
-/// Mirrors functions/src/types.ts's ORDER_STATUS_TRANSITIONS exactly —
-/// this is a UI hint for which buttons to offer, not the authority; every
-/// tap still goes through `OrderController.updateStatus`
-/// (`updateOrderStatus` Cloud Function), which independently re-validates
-/// the transition server-side via functions/src/orders/stateMachine.ts
-/// (an admin caller is allowed any transition in this map — see
-/// `isTransitionAllowedForRole`'s `if (role === "admin") return true`).
-/// Never a direct Firestore write, so restocking/statusHistory stay
-/// consistent.
+/// Mirrors the API's `Order::TRANSITIONS` exactly — this is a UI hint for
+/// which buttons to offer, not the authority; every tap still goes through
+/// `OrderController.updateStatus` (`PATCH /orders/{id}/status`), where
+/// `OrderService` re-validates the move (admins may make any valid move)
+/// and keeps restocking/status history consistent.
 const Map<String, List<String>> _adminNextStatuses = {
   'pending': ['confirmed', 'cancelled'],
   'confirmed': ['processing', 'cancelled'],
@@ -40,7 +39,8 @@ class AdminOrderDetailPage extends ConsumerWidget {
             ? 'This may restore reserved stock and cannot be undone.'
             : 'The buyer will be notified of this change.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text('Confirm', style: TextStyle(color: statusColor(to))),
@@ -59,6 +59,37 @@ class AdminOrderDetailPage extends ConsumerWidget {
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+    }
+  }
+
+  /// Paid, but the order won't be fulfilled: the money has to go back.
+  static bool _needsRefundRecord(PoojaOrder order) =>
+      order.paymentStatus == 'paid' && (order.status == 'cancelled' || order.status == 'returned');
+
+  Future<void> _markRefunded(BuildContext context, WidgetRef ref, String orderId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Record refund?'),
+        content: const Text(
+            'Only do this once the money has been sent back to the buyer. The buyer is notified.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Mark refunded')),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    try {
+      await ref
+          .read(orderControllerProvider.notifier)
+          .updatePaymentStatus(orderId: orderId, paymentStatus: 'refunded');
+      if (context.mounted) showMessage(context, 'Refund recorded.');
+    } catch (e) {
+      if (context.mounted) showMessage(context, friendlyErrorMessage(e));
     }
   }
 
@@ -106,17 +137,19 @@ class AdminOrderDetailPage extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Rs.${order.totalAmount.toStringAsFixed(2)} • ${order.items.length} item(s)',
+                      Text(
+                          'Rs.${order.totalAmount.toStringAsFixed(2)} • ${order.items.length} item(s)',
                           style: const TextStyle(fontWeight: FontWeight.w600)),
                       const SizedBox(height: 4),
-                      Text('Payment: ${order.paymentMethod.toUpperCase()} • ${order.paymentStatus.toUpperCase()}',
-                          style: const TextStyle(color: AppColors.muted)),
+                      Text(
+                          'Payment: ${order.paymentMethod.toUpperCase()} • ${order.paymentStatus.toUpperCase()}',
+                          style: TextStyle(color: AppColors.muted)),
                       const SizedBox(height: 4),
                       Text('Placed: ${order.createdAt?.toString().substring(0, 16) ?? '—'}',
-                          style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                          style: TextStyle(color: AppColors.muted, fontSize: 12)),
                       const SizedBox(height: 8),
                       Text('Shipping to: ${order.shippingAddress}',
-                          style: const TextStyle(color: AppColors.muted)),
+                          style: TextStyle(color: AppColors.muted)),
                     ],
                   ),
                 ),
@@ -141,7 +174,7 @@ class AdminOrderDetailPage extends ConsumerWidget {
               const Text('Status history', style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               if (order.statusHistory.isEmpty)
-                const Text('No history recorded.', style: TextStyle(color: AppColors.muted))
+                Text('No history recorded.', style: TextStyle(color: AppColors.muted))
               else
                 for (final entry in order.statusHistory)
                   Padding(
@@ -150,12 +183,38 @@ class AdminOrderDetailPage extends ConsumerWidget {
                       children: [
                         Icon(Icons.circle, size: 8, color: statusColor(entry.status)),
                         const SizedBox(width: 8),
-                        Expanded(child: Text(entry.status.toUpperCase())),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(entry.status.toUpperCase()),
+                              // e.g. the buyer's return reason.
+                              if (entry.note.isNotEmpty)
+                                Text(entry.note,
+                                    style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                            ],
+                          ),
+                        ),
                         Text(entry.timestamp?.toString().substring(0, 16) ?? '',
-                            style: const TextStyle(color: AppColors.muted, fontSize: 11)),
+                            style: TextStyle(color: AppColors.muted, fontSize: 11)),
                       ],
                     ),
                   ),
+              if (_needsRefundRecord(order)) ...[
+                const SizedBox(height: 20),
+                const Text('Payment', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Text(
+                    'This order was paid but is ${order.status}. After refunding it from the '
+                    '${order.paymentMethod.toUpperCase()} dashboard, record it here.',
+                    style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: isBusy ? null : () => _markRefunded(context, ref, order.id),
+                  icon: const Icon(Icons.currency_exchange, size: 18),
+                  label: const Text('Mark payment refunded'),
+                ),
+              ],
               if (nextOptions.isNotEmpty) ...[
                 const SizedBox(height: 20),
                 const Text('Change status', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -166,8 +225,11 @@ class AdminOrderDetailPage extends ConsumerWidget {
                   children: [
                     for (final option in nextOptions)
                       OutlinedButton(
-                        onPressed: isBusy ? null : () => _changeStatus(context, ref, order.id, option),
-                        style: OutlinedButton.styleFrom(foregroundColor: statusColor(option)),
+                        onPressed:
+                            isBusy ? null : () => _changeStatus(context, ref, order.id, option),
+                        style: OutlinedButton.styleFrom(
+                            foregroundColor: statusColor(option),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10)),
                         child: Text('Mark as ${option[0].toUpperCase()}${option.substring(1)}'),
                       ),
                   ],

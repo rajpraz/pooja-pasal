@@ -1,18 +1,14 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:untitled3/core/network/functions_client.dart';
-import 'package:untitled3/features/reviews/domain/entities/review.dart';
+import 'package:pooja_pasal/core/network/api_client.dart';
+import 'package:pooja_pasal/features/reviews/domain/entities/review.dart';
 
+/// Reviews. The API only accepts a review from a buyer whose order with the
+/// product was delivered, once per product, and recomputes the product's
+/// rating on every create/delete.
 class ReviewRemoteDataSource {
-  final CollectionReference<Map<String, dynamic>> _reviews =
-      FirebaseFirestore.instance.collection('reviews');
+  ReviewRemoteDataSource(this._api);
 
-  /// Review creation is exclusively via the `createReview` Cloud Function
-  /// (see functions/src/reviews/createReview.ts) — it verifies the caller
-  /// actually bought and received the product, which needs a cross-document
-  /// read only trusted backend code can safely do. Reading reviews back,
-  /// below, is a plain direct Firestore query — the `reviews` collection
-  /// rule (`allow read: if isSignedIn();`) already allows it, and there's
-  /// no equivalent trust problem for reads.
+  final ApiClient _api;
+
   Future<void> createReview({
     required String productId,
     required String orderId,
@@ -20,32 +16,32 @@ class ReviewRemoteDataSource {
     required String text,
     List<String> images = const [],
   }) async {
-    await FunctionsClient.call('createReview', {
+    await _api.post('/reviews', {
       'productId': productId,
       'orderId': orderId,
       'rating': rating,
       'text': text,
       'images': images,
     });
+    _api.notifyChanged(const [ApiTopics.reviews, ApiTopics.products]);
   }
 
-  Stream<List<Review>> streamReviewsForProduct(String productId) {
-    return _reviews
-        .where('productId', isEqualTo: productId)
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map((snap) => snap.docs.map(Review.fromDoc).toList());
-  }
+  Stream<List<Review>> streamReviewsForProduct(String productId) => _api.watch(
+        {ApiTopics.reviews},
+        () async => asJsonList(await _api.get('/products/$productId/reviews'))
+            .map(Review.fromJson)
+            .toList(),
+      );
 
+  /// Admin moderation list, newest first.
   Future<List<Review>> fetchRecentReviews({int limit = 100}) async {
-    final snap = await _reviews.orderBy('createdAt', descending: true).limit(limit).get();
-    return snap.docs.map(Review.fromDoc).toList();
+    final reviews = asJsonList(await _api.get('/admin/reviews')).map(Review.fromJson).toList();
+    return reviews.take(limit).toList();
   }
 
-  /// Deletion (and the rating-aggregate reversal it requires) is
-  /// exclusively via the `deleteReview` Cloud Function — the `reviews`
-  /// collection rule denies all direct client writes.
+  /// Own review, or any review for admins.
   Future<void> deleteReview(String reviewId) async {
-    await FunctionsClient.call('deleteReview', {'reviewId': reviewId});
+    await _api.delete('/reviews/$reviewId');
+    _api.notifyChanged(const [ApiTopics.reviews, ApiTopics.products]);
   }
 }

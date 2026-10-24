@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/features/products/data/datasources/search_history_local_data_source.dart';
-import 'package:untitled3/features/products/domain/entities/product.dart';
-import 'package:untitled3/features/products/presentation/providers/product_providers.dart';
+import 'package:pooja_pasal/features/products/data/datasources/search_history_local_data_source.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product.dart';
+import 'package:pooja_pasal/features/products/presentation/providers/product_providers.dart';
 
 final searchHistoryDataSourceProvider =
     Provider<SearchHistoryLocalDataSource>((ref) => SearchHistoryLocalDataSource());
@@ -35,7 +35,8 @@ class SearchQueryController extends Notifier<String> {
   }
 }
 
-final searchQueryProvider = NotifierProvider<SearchQueryController, String>(SearchQueryController.new);
+final searchQueryProvider =
+    NotifierProvider<SearchQueryController, String>(SearchQueryController.new);
 
 class DebouncedSearchQueryController extends Notifier<String> {
   @override
@@ -47,29 +48,13 @@ class DebouncedSearchQueryController extends Notifier<String> {
 final debouncedSearchQueryProvider =
     NotifierProvider<DebouncedSearchQueryController, String>(DebouncedSearchQueryController.new);
 
-/// Search results.
-///
-/// LIMITATION (documented, not hidden): Firestore has no native full-text
-/// search. There is no maintained lowercase-name field on product
-/// documents to drive an indexed prefix query (`where('name_lowercase',
-/// isGreaterThanOrEqualTo: q)...`), and adding one now would require a
-/// backend migration/Cloud Function to backfill every existing product —
-/// out of scope for this buyer-features batch. Instead this filters
-/// client-side over `activeProductsProvider`'s already-loaded stream. That
-/// is fine at the current catalog size but does NOT scale: every keystroke
-/// (after debounce) re-scans the full active-product list in memory, and
-/// opening search at all forces that unbounded stream to load if nothing
-/// else on screen already needed it. A real fix is either (a) add a
-/// maintained `name_lowercase` field (small backend addition + one-time
-/// backfill script) and switch this to a server-side range query, or (b) a
-/// dedicated search service (Algolia/Typesense/Meilisearch) synced via a
-/// Cloud Function trigger on product writes.
+/// Search results from the API (`GET /products/search`), which matches
+/// name, category, festival and description in SQL — no need to load the
+/// whole catalog onto the device.
 final searchResultsProvider = FutureProvider.autoDispose<List<Product>>((ref) async {
   final query = ref.watch(debouncedSearchQueryProvider);
   if (query.isEmpty) return const [];
-  final products = await ref.watch(activeProductsProvider.future);
-  final lower = query.toLowerCase();
-  return products.where((p) => p.name.toLowerCase().contains(lower)).toList();
+  return ref.watch(productRepositoryProvider).search(query);
 });
 
 class SearchHistoryController extends AsyncNotifier<List<String>> {

@@ -1,11 +1,12 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/app/app.dart';
-import 'package:untitled3/firebase_options.dart';
+import 'package:pooja_pasal/app/app.dart';
+import 'package:pooja_pasal/core/services/push_notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // Firebase is only used for push notifications; everything else talks
+  // to the Laravel API (core/network/api_client.dart).
+  await PushNotificationService.bootstrap();
   runApp(const ProviderScope(child: App()));
 }

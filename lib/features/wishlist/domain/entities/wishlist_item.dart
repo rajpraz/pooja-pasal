@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pooja_pasal/core/network/json_reader.dart';
 
 /// A saved wishlist entry — just the product reference, never a copy of the
 /// product's name/price/image. Those go stale the moment the product
@@ -10,10 +10,10 @@ class WishlistItem {
 
   const WishlistItem({required this.productId, this.addedAt});
 
-  factory WishlistItem.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
+  factory WishlistItem.fromJson(Map<String, dynamic> map) {
     return WishlistItem(
-      productId: doc.id,
-      addedAt: (doc.data()?['addedAt'] as Timestamp?)?.toDate(),
+      productId: map.str('productId'),
+      addedAt: map.date('addedAt'),
     );
   }
 }

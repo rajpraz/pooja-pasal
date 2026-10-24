@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:untitled3/features/cart/domain/entities/cart_item.dart';
-import 'package:untitled3/features/orders/domain/entities/order.dart';
-import 'package:untitled3/features/orders/domain/repositories/order_repository.dart';
-import 'package:untitled3/features/orders/presentation/providers/order_providers.dart';
+import 'package:pooja_pasal/features/cart/domain/entities/cart_item.dart';
+import 'package:pooja_pasal/features/orders/domain/entities/order.dart';
+import 'package:pooja_pasal/features/orders/domain/repositories/order_repository.dart';
+import 'package:pooja_pasal/features/orders/presentation/providers/order_providers.dart';
 
 /// Fake standing in for the Cloud-Functions-backed OrderRepository, so
 /// these tests exercise OrderController's own logic (state transitions,
@@ -22,6 +22,7 @@ class _FakeOrderRepository implements OrderRepository {
     required String shippingAddress,
     required String paymentMethod,
     required String idempotencyKey,
+    String? couponCode,
   }) async {
     calls.add('createOrder(items: ${items.length}, address: $shippingAddress, '
         'method: $paymentMethod, key: $idempotencyKey)');
@@ -30,8 +31,15 @@ class _FakeOrderRepository implements OrderRepository {
   }
 
   @override
-  Future<void> updateOrderStatus({required String orderId, required String status, String? note}) async {
+  Future<void> updateOrderStatus(
+      {required String orderId, required String status, String? note}) async {
     calls.add('updateOrderStatus($orderId, $status, note: $note)');
+    if (errorToThrow != null) throw errorToThrow!;
+  }
+
+  @override
+  Future<void> updatePaymentStatus({required String orderId, required String paymentStatus}) async {
+    calls.add('updatePaymentStatus($orderId, $paymentStatus)');
     if (errorToThrow != null) throw errorToThrow!;
   }
 
@@ -75,11 +83,11 @@ void main() {
   group('OrderController.placeOrder', () {
     test('delegates to the repository and returns its server-computed result', () async {
       final result = await container.read(orderControllerProvider.notifier).placeOrder(
-            items: [_cartItem()],
-            shippingAddress: 'Kathmandu',
-            paymentMethod: 'khalti',
-            idempotencyKey: 'key-123',
-          );
+        items: [_cartItem()],
+        shippingAddress: 'Kathmandu',
+        paymentMethod: 'khalti',
+        idempotencyKey: 'key-123',
+      );
 
       expect(fakeRepo.calls, [
         'createOrder(items: 1, address: Kathmandu, method: khalti, key: key-123)',
@@ -95,11 +103,11 @@ void main() {
           const CreateOrderResult(orderId: 'order-2', totalAmount: 999.5, deduplicated: true);
 
       final result = await container.read(orderControllerProvider.notifier).placeOrder(
-            items: [_cartItem()],
-            shippingAddress: 'Pokhara',
-            paymentMethod: 'cod',
-            idempotencyKey: 'key-456',
-          );
+        items: [_cartItem()],
+        shippingAddress: 'Pokhara',
+        paymentMethod: 'cod',
+        idempotencyKey: 'key-456',
+      );
 
       expect(result.totalAmount, 999.5);
       expect(result.deduplicated, isTrue);
@@ -110,11 +118,11 @@ void main() {
 
       await expectLater(
         () => container.read(orderControllerProvider.notifier).placeOrder(
-              items: [_cartItem()],
-              shippingAddress: 'Kathmandu',
-              paymentMethod: 'khalti',
-              idempotencyKey: 'key-789',
-            ),
+          items: [_cartItem()],
+          shippingAddress: 'Kathmandu',
+          paymentMethod: 'khalti',
+          idempotencyKey: 'key-789',
+        ),
         throwsA(isA<Exception>()),
       );
 
@@ -131,9 +139,12 @@ void main() {
       expect(fakeRepo.calls, ['updateOrderStatus(order-1, confirmed, note: ready to ship)']);
     });
 
-    test('cancelOrder is implemented as updateStatus(status: "cancelled") — never a separate delete',
+    test(
+        'cancelOrder is implemented as updateStatus(status: "cancelled") — never a separate delete',
         () async {
-      await container.read(orderControllerProvider.notifier).cancelOrder('order-1', note: 'buyer changed mind');
+      await container
+          .read(orderControllerProvider.notifier)
+          .cancelOrder('order-1', note: 'buyer changed mind');
 
       expect(fakeRepo.calls, ['updateOrderStatus(order-1, cancelled, note: buyer changed mind)']);
     });

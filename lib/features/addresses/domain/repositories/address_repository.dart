@@ -1,4 +1,4 @@
-import 'package:untitled3/features/addresses/domain/entities/address.dart';
+import 'package:pooja_pasal/features/addresses/domain/entities/address.dart';
 
 abstract class AddressRepository {
   Stream<List<Address>> streamAddresses(String uid);

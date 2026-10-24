@@ -2,12 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/network/cloudinary_service.dart';
-import 'package:untitled3/core/utils/error_mapper.dart';
-import 'package:untitled3/features/auth/presentation/providers/auth_providers.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/core/network/upload_service.dart';
+import 'package:pooja_pasal/core/utils/error_mapper.dart';
+import 'package:pooja_pasal/core/widgets/feedback.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
 
 class EditProfilePage extends ConsumerStatefulWidget {
   const EditProfilePage({super.key});
@@ -60,13 +60,15 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       _isUploadingPhoto = true;
     });
     try {
-      final url = await CloudinaryService.uploadImage(_pickedPhoto!);
+      final url = await ref
+          .read(uploadServiceProvider)
+          .uploadImage(_pickedPhoto!, folder: UploadFolders.profileImages);
       await authRepository.updateUserProfile(uid: user.uid, photoUrl: url);
       if (!mounted) return;
       setState(() => _existingPhotoUrl = url);
-      Fluttertoast.showToast(msg: 'Profile photo updated');
+      showMessage(context, 'Profile photo updated');
     } catch (e) {
-      Fluttertoast.showToast(msg: 'Could not upload photo: ${friendlyErrorMessage(e)}');
+      if (mounted) showMessage(context, 'Could not upload photo: ${friendlyErrorMessage(e)}');
     } finally {
       if (mounted) setState(() => _isUploadingPhoto = false);
     }
@@ -74,7 +76,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
   Future<void> _save() async {
     if (_nameController.text.trim().isEmpty) {
-      Fluttertoast.showToast(msg: 'Please enter your name');
+      showMessage(context, 'Please enter your name');
       return;
     }
     final authRepository = ref.read(authRepositoryProvider);
@@ -90,10 +92,10 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
         address: _addressController.text.trim(),
       );
       if (!mounted) return;
-      Fluttertoast.showToast(msg: 'Profile updated');
+      showMessage(context, 'Profile updated');
       Navigator.pop(context, true);
     } catch (e) {
-      Fluttertoast.showToast(msg: 'Could not update profile: ${friendlyErrorMessage(e)}');
+      showMessage(context, 'Could not update profile: ${friendlyErrorMessage(e)}');
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -113,7 +115,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       backgroundColor: AppColors.background,
       appBar: AppBar(title: const Text('Edit Profile')),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.accent))
+          ? Center(child: CircularProgressIndicator(color: AppColors.accent))
           : Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
@@ -131,7 +133,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                                   ? NetworkImage(_existingPhotoUrl)
                                   : null) as ImageProvider?,
                           child: _pickedPhoto == null && _existingPhotoUrl.isEmpty
-                              ? const Icon(Icons.person, size: 48, color: AppColors.accent)
+                              ? Icon(Icons.person, size: 48, color: AppColors.accent)
                               : null,
                         ),
                         if (_isUploadingPhoto)
@@ -198,7 +200,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                           ? const SizedBox(
                               width: 22,
                               height: 22,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.4),
+                              child:
+                                  CircularProgressIndicator(color: Colors.white, strokeWidth: 2.4),
                             )
                           : const Text('Save Changes'),
                     ),

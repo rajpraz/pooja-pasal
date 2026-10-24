@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pooja_pasal/app/router/route_names.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:untitled3/app/router/route_names.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/features/auth/presentation/providers/auth_providers.dart';
 
 class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({super.key});
@@ -25,9 +25,11 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   }
 
   Future<void> _resolveDestination() async {
-    final minSplash = Future.delayed(const Duration(seconds: 2));
+    final minSplash = Future<void>.delayed(const Duration(seconds: 2));
     final authRepository = ref.read(authRepositoryProvider);
-    final user = authRepository.currentUser;
+    // The saved session is restored asynchronously (a `/auth/me` call), so
+    // wait for it rather than reading `currentUser` too early.
+    final user = await authRepository.authStateChanges().first;
 
     String destination;
     if (user == null) {
@@ -37,7 +39,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     } else {
       final appUser = await authRepository.getUserDoc(user.uid);
       if (appUser == null) {
-        // Auth account exists without a Firestore profile (e.g. interrupted signup).
+        // The saved session no longer resolves to a profile.
         await authRepository.signOut();
         destination = RouteNames.login;
       } else if (appUser.role == 'admin') {
@@ -55,63 +57,57 @@ class _SplashPageState extends ConsumerState<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
+    // A fixed, branded screen (same in light and dark), like a launch image.
     return Scaffold(
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              AppColors.background,
-              AppColors.accentLight,
-              AppColors.accent,
-            ],
+            colors: [AppColors.brandDeep, AppColors.brand, AppColors.saffron],
             stops: [0.0, 0.55, 1.0],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              const Spacer(flex: 2),
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  Icon(Icons.local_florist,
-                      size: 90, color: Colors.white.withValues(alpha: 0.9)),
-                ],
+              const Spacer(flex: 3),
+              Container(
+                padding: const EdgeInsets.all(28),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.12),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                        color: AppColors.saffron.withValues(alpha: 0.45),
+                        blurRadius: 40,
+                        spreadRadius: 4),
+                  ],
+                ),
+                child: const Icon(Icons.temple_hindu, size: 84, color: Colors.white),
               ),
-              const SizedBox(height: 8),
-              Icon(Icons.temple_hindu,
-                  size: 110, color: Colors.white.withValues(alpha: 0.95)),
-              const SizedBox(height: 20),
+              const SizedBox(height: 28),
               const Text('Pooja Pasal',
                   style: TextStyle(
                       fontSize: 34,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary)),
-              const SizedBox(height: 10),
-              const Text('Everything for your',
-                  style: TextStyle(fontSize: 15, color: Colors.white)),
-              const Text('Puja, delivered with devotion',
-                  style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
                       color: Colors.white)),
-              const Spacer(flex: 2),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  5,
-                  (index) => Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Icon(Icons.local_fire_department,
-                        size: 18, color: Colors.white.withValues(alpha: 0.8)),
-                  ),
-                ),
+              const SizedBox(height: 8),
+              Text('Everything for your puja, delivered with devotion',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14, color: Colors.white.withValues(alpha: 0.85))),
+              const Spacer(flex: 3),
+              SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                    strokeWidth: 2.2, color: Colors.white.withValues(alpha: 0.85)),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 40),
             ],
           ),
         ),

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:untitled3/app/router/route_names.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/features/products/presentation/providers/product_providers.dart';
+import 'package:pooja_pasal/app/router/route_names.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/core/widgets/product_image.dart';
+import 'package:pooja_pasal/features/products/presentation/providers/product_providers.dart';
 
 class FestivalCollectionPage extends ConsumerWidget {
   final String festival;
@@ -14,10 +15,10 @@ class FestivalCollectionPage extends ConsumerWidget {
   /// carries the festival name) and every card that links to it agree on
   /// the color without passing a `Color` through navigation.
   static const Map<String, Color> colors = {
-    'Dashain': AppColors.accent,
-    'Tihar': AppColors.primary,
-    'Shivaratri': AppColors.festivalShivaratri,
-    'Teej': AppColors.festivalTeej,
+    'Dashain': AppColors.saffron,
+    'Tihar': AppColors.brand,
+    'Shivaratri': Color(0xFF3B3B58),
+    'Teej': Color(0xFFB23A6B),
   };
 
   @override
@@ -56,19 +57,17 @@ class FestivalCollectionPage extends ConsumerWidget {
           Expanded(
             child: productsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, st) =>
-                  Center(child: Text('Could not load products: $err')),
+              error: (err, st) => Center(child: Text('Could not load products: $err')),
               data: (products) {
-                final items =
-                    products.where((p) => p.festivalTag == festival).toList();
+                final items = products.where((p) => p.festivalTag == festival).toList();
 
                 if (items.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.temple_hindu, size: 56, color: AppColors.muted),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         Text('More items coming soon for this collection.',
                             style: TextStyle(color: AppColors.muted)),
                       ],
@@ -89,9 +88,9 @@ class FestivalCollectionPage extends ConsumerWidget {
                         decoration: BoxDecoration(
                           color: AppColors.surface,
                           borderRadius: BorderRadius.circular(14),
-                          boxShadow: [
+                          boxShadow: const [
                             BoxShadow(
-                                color: const Color.fromRGBO(0, 0, 0, 0.06),
+                                color: Color.fromRGBO(0, 0, 0, 0.06),
                                 blurRadius: 8,
                                 spreadRadius: 1),
                           ],
@@ -100,23 +99,12 @@ class FestivalCollectionPage extends ConsumerWidget {
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(10),
-                              child: product.image.isEmpty
-                                  ? Container(
-                                      width: 70,
-                                      height: 70,
-                                      color: AppColors.card,
-                                      child: const Icon(Icons.temple_hindu,
-                                          color: AppColors.primary))
-                                  : Image.network(product.image,
-                                      width: 70,
-                                      height: 70,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => Container(
-                                          width: 70,
-                                          height: 70,
-                                          color: AppColors.card,
-                                          child: const Icon(Icons.temple_hindu,
-                                              color: AppColors.primary))),
+                              child: ProductImage(
+                                  url: product.image,
+                                  category: product.category,
+                                  name: product.name,
+                                  width: 70,
+                                  height: 70),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -129,13 +117,11 @@ class FestivalCollectionPage extends ConsumerWidget {
                                   Text(product.description,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                          fontSize: 12, color: AppColors.muted)),
+                                      style: TextStyle(fontSize: 12, color: AppColors.muted)),
                                   const SizedBox(height: 4),
                                   Text('Rs.${product.price.toStringAsFixed(0)}',
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: AppColors.primary)),
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold, color: AppColors.primary)),
                                 ],
                               ),
                             ),
@@ -194,9 +180,7 @@ class AllFestivalCollectionsPage extends StatelessWidget {
                       right: 12,
                       child: Text('${fest.key} Collection',
                           style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15)),
+                              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
                     ),
                   ],
                 ),

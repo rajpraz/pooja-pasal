@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:untitled3/app/router/route_names.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
+import 'package:pooja_pasal/app/router/route_names.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
 
 /// Shared bottom navigation used across the buyer-facing pages
 /// (Home / Categories / Cart / Wishlist / Profile). Self-contained: it
@@ -46,15 +46,11 @@ class AppBottomNav extends StatelessWidget {
       currentIndex: currentIndex,
       onTap: (index) => _onTap(context, index),
       items: [
-        const BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined), label: 'Home'),
-        const BottomNavigationBarItem(
-            icon: Icon(Icons.grid_view_outlined), label: 'Categories'),
+        const BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
+        const BottomNavigationBarItem(icon: Icon(Icons.grid_view_outlined), label: 'Categories'),
         BottomNavigationBarItem(icon: cartIcon, label: 'Cart'),
-        const BottomNavigationBarItem(
-            icon: Icon(Icons.favorite_border), label: 'Wishlist'),
-        const BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline), label: 'Profile'),
+        const BottomNavigationBarItem(icon: Icon(Icons.favorite_border), label: 'Wishlist'),
+        const BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
       ],
     );
   }

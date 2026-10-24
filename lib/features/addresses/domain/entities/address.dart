@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pooja_pasal/core/network/json_reader.dart';
 
 class Address {
   final String id;
@@ -23,32 +23,30 @@ class Address {
   /// the `shippingAddress` sent to `createOrder`).
   String get formatted => '$recipientName, $fullAddress, $phone';
 
-  factory Address.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final map = doc.data() ?? {};
+  factory Address.fromJson(Map<String, dynamic> map) {
     return Address(
-      id: doc.id,
-      label: (map['label'] as String?) ?? '',
-      recipientName: (map['recipientName'] as String?) ?? '',
-      phone: (map['phone'] as String?) ?? '',
-      fullAddress: (map['fullAddress'] as String?) ?? '',
-      isDefault: map['isDefault'] as bool? ?? false,
-      createdAt: (map['createdAt'] as Timestamp?)?.toDate(),
+      id: map.str('id'),
+      label: map.str('label'),
+      recipientName: map.str('recipientName'),
+      phone: map.str('phone'),
+      fullAddress: map.str('fullAddress'),
+      isDefault: map.flag('isDefault'),
+      createdAt: map.date('createdAt'),
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
       'label': label,
       'recipientName': recipientName,
       'phone': phone,
       'fullAddress': fullAddress,
       'isDefault': isDefault,
-      'createdAt': createdAt == null ? FieldValue.serverTimestamp() : Timestamp.fromDate(createdAt!),
-      'updatedAt': FieldValue.serverTimestamp(),
     };
   }
 
-  Address copyWith({String? label, String? recipientName, String? phone, String? fullAddress, bool? isDefault}) {
+  Address copyWith(
+      {String? label, String? recipientName, String? phone, String? fullAddress, bool? isDefault}) {
     return Address(
       id: id,
       label: label ?? this.label,

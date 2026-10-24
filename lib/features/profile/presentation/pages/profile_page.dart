@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pooja_pasal/app/router/route_names.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/app/theme/appearance_sheet.dart';
+import 'package:pooja_pasal/app/theme/theme_mode_provider.dart';
+import 'package:pooja_pasal/core/widgets/app_bottom_nav.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
+import 'package:pooja_pasal/features/profile/presentation/widgets/seller_application_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:untitled3/app/router/route_names.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/widgets/app_bottom_nav.dart';
-import 'package:untitled3/features/auth/presentation/providers/auth_providers.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
@@ -35,7 +38,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   }
 
   void _changeLanguage() {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => SimpleDialog(
         title: const Text('Choose language'),
@@ -56,34 +59,31 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   }
 
   Future<void> _logout() async {
-    await ref.read(authRepositoryProvider).signOut();
+    await ref.read(signOutActionProvider)();
     if (!mounted) return;
     context.go(RouteNames.login);
   }
 
-  Widget _tile(IconData icon, String label, VoidCallback onTap,
-      {String? trailingText}) {
+  Widget _tile(IconData icon, String label, VoidCallback onTap, {String? trailingText}) {
     return Column(
       children: [
         ListTile(
           leading: Icon(icon, color: AppColors.accent),
-          title: Text(label, style: const TextStyle(color: AppColors.text)),
+          title: Text(label, style: TextStyle(color: AppColors.text)),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (trailingText != null)
                 Padding(
                   padding: const EdgeInsets.only(right: 6),
-                  child: Text(trailingText,
-                      style: const TextStyle(color: AppColors.muted)),
+                  child: Text(trailingText, style: TextStyle(color: AppColors.muted)),
                 ),
-              const Icon(Icons.arrow_forward_ios,
-                  size: 14, color: AppColors.muted),
+              Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.muted),
             ],
           ),
           onTap: onTap,
         ),
-        const Divider(height: 1, color: AppColors.border),
+        Divider(height: 1, color: AppColors.border),
       ],
     );
   }
@@ -106,7 +106,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(18),
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
                   colors: [AppColors.accent, AppColors.accentDark],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -117,10 +117,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   CircleAvatar(
                     radius: 32,
                     backgroundColor: Colors.white,
-                    backgroundImage:
-                        userPhotoUrl.isNotEmpty ? NetworkImage(userPhotoUrl) : null,
+                    backgroundImage: userPhotoUrl.isNotEmpty ? NetworkImage(userPhotoUrl) : null,
                     child: userPhotoUrl.isEmpty
-                        ? const Icon(Icons.person, size: 34, color: AppColors.accent)
+                        ? Icon(Icons.person, size: 34, color: AppColors.accent)
                         : null,
                   ),
                   const SizedBox(width: 16),
@@ -130,33 +129,27 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       children: [
                         Text('Profile',
                             style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.85),
-                                fontSize: 12)),
+                                color: Colors.white.withValues(alpha: 0.85), fontSize: 12)),
                         const SizedBox(height: 4),
                         if (isLoadingProfile)
                           const SizedBox(
                             width: 16,
                             height: 16,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white),
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                           )
                         else
                           Text(userName.isEmpty ? 'Your name' : userName,
                               style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white)),
+                                  fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                         const SizedBox(height: 2),
                         if (!isLoadingProfile)
                           Text(userPhone.isEmpty ? 'Add a phone number' : userPhone,
-                              style: const TextStyle(
-                                  color: Colors.white70, fontSize: 13)),
+                              style: const TextStyle(color: Colors.white70, fontSize: 13)),
                       ],
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.settings_outlined,
-                        color: Colors.white),
+                    icon: const Icon(Icons.settings_outlined, color: Colors.white),
                     tooltip: 'Edit profile',
                     onPressed: _editProfile,
                   ),
@@ -164,7 +157,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               ),
             ),
             const SizedBox(height: 20),
-            Container(
+            DecoratedBox(
               decoration: BoxDecoration(
                 color: AppColors.surface,
                 borderRadius: BorderRadius.circular(16),
@@ -173,20 +166,35 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 children: [
                   _tile(Icons.receipt_long_outlined, 'My Orders',
                       () => context.push(RouteNames.orders)),
-                  _tile(Icons.favorite_border, 'Wishlist',
-                      () => context.push(RouteNames.wishlist)),
+                  _tile(Icons.favorite_border, 'Wishlist', () => context.push(RouteNames.wishlist)),
                   _tile(Icons.location_on_outlined, 'Addresses',
                       () => context.push(RouteNames.addresses)),
                   _tile(Icons.notifications_none, 'Notifications',
                       () => context.push(RouteNames.notifications)),
+                  _tile(
+                      Icons.palette_outlined, 'Appearance', () => showAppearanceSheet(context, ref),
+                      trailingText: themeModeLabel(ref.watch(themeModeProvider))),
                   _tile(Icons.language_outlined, 'Language', _changeLanguage,
                       trailingText: language),
+                  if (userDocAsync.value case final user? when user.role == 'buyer')
+                    _tile(
+                      Icons.storefront_outlined,
+                      'Become a Seller',
+                      user.hasPendingSellerApplication
+                          ? () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                              content: Text('Your seller application is waiting for review.')))
+                          : () => showSellerApplicationDialog(context, ref, user),
+                      trailingText: switch (user.sellerStatus) {
+                        'pending' => 'Pending',
+                        'rejected' => 'Declined',
+                        _ => null,
+                      },
+                    ),
                   _tile(Icons.help_outline, 'Help & Support',
                       () => context.push(RouteNames.helpSupport)),
                   ListTile(
-                    leading: const Icon(Icons.logout, color: AppColors.accent),
-                    title: const Text('Logout',
-                        style: TextStyle(color: AppColors.text)),
+                    leading: Icon(Icons.logout, color: AppColors.accent),
+                    title: Text('Logout', style: TextStyle(color: AppColors.text)),
                     onTap: _logout,
                   ),
                 ],

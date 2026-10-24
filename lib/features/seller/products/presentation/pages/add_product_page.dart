@@ -2,14 +2,14 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/network/cloudinary_service.dart';
-import 'package:untitled3/core/utils/error_mapper.dart';
-import 'package:untitled3/features/auth/presentation/providers/auth_providers.dart';
-import 'package:untitled3/features/products/domain/entities/product.dart';
-import 'package:untitled3/features/products/presentation/providers/product_providers.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/core/network/upload_service.dart';
+import 'package:pooja_pasal/core/utils/error_mapper.dart';
+import 'package:pooja_pasal/core/widgets/feedback.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product.dart';
+import 'package:pooja_pasal/features/products/presentation/providers/product_providers.dart';
 
 /// Reached either as `/seller/products/new` (no ID — [productId] is null)
 /// or `/seller/products/:productId/edit`. When editing, the existing
@@ -30,7 +30,7 @@ class AddProductPage extends ConsumerWidget {
       loading: () => Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(title: const Text('Edit Product')),
-        body: const Center(child: CircularProgressIndicator(color: AppColors.accent)),
+        body: Center(child: CircularProgressIndicator(color: AppColors.accent)),
       ),
       error: (err, st) => Scaffold(
         backgroundColor: AppColors.background,
@@ -130,49 +130,46 @@ class _AddProductFormState extends ConsumerState<_AddProductForm> {
     final description = _descriptionController.text.trim();
 
     if (name.isEmpty || price.isEmpty || stock.isEmpty) {
-      Fluttertoast.showToast(msg: 'Please fill in name, price and stock');
+      showMessage(context, 'Please fill in name, price and stock');
       return;
     }
     final parsedPrice = double.tryParse(price);
     if (parsedPrice == null) {
-      Fluttertoast.showToast(msg: 'Price must be a number');
+      showMessage(context, 'Price must be a number');
       return;
     }
     if (parsedPrice < 0) {
-      Fluttertoast.showToast(msg: 'Price cannot be negative');
+      showMessage(context, 'Price cannot be negative');
       return;
     }
     final parsedStock = int.tryParse(stock);
     if (parsedStock == null) {
-      Fluttertoast.showToast(msg: 'Stock must be a whole number');
+      showMessage(context, 'Stock must be a whole number');
       return;
     }
     if (parsedStock < 0) {
-      Fluttertoast.showToast(msg: 'Stock cannot be negative');
+      showMessage(context, 'Stock cannot be negative');
       return;
     }
     if (_existingImageUrls.isEmpty && _newImages.isEmpty) {
-      Fluttertoast.showToast(msg: 'Please add at least one product image');
+      showMessage(context, 'Please add at least one product image');
       return;
     }
 
     final authRepository = ref.read(authRepositoryProvider);
     final sellerId = authRepository.currentUser?.uid;
     if (sellerId == null) {
-      Fluttertoast.showToast(msg: 'You must be signed in as a seller');
+      showMessage(context, 'You must be signed in as a seller');
       return;
     }
 
     setState(() => _isSaving = true);
     try {
-      final uploadedUrls = await CloudinaryService.uploadImages(_newImages);
+      final uploadedUrls = await ref
+          .read(uploadServiceProvider)
+          .uploadImages(_newImages, folder: UploadFolders.productImages);
       final images = [..._existingImageUrls, ...uploadedUrls];
       final productRepository = ref.read(productRepositoryProvider);
-      // Denormalized onto the product doc here (the seller reading their
-      // own profile is always allowed) since a buyer viewing the product
-      // later can't read another user's profile doc to look this up —
-      // see firestore.rules and Product.sellerName.
-      final sellerName = (await authRepository.getUserDoc(sellerId))?.name ?? '';
 
       if (_isEditing) {
         await productRepository.updateProduct(widget.existing!.id, {
@@ -183,7 +180,6 @@ class _AddProductFormState extends ConsumerState<_AddProductForm> {
           'category': _category,
           'festivalTag': _festivalTag,
           'images': images,
-          'sellerName': sellerName,
         });
       } else {
         await productRepository.addProduct(Product(
@@ -196,7 +192,6 @@ class _AddProductFormState extends ConsumerState<_AddProductForm> {
           images: images,
           stock: parsedStock,
           sellerId: sellerId,
-          sellerName: sellerName,
           isActive: true,
           createdAt: DateTime.now(),
         ));
@@ -205,7 +200,7 @@ class _AddProductFormState extends ConsumerState<_AddProductForm> {
       if (!mounted) return;
       Navigator.pop(context, true);
     } catch (e) {
-      Fluttertoast.showToast(msg: 'Could not save product: ${friendlyErrorMessage(e)}');
+      showMessage(context, 'Could not save product: ${friendlyErrorMessage(e)}');
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -226,7 +221,7 @@ class _AddProductFormState extends ConsumerState<_AddProductForm> {
       backgroundColor: AppColors.background,
       appBar: AppBar(title: Text(_isEditing ? 'Edit Product' : 'Add Product')),
       body: _isSaving
-          ? const Center(child: CircularProgressIndicator(color: AppColors.accent))
+          ? Center(child: CircularProgressIndicator(color: AppColors.accent))
           : Padding(
               padding: const EdgeInsets.all(20.0),
               child: ListView(
@@ -261,7 +256,7 @@ class _AddProductFormState extends ConsumerState<_AddProductForm> {
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(color: AppColors.border),
                             ),
-                            child: const Icon(Icons.add_a_photo_outlined, color: AppColors.primary),
+                            child: Icon(Icons.add_a_photo_outlined, color: AppColors.primary),
                           ),
                         ),
                       ),
@@ -281,7 +276,8 @@ class _AddProductFormState extends ConsumerState<_AddProductForm> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Price (Rs.)', style: TextStyle(fontWeight: FontWeight.w600)),
+                            const Text('Price (Rs.)',
+                                style: TextStyle(fontWeight: FontWeight.w600)),
                             const SizedBox(height: 8),
                             TextField(
                               controller: _priceController,
@@ -313,20 +309,18 @@ class _AddProductFormState extends ConsumerState<_AddProductForm> {
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
                     initialValue: _category,
-                    items: _categories
-                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                        .toList(),
+                    items:
+                        _categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
                     onChanged: (value) => setState(() => _category = value ?? _category),
                   ),
                   const SizedBox(height: 16),
                   const Text('Festival Tag (optional)',
                       style: TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 4),
-                  const Text('Feature this product on a festival collection page',
+                  Text('Feature this product on a festival collection page',
                       style: TextStyle(color: AppColors.muted, fontSize: 12)),
                   const SizedBox(height: 8),
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<String>(
@@ -353,8 +347,7 @@ class _AddProductFormState extends ConsumerState<_AddProductForm> {
                   TextField(
                     controller: _descriptionController,
                     maxLines: 3,
-                    decoration: const InputDecoration(
-                        hintText: 'Tell buyers about this product'),
+                    decoration: const InputDecoration(hintText: 'Tell buyers about this product'),
                   ),
                   const SizedBox(height: 28),
                   SizedBox(

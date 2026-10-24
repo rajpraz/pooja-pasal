@@ -1,10 +1,9 @@
-import 'package:untitled3/features/cart/domain/entities/cart_item.dart';
-import 'package:untitled3/features/products/domain/entities/product.dart';
+import 'package:pooja_pasal/features/cart/domain/entities/cart_item.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product.dart';
 
-/// A cart line checked against the product's *current* Firestore state —
-/// not what was true when it was added to the cart. Display-only; the
-/// authoritative check happens again, unconditionally, inside
-/// `createOrder` server-side.
+/// A cart line checked against the product's *current* state — not what
+/// was true when it was added to the cart. Display-only; the authoritative
+/// check happens again, unconditionally, when the API creates the order.
 class CartLineValidation {
   final CartItem item;
   final Product? product;

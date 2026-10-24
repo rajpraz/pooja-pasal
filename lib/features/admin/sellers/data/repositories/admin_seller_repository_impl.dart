@@ -1,7 +1,7 @@
-import 'package:untitled3/features/admin/sellers/data/datasources/admin_seller_remote_data_source.dart';
-import 'package:untitled3/features/admin/sellers/domain/entities/seller_application.dart';
-import 'package:untitled3/features/admin/sellers/domain/repositories/admin_seller_repository.dart';
-import 'package:untitled3/features/auth/domain/entities/app_user.dart';
+import 'package:pooja_pasal/features/admin/sellers/data/datasources/admin_seller_remote_data_source.dart';
+import 'package:pooja_pasal/features/admin/sellers/domain/entities/seller_application.dart';
+import 'package:pooja_pasal/features/admin/sellers/domain/repositories/admin_seller_repository.dart';
+import 'package:pooja_pasal/features/auth/domain/entities/app_user.dart';
 
 class AdminSellerRepositoryImpl implements AdminSellerRepository {
   final AdminSellerRemoteDataSource _dataSource;

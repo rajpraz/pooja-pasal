@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
-import 'package:untitled3/app/router/route_names.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/errors/app_exception.dart';
-import 'package:untitled3/features/auth/presentation/providers/auth_providers.dart';
+import 'package:pooja_pasal/app/router/route_names.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/core/errors/app_exception.dart';
+import 'package:pooja_pasal/core/widgets/feedback.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
 
 class SignUpPage extends ConsumerStatefulWidget {
   final String role;
@@ -17,12 +17,12 @@ class SignUpPage extends ConsumerStatefulWidget {
 
 class _SignUpPageState extends ConsumerState<SignUpPage> {
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _shopNameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   bool _obsecure = true;
   bool _obsecure1 = true;
   bool _isSaving = false;
@@ -34,24 +34,27 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
+    final shopName = _shopNameController.text.trim();
+    final isSeller = widget.role == 'seller';
 
     if (name.isEmpty ||
         address.isEmpty ||
         phone.isEmpty ||
         email.isEmpty ||
         password.isEmpty ||
-        confirmPassword.isEmpty) {
-      Fluttertoast.showToast(msg: 'Please fill all fields');
+        confirmPassword.isEmpty ||
+        (isSeller && shopName.isEmpty)) {
+      showMessage(context, 'Please fill all fields');
       return;
     }
 
     if (password != confirmPassword) {
-      Fluttertoast.showToast(msg: 'Passwords do not match');
+      showMessage(context, 'Passwords do not match');
       return;
     }
 
-    if (password.length < 6) {
-      Fluttertoast.showToast(msg: 'Password must be at least 6 characters');
+    if (password.length < 8) {
+      showMessage(context, 'Password must be at least 8 characters');
       return;
     }
 
@@ -64,15 +67,22 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
             phone: phone,
             address: address,
             role: widget.role,
+            shopName: isSeller ? shopName : null,
           );
 
       if (!mounted) return;
-      Fluttertoast.showToast(msg: 'Account created successfully');
-      context.go('${RouteNames.login}?role=${widget.role}');
+      // Signed in already. A seller account starts as a buyer until an
+      // admin approves the application.
+      showMessage(
+          context,
+          isSeller
+              ? 'Account created. Your seller application is waiting for admin approval.'
+              : 'Account created successfully');
+      context.go(RouteNames.home);
     } on AuthException catch (e) {
-      Fluttertoast.showToast(msg: e.message);
+      showMessage(context, e.message);
     } catch (e) {
-      Fluttertoast.showToast(msg: 'Something went wrong. Please try again.');
+      showMessage(context, 'Something went wrong. Please try again.');
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -80,14 +90,13 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
 
   Widget _fieldLabel(String label) => Padding(
         padding: const EdgeInsets.only(bottom: 8),
-        child: Text(label,
-            style: const TextStyle(
-                fontWeight: FontWeight.w600, color: AppColors.text)),
+        child: Text(label, style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.text)),
       );
 
   @override
   void dispose() {
     _nameController.dispose();
+    _shopNameController.dispose();
     _addressController.dispose();
     _phoneNumberController.dispose();
     _emailController.dispose();
@@ -100,14 +109,9 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppColors.background, AppColors.primary],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
+        body: ColoredBox(
+          // Plain page, matching the login screen.
+          color: AppColors.background,
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: SingleChildScrollView(
@@ -115,21 +119,15 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 20),
-                  Text(
-                      widget.role == 'seller'
-                          ? 'Seller Sign Up'
-                          : 'Create Account',
-                      style: const TextStyle(
-                          fontSize: 36,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary)),
+                  Text(widget.role == 'seller' ? 'Seller Sign Up' : 'Create Account',
+                      style: TextStyle(
+                          fontSize: 36, fontWeight: FontWeight.bold, color: AppColors.primary)),
                   const SizedBox(height: 8),
                   Text(
                     widget.role == 'seller'
-                        ? 'Register as a seller to list your pooja items.'
+                        ? 'Apply to sell your pooja items. An admin reviews every new seller.'
                         : 'Join Pooja Pasal for trusted puja essentials.',
-                    style:
-                        const TextStyle(fontSize: 16, color: AppColors.muted),
+                    style: TextStyle(fontSize: 16, color: AppColors.muted),
                   ),
                   const SizedBox(height: 20),
                   Container(
@@ -148,10 +146,19 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                   TextFormField(
                     controller: _nameController,
                     decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.person_outline),
-                        hintText: 'Enter your full name'),
+                        prefixIcon: Icon(Icons.person_outline), hintText: 'Enter your full name'),
                   ),
                   const SizedBox(height: 16),
+                  if (widget.role == 'seller') ...[
+                    _fieldLabel('Shop name'),
+                    TextFormField(
+                      controller: _shopNameController,
+                      decoration: const InputDecoration(
+                          prefixIcon: Icon(Icons.storefront_outlined),
+                          hintText: 'Name buyers will see on your products'),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                   _fieldLabel('Phone number'),
                   TextFormField(
                     controller: _phoneNumberController,
@@ -187,9 +194,8 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                       suffixIcon: IconButton(
                         onPressed: () => setState(() => _obsecure = !_obsecure),
                         tooltip: _obsecure ? 'Show password' : 'Hide password',
-                        icon: Icon(_obsecure
-                            ? Icons.remove_red_eye
-                            : Icons.remove_red_eye_outlined),
+                        icon:
+                            Icon(_obsecure ? Icons.remove_red_eye : Icons.remove_red_eye_outlined),
                       ),
                       hintText: 'At least 6 characters',
                     ),
@@ -204,9 +210,8 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                       suffixIcon: IconButton(
                         onPressed: () => setState(() => _obsecure1 = !_obsecure1),
                         tooltip: _obsecure1 ? 'Show password' : 'Hide password',
-                        icon: Icon(_obsecure1
-                            ? Icons.remove_red_eye
-                            : Icons.remove_red_eye_outlined),
+                        icon:
+                            Icon(_obsecure1 ? Icons.remove_red_eye : Icons.remove_red_eye_outlined),
                       ),
                       hintText: 'Re-enter your password',
                     ),
@@ -217,18 +222,16 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: _isSaving ? null : _signUp,
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary),
+                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
                       child: _isSaving
                           ? const SizedBox(
                               width: 22,
                               height: 22,
-                              child: CircularProgressIndicator(
-                                  color: Colors.white, strokeWidth: 2.4),
+                              child:
+                                  CircularProgressIndicator(color: Colors.white, strokeWidth: 2.4),
                             )
                           : const Text('Sign Up',
-                              style:
-                                  TextStyle(fontSize: 18, color: Colors.white)),
+                              style: TextStyle(fontSize: 18, color: Colors.white)),
                     ),
                   ),
                 ],

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/features/products/domain/entities/product.dart';
-import 'package:untitled3/features/products/presentation/providers/product_filter_providers.dart';
-import 'package:untitled3/features/products/presentation/providers/product_list_controller.dart';
-import 'package:untitled3/features/products/presentation/widgets/product_card.dart';
-import 'package:untitled3/features/products/presentation/widgets/product_filter_sheet.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product.dart';
+import 'package:pooja_pasal/features/products/presentation/providers/product_filter_providers.dart';
+import 'package:pooja_pasal/features/products/presentation/providers/product_list_controller.dart';
+import 'package:pooja_pasal/features/products/presentation/widgets/product_card.dart';
+import 'package:pooja_pasal/features/products/presentation/widgets/product_filter_sheet.dart';
 
 /// Full, paginated product browse — reached from Home's "View All". Backed
 /// by `productListControllerProvider` (server-paginated, 20/page) rather
@@ -36,8 +36,7 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >
-        _scrollController.position.maxScrollExtent - 300) {
+    if (_scrollController.position.pixels > _scrollController.position.maxScrollExtent - 300) {
       ref.read(productListControllerProvider.notifier).loadMore();
     }
   }
@@ -69,12 +68,12 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage> {
           final visible = list.rawItems.where(filter.matches).toList();
 
           if (visible.isEmpty) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.inventory_2_outlined, size: 56, color: AppColors.muted),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   Text('No products match your filters.', style: TextStyle(color: AppColors.muted)),
                 ],
               ),
@@ -86,17 +85,12 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage> {
             child: GridView.builder(
               controller: _scrollController,
               itemCount: visible.length + (list.hasMore ? 1 : 0),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 14,
-                crossAxisSpacing: 14,
-                childAspectRatio: 0.68,
-              ),
+              gridDelegate: const ProductGridDelegate(),
               itemBuilder: (context, index) {
                 if (index >= visible.length) {
                   return const Center(
-                      child: Padding(
-                          padding: EdgeInsets.all(12), child: CircularProgressIndicator()));
+                      child:
+                          Padding(padding: EdgeInsets.all(12), child: CircularProgressIndicator()));
                 }
                 final Product product = visible[index];
                 return ProductCard(product: product);

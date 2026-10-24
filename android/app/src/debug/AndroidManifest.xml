@@ -4,4 +4,8 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Debug builds talk to a local `php artisan serve` over plain HTTP
+         (http://10.0.2.2:8000 on the emulator). Release builds must use an
+         https API_BASE_URL. -->
+    <application android:usesCleartextTraffic="true" />
 </manifest>

@@ -1,9 +1,8 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Recent-searches list. Kept device-local (SharedPreferences) rather than
-/// synced to Firestore — unlike wishlist/addresses, search history isn't
-/// account data that needs to follow the buyer across devices, so it
-/// doesn't need the trusted per-account storage those got migrated to.
+/// stored on the server — unlike wishlist/addresses, search history isn't
+/// account data that needs to follow the buyer across devices.
 class SearchHistoryLocalDataSource {
   static const _key = 'recent_searches';
   static const _maxEntries = 10;

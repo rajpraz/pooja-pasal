@@ -3,18 +3,17 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/network/cloudinary_service.dart';
-import 'package:untitled3/core/utils/error_mapper.dart';
-import 'package:untitled3/features/categories/domain/entities/category.dart';
-import 'package:untitled3/features/categories/presentation/providers/category_providers.dart';
-import 'package:untitled3/shared/widgets/empty_view.dart';
-import 'package:untitled3/shared/widgets/loading_view.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/core/network/upload_service.dart';
+import 'package:pooja_pasal/core/utils/error_mapper.dart';
+import 'package:pooja_pasal/features/categories/domain/entities/category.dart';
+import 'package:pooja_pasal/features/categories/presentation/providers/category_providers.dart';
+import 'package:pooja_pasal/shared/widgets/empty_view.dart';
+import 'package:pooja_pasal/shared/widgets/loading_view.dart';
 
 /// Admin category management — reuses the existing `CategoryRepository`
-/// (extended with admin CRUD methods, no duplicate category model). Writes
-/// go directly to Firestore (no Cloud Function) since
-/// firestore.rules already gates `categories` writes on `isAdmin()`.
+/// (extended with admin CRUD methods, no duplicate category model). The
+/// API only accepts these writes from admins.
 class AdminCategoriesPage extends ConsumerWidget {
   const AdminCategoriesPage({super.key});
 
@@ -25,8 +24,9 @@ class AdminCategoriesPage extends ConsumerWidget {
           .setActive(category.id, !category.isActive);
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content:
-              Text(category.isActive ? '${category.name} deactivated.' : '${category.name} activated.')));
+          content: Text(category.isActive
+              ? '${category.name} deactivated.'
+              : '${category.name} activated.')));
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
@@ -34,7 +34,7 @@ class AdminCategoriesPage extends ConsumerWidget {
   }
 
   void _openForm(BuildContext context, WidgetRef ref, {Category? existing}) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       builder: (_) => _CategoryFormSheet(existing: existing),
@@ -49,7 +49,6 @@ class AdminCategoriesPage extends ConsumerWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(title: const Text('Categories')),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
         onPressed: () => _openForm(context, ref),
         child: const Icon(Icons.add),
       ),
@@ -65,7 +64,8 @@ class AdminCategoriesPage extends ConsumerWidget {
             );
           }
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
+            // Bottom room for the "+" button over the last row.
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
             itemCount: categories.length,
             itemBuilder: (context, index) {
               final category = categories[index];
@@ -84,14 +84,15 @@ class AdminCategoriesPage extends ConsumerWidget {
                             ? Container(
                                 color: AppColors.card,
                                 alignment: Alignment.center,
-                                child: const Icon(Icons.category_outlined, color: AppColors.primary),
+                                child: Icon(Icons.category_outlined, color: AppColors.primary),
                               )
                             : Image.network(category.imageUrl,
                                 fit: BoxFit.cover,
                                 errorBuilder: (_, __, ___) => Container(
                                     color: AppColors.card,
                                     alignment: Alignment.center,
-                                    child: const Icon(Icons.category_outlined, color: AppColors.primary))),
+                                    child:
+                                        Icon(Icons.category_outlined, color: AppColors.primary))),
                       ),
                     ),
                     title: Text(category.name, style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -102,13 +103,15 @@ class AdminCategoriesPage extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
+                          icon: Icon(Icons.edit_outlined, color: AppColors.primary),
                           tooltip: 'Edit',
                           onPressed: () => _openForm(context, ref, existing: category),
                         ),
                         IconButton(
                           icon: Icon(
-                              category.isActive ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                              category.isActive
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
                               color: category.isActive ? AppColors.error : AppColors.success),
                           tooltip: category.isActive ? 'Deactivate' : 'Activate',
                           onPressed: () => _toggleActive(context, ref, category),
@@ -182,7 +185,9 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
     try {
       var imageUrl = _existingImageUrl;
       if (_pickedImage != null) {
-        imageUrl = await CloudinaryService.uploadImage(_pickedImage!);
+        imageUrl = await ref
+            .read(uploadServiceProvider)
+            .uploadImage(_pickedImage!, folder: UploadFolders.categoryImages);
       }
 
       if (_isEditing) {
@@ -245,7 +250,7 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(10),
                               child: Image.network(_existingImageUrl, fit: BoxFit.cover))
-                          : const Icon(Icons.add_a_photo_outlined, color: AppColors.primary),
+                          : Icon(Icons.add_a_photo_outlined, color: AppColors.primary),
                 ),
               ),
             ),

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:untitled3/app/router/route_names.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/utils/error_mapper.dart';
-import 'package:untitled3/features/addresses/domain/entities/address.dart';
-import 'package:untitled3/features/addresses/presentation/providers/address_providers.dart';
-import 'package:untitled3/features/auth/presentation/providers/auth_providers.dart';
-import 'package:untitled3/shared/widgets/empty_view.dart';
-import 'package:untitled3/shared/widgets/loading_view.dart';
+import 'package:pooja_pasal/app/router/route_names.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/core/utils/error_mapper.dart';
+import 'package:pooja_pasal/features/addresses/domain/entities/address.dart';
+import 'package:pooja_pasal/features/addresses/presentation/providers/address_providers.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
+import 'package:pooja_pasal/shared/widgets/empty_view.dart';
+import 'package:pooja_pasal/shared/widgets/loading_view.dart';
 
 class AddressesPage extends ConsumerWidget {
   const AddressesPage({super.key});
@@ -20,16 +20,13 @@ class AddressesPage extends ConsumerWidget {
     final addressController = TextEditingController(text: existing?.fullAddress ?? '');
     bool isDefault = existing?.isDefault ?? false;
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       builder: (sheetContext) => StatefulBuilder(
         builder: (sheetContext, setSheetState) => Padding(
           padding: EdgeInsets.only(
-              bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
-              left: 16,
-              right: 16,
-              top: 16),
+              bottom: MediaQuery.of(sheetContext).viewInsets.bottom, left: 16, right: 16, top: 16),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -139,7 +136,8 @@ class AddressesPage extends ConsumerWidget {
     }
   }
 
-  Future<void> _setDefault(BuildContext context, WidgetRef ref, String uid, String addressId) async {
+  Future<void> _setDefault(
+      BuildContext context, WidgetRef ref, String uid, String addressId) async {
     try {
       await ref.read(addressControllerProvider.notifier).setDefault(uid, addressId);
     } catch (e) {
@@ -184,7 +182,6 @@ class AddressesPage extends ConsumerWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(title: const Text('Addresses')),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.accent,
         onPressed: () => _openForm(context, ref, uid),
         child: const Icon(Icons.add, color: Colors.white),
       ),
@@ -200,7 +197,8 @@ class AddressesPage extends ConsumerWidget {
             );
           }
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
+            // Bottom room for the "+" button over the last row.
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
             itemCount: addresses.length,
             itemBuilder: (context, index) {
               final address = addresses[index];
@@ -249,9 +247,8 @@ class AddressesPage extends ConsumerWidget {
                               const SizedBox(height: 4),
                               Text(address.recipientName,
                                   style: const TextStyle(fontWeight: FontWeight.w600)),
-                              Text(address.phone, style: const TextStyle(color: AppColors.muted)),
-                              Text(address.fullAddress,
-                                  style: const TextStyle(color: AppColors.muted)),
+                              Text(address.phone, style: TextStyle(color: AppColors.muted)),
+                              Text(address.fullAddress, style: TextStyle(color: AppColors.muted)),
                             ],
                           ),
                         ),

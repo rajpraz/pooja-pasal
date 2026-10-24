@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/utils/error_mapper.dart';
-import 'package:untitled3/features/products/presentation/providers/product_providers.dart';
-import 'package:untitled3/features/reviews/domain/entities/review.dart';
-import 'package:untitled3/features/reviews/presentation/providers/review_providers.dart';
-import 'package:untitled3/shared/widgets/empty_view.dart';
-import 'package:untitled3/shared/widgets/loading_view.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/core/utils/error_mapper.dart';
+import 'package:pooja_pasal/features/products/presentation/providers/product_providers.dart';
+import 'package:pooja_pasal/features/reviews/domain/entities/review.dart';
+import 'package:pooja_pasal/features/reviews/presentation/providers/review_providers.dart';
+import 'package:pooja_pasal/shared/widgets/empty_view.dart';
+import 'package:pooja_pasal/shared/widgets/loading_view.dart';
 
 /// Admin review moderation — a bounded (most-recent-100) list, not the
 /// whole `reviews` collection. Reviewer identity is never resolved beyond
@@ -24,10 +24,11 @@ class AdminReviewsPage extends ConsumerWidget {
             'The review will be permanently removed and the product\'s average rating will be '
             'recalculated. This cannot be undone.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Delete', style: TextStyle(color: AppColors.error)),
+            child: Text('Delete', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -37,8 +38,7 @@ class AdminReviewsPage extends ConsumerWidget {
     try {
       await ref.read(reviewControllerProvider.notifier).deleteReview(review.id);
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Review deleted.')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Review deleted.')));
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
@@ -90,7 +90,7 @@ class AdminReviewsPage extends ConsumerWidget {
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.delete_outline, color: AppColors.error),
+                              icon: Icon(Icons.delete_outline, color: AppColors.error),
                               tooltip: 'Delete review',
                               onPressed: isBusy ? null : () => _confirmDelete(context, ref, review),
                             ),
@@ -113,7 +113,7 @@ class AdminReviewsPage extends ConsumerWidget {
                                 decoration: BoxDecoration(
                                     color: AppColors.success.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(6)),
-                                child: const Text('Verified Purchase',
+                                child: Text('Verified Purchase',
                                     style: TextStyle(fontSize: 10, color: AppColors.success)),
                               ),
                             ],

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pooja_pasal/app/router/route_names.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:untitled3/app/router/route_names.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -16,8 +16,7 @@ class _OnboardingSlide {
   final String title;
   final String description;
 
-  const _OnboardingSlide(
-      {required this.icon, required this.title, required this.description});
+  const _OnboardingSlide({required this.icon, required this.title, required this.description});
 }
 
 class _OnboardingPageState extends State<OnboardingPage> {
@@ -28,20 +27,17 @@ class _OnboardingPageState extends State<OnboardingPage> {
     _OnboardingSlide(
       icon: Icons.temple_hindu,
       title: 'Authentic Pooja Samagri',
-      description:
-          'Wide range of authentic and high quality puja items.',
+      description: 'Wide range of authentic and high quality puja items.',
     ),
     _OnboardingSlide(
       icon: Icons.local_shipping_outlined,
       title: 'Fast & Reliable Delivery',
-      description:
-          'Get your pooja essentials delivered right on time, every time.',
+      description: 'Get your pooja essentials delivered right on time, every time.',
     ),
     _OnboardingSlide(
       icon: Icons.volunteer_activism_outlined,
       title: 'Trusted by Devotees',
-      description:
-          'Thousands of happy customers trust us for their rituals and festivals.',
+      description: 'Thousands of happy customers trust us for their rituals and festivals.',
     ),
   ];
 
@@ -56,8 +52,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     if (_index == _slides.length - 1) {
       _finishOnboarding();
     } else {
-      _controller.nextPage(
-          duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+      _controller.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
     }
   }
 
@@ -74,8 +69,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 padding: const EdgeInsets.all(12.0),
                 child: TextButton(
                   onPressed: _finishOnboarding,
-                  child: const Text('Skip',
-                      style: TextStyle(color: AppColors.muted)),
+                  child: Text('Skip', style: TextStyle(color: AppColors.muted)),
                 ),
               ),
             ),
@@ -96,28 +90,26 @@ class _OnboardingPageState extends State<OnboardingPage> {
                           height: 220,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            gradient: const LinearGradient(
+                            gradient: LinearGradient(
                               colors: [AppColors.card, AppColors.accentLight],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                           ),
                           alignment: Alignment.center,
-                          child: Icon(slide.icon,
-                              size: 90, color: AppColors.primary),
+                          child: Icon(slide.icon, size: 90, color: AppColors.primary),
                         ),
                         const SizedBox(height: 32),
                         Text(slide.title,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.primary)),
                         const SizedBox(height: 12),
                         Text(slide.description,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
-                                fontSize: 15, color: AppColors.muted)),
+                            style: TextStyle(fontSize: 15, color: AppColors.muted)),
                       ],
                     ),
                   );
@@ -147,8 +139,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 height: 52,
                 child: ElevatedButton(
                   onPressed: _next,
-                  child: Text(
-                      _index == _slides.length - 1 ? 'Get Started' : 'Next'),
+                  child: Text(_index == _slides.length - 1 ? 'Get Started' : 'Next'),
                 ),
               ),
             ),

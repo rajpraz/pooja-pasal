@@ -1,5 +1,5 @@
-import 'package:untitled3/features/cart/domain/entities/cart_item.dart';
-import 'package:untitled3/features/products/domain/entities/product.dart';
+import 'package:pooja_pasal/features/cart/domain/entities/cart_item.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product.dart';
 
 abstract class CartRepository {
   Stream<List<CartItem>> streamCart(String uid);

@@ -1,17 +1,19 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:untitled3/app/router/route_names.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
-import 'package:untitled3/core/utils/error_mapper.dart';
-import 'package:untitled3/features/auth/presentation/providers/auth_providers.dart';
-import 'package:untitled3/features/cart/presentation/providers/cart_providers.dart';
-import 'package:untitled3/features/products/domain/entities/product.dart';
-import 'package:untitled3/features/products/presentation/providers/product_providers.dart';
-import 'package:untitled3/features/products/presentation/widgets/related_products_row.dart';
-import 'package:untitled3/features/reviews/presentation/widgets/review_list.dart';
-import 'package:untitled3/features/wishlist/presentation/providers/wishlist_providers.dart';
+import 'package:pooja_pasal/app/router/route_names.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
+import 'package:pooja_pasal/core/utils/error_mapper.dart';
+import 'package:pooja_pasal/core/widgets/product_image.dart';
+import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
+import 'package:pooja_pasal/features/cart/presentation/providers/cart_providers.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product.dart';
+import 'package:pooja_pasal/features/products/presentation/providers/product_providers.dart';
+import 'package:pooja_pasal/features/products/presentation/widgets/related_products_row.dart';
+import 'package:pooja_pasal/features/reviews/presentation/widgets/review_list.dart';
+import 'package:pooja_pasal/features/wishlist/presentation/providers/wishlist_providers.dart';
 
 class ProductDetailPage extends ConsumerStatefulWidget {
   final String productId;
@@ -35,21 +37,11 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   }
 
   void _shareProduct(Product product) {
-    Clipboard.setData(ClipboardData(
-        text: 'Check out ${product.name} on Pooja Pasal - Rs.${product.price}'));
+    Clipboard.setData(
+        ClipboardData(text: 'Check out ${product.name} on Pooja Pasal - Rs.${product.price}'));
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Product details copied to clipboard')),
     );
-  }
-
-  Widget _imageOrFallback(String imagePath) {
-    Widget fallback() => Container(
-          color: AppColors.card,
-          alignment: Alignment.center,
-          child: const Icon(Icons.temple_hindu, size: 60, color: AppColors.primary),
-        );
-    if (imagePath.isEmpty) return fallback();
-    return Image.network(imagePath, fit: BoxFit.cover, errorBuilder: (_, __, ___) => fallback());
   }
 
   Widget _buildGallery(Product product) {
@@ -60,9 +52,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
           height: 260,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(color: const Color.fromRGBO(0, 0, 0, 0.10), blurRadius: 16, spreadRadius: 1)
-            ],
+            boxShadow: [BoxShadow(color: AppColors.shadow, blurRadius: 16, spreadRadius: 1)],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(18),
@@ -70,7 +60,12 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
               controller: _imageController,
               itemCount: images.length,
               onPageChanged: (i) => setState(() => _imageIndex = i),
-              itemBuilder: (context, index) => _imageOrFallback(images[index]),
+              itemBuilder: (context, index) => ProductImage(
+                  url: images[index],
+                  category: product.category,
+                  name: product.name,
+                  borderRadius: BorderRadius.zero,
+                  iconScale: 0.22),
             ),
           ),
         ),
@@ -131,7 +126,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   Future<void> buyNow(Product product) async {
     await addToCart(product);
     if (!mounted) return;
-    context.push(RouteNames.cart);
+    unawaited(context.push(RouteNames.cart));
   }
 
   @override
@@ -155,16 +150,16 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   }
 
   Widget _buildBody(Product product) {
-    final description = product.description.isEmpty ? 'No description available' : product.description;
-    final shortDescription = description.length > 90 && !_expanded
-        ? '${description.substring(0, 90)}...'
-        : description;
+    final description =
+        product.description.isEmpty ? 'No description available' : product.description;
+    final shortDescription =
+        description.length > 90 && !_expanded ? '${description.substring(0, 90)}...' : description;
 
     final uid = ref.watch(authRepositoryProvider).currentUser?.uid;
     final saved = uid == null
         ? false
-        : ref.watch(wishlistProvider(uid).select(
-            (state) => state.value?.any((e) => e.productId == product.id) ?? false));
+        : ref.watch(wishlistProvider(uid)
+            .select((state) => state.value?.any((e) => e.productId == product.id) ?? false));
     final inStock = product.stock > 0;
 
     return SingleChildScrollView(
@@ -179,7 +174,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
               children: [
                 Expanded(
                   child: Text(product.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.text)),
                 ),
                 IconButton(
@@ -206,14 +201,15 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                     ),
                   ),
                   const SizedBox(width: 6),
-                  Text('${product.ratingAverage.toStringAsFixed(1)} (${product.ratingCount} reviews)',
-                      style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                  Text(
+                      '${product.ratingAverage.toStringAsFixed(1)} (${product.ratingCount} reviews)',
+                      style: TextStyle(fontSize: 12, color: AppColors.muted)),
                 ],
               ),
             if (product.sellerName.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text('Sold by ${product.sellerName}',
-                  style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                  style: TextStyle(fontSize: 12, color: AppColors.muted)),
             ],
             const SizedBox(height: 8),
             if (product.category.isNotEmpty)
@@ -224,15 +220,14 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(product.category,
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.w600)),
               ),
             const SizedBox(height: 12),
             Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text('Rs.${product.price.toStringAsFixed(0)}',
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.primary)),
                 const Spacer(),
                 Text(inStock ? 'In Stock' : 'Out of Stock',
@@ -246,8 +241,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
             if (inStock)
               Row(
                 children: [
-                  const Icon(Icons.remove_circle_outline, color: AppColors.muted),
-                  const SizedBox(width: 8),
+                  Text('Quantity', style: TextStyle(color: AppColors.muted)),
+                  const SizedBox(width: 12),
                   Row(
                     children: [
                       IconButton(
@@ -279,19 +274,18 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                 ],
               ),
             const SizedBox(height: 20),
-            const Text('Product Details',
-                style:
-                    TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.text)),
+            Text('Product Details',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.text)),
             const SizedBox(height: 8),
             Text(shortDescription,
-                style: const TextStyle(fontSize: 14, color: AppColors.muted, height: 1.5)),
+                style: TextStyle(fontSize: 14, color: AppColors.muted, height: 1.5)),
             if (description.length > 90)
               GestureDetector(
                 onTap: () => setState(() => _expanded = !_expanded),
                 child: Padding(
                   padding: const EdgeInsets.only(top: 4.0),
                   child: Text(_expanded ? 'Show less' : 'Read More',
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: AppColors.accent, fontWeight: FontWeight.w600, fontSize: 13)),
                 ),
               ),
@@ -314,9 +308,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
               ],
             ),
             const SizedBox(height: 28),
-            const Text('Ratings & Reviews',
-                style:
-                    TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.text)),
+            Text('Ratings & Reviews',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.text)),
             const SizedBox(height: 10),
             ReviewList(productId: product.id),
             const SizedBox(height: 20),

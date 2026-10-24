@@ -1,32 +1,24 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:untitled3/features/cart/domain/entities/cart_item.dart';
-import 'package:untitled3/features/products/domain/entities/product.dart';
+import 'package:pooja_pasal/core/network/api_client.dart';
+import 'package:pooja_pasal/features/cart/domain/entities/cart_item.dart';
+import 'package:pooja_pasal/features/products/domain/entities/product.dart';
 
+/// The signed-in user's server-side cart (`/cart`), one line per product.
+/// The API clamps quantities to live stock and reports each line's current
+/// price, so the cart never shows a stale price. [uid] is implied by the
+/// session.
 class CartRemoteDataSource {
-  CollectionReference<Map<String, dynamic>> _items(String uid) =>
-      FirebaseFirestore.instance.collection('carts').doc(uid).collection('items');
+  CartRemoteDataSource(this._api);
 
-  Stream<List<CartItem>> streamCart(String uid) {
-    return _items(uid).snapshots().map(
-        (snap) => snap.docs.map(CartItem.fromDoc).toList());
-  }
+  final ApiClient _api;
+
+  Stream<List<CartItem>> streamCart(String uid) => _api.watch(
+        {ApiTopics.cart},
+        () async => asJsonList(await _api.get('/cart')).map(CartItem.fromJson).toList(),
+      );
 
   Future<void> addToCart(String uid, Product product, {int qty = 1}) async {
-    final ref = _items(uid).doc(product.id);
-    final existing = await ref.get();
-    if (existing.exists) {
-      final currentQty = (existing.data()?['qty'] as num?)?.toInt() ?? 1;
-      await ref.update({'qty': currentQty + qty});
-    } else {
-      await ref.set(CartItem(
-        productId: product.id,
-        name: product.name,
-        price: product.price,
-        qty: qty,
-        image: product.image,
-        sellerId: product.sellerId,
-      ).toMap());
-    }
+    await _api.post('/cart', {'productId': product.id, 'qty': qty});
+    _api.notifyChanged(const [ApiTopics.cart]);
   }
 
   Future<void> updateQty(String uid, String productId, int qty) async {
@@ -34,19 +26,17 @@ class CartRemoteDataSource {
       await removeItem(uid, productId);
       return;
     }
-    await _items(uid).doc(productId).update({'qty': qty});
+    await _api.patch('/cart/$productId', {'qty': qty});
+    _api.notifyChanged(const [ApiTopics.cart]);
   }
 
   Future<void> removeItem(String uid, String productId) async {
-    await _items(uid).doc(productId).delete();
+    await _api.delete('/cart/$productId');
+    _api.notifyChanged(const [ApiTopics.cart]);
   }
 
   Future<void> clearCart(String uid) async {
-    final snap = await _items(uid).get();
-    final batch = FirebaseFirestore.instance.batch();
-    for (final doc in snap.docs) {
-      batch.delete(doc.reference);
-    }
-    await batch.commit();
+    await _api.delete('/cart');
+    _api.notifyChanged(const [ApiTopics.cart]);
   }
 }

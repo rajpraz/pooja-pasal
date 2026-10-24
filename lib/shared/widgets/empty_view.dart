@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:untitled3/app/theme/app_colors.dart';
+import 'package:pooja_pasal/app/theme/app_colors.dart';
 
 /// Reusable icon + title + subtitle empty state, factored out of the
 /// near-identical pattern previously repeated in order history, seller
@@ -34,7 +34,7 @@ class EmptyView extends StatelessWidget {
             if (subtitle != null) ...[
               const SizedBox(height: 6),
               Text(subtitle!,
-                  textAlign: TextAlign.center, style: const TextStyle(color: AppColors.muted)),
+                  textAlign: TextAlign.center, style: TextStyle(color: AppColors.muted)),
             ],
             if (action != null) ...[
               const SizedBox(height: 20),

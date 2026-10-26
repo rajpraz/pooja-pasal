@@ -33,6 +33,7 @@ const Set<String> _publicPaths = {
   RouteNames.login,
   RouteNames.signup,
   RouteNames.forgotPassword,
+  RouteNames.otpLogin,
 };
 
 /// This is a navigation-UX guard ONLY — it decides which screen to *show*,
@@ -84,7 +85,10 @@ String? redirectFor({
 
   // Signed in: auth screens make no sense any more. Send each role to its
   // own start screen; until the profile has loaded, splash resolves it.
-  if (path == RouteNames.login || path == RouteNames.signup || path == RouteNames.onboarding) {
+  if (path == RouteNames.login ||
+      path == RouteNames.signup ||
+      path == RouteNames.otpLogin ||
+      path == RouteNames.onboarding) {
     return role == null ? RouteNames.splash : homeForRole(role);
   }
 

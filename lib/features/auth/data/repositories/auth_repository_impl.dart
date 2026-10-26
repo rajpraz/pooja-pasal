@@ -42,9 +42,28 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> signIn({required String email, required String password}) {
-    return _dataSource.signIn(email: email, password: password);
+  Future<void> signIn({
+    required String email,
+    required String password,
+    bool rememberMe = true,
+  }) {
+    return _dataSource.signIn(
+        email: email, password: password, rememberMe: rememberMe);
   }
+
+  @override
+  Future<String?> rememberedEmail() => _dataSource.rememberedEmail();
+
+  @override
+  Future<bool> signInWithGoogle({bool rememberMe = true}) =>
+      _dataSource.signInWithGoogle(rememberMe: rememberMe);
+
+  @override
+  Future<void> sendOtp(String phone) => _dataSource.sendOtp(phone);
+
+  @override
+  Future<void> verifyOtp(String phone, String code, {bool rememberMe = true}) =>
+      _dataSource.verifyOtp(phone, code, rememberMe: rememberMe);
 
   @override
   Future<void> sendPasswordResetEmail(String email) {
@@ -64,8 +83,10 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> applyToSell({required String shopName, required String phone, String? reason}) {
-    return _dataSource.applyToSell(shopName: shopName, phone: phone, reason: reason);
+  Future<void> applyToSell(
+      {required String shopName, required String phone, String? reason}) {
+    return _dataSource.applyToSell(
+        shopName: shopName, phone: phone, reason: reason);
   }
 
   @override

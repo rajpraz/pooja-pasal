@@ -58,7 +58,7 @@ class _MemoryTokenStore extends TokenStore {
   Future<String?> read() async => _token;
 
   @override
-  Future<void> write(String token) async => _token = token;
+  Future<void> write(String token, {bool persist = true}) async => _token = token;
 
   @override
   Future<void> clear() async => _token = null;
@@ -75,29 +75,38 @@ void main() {
     // Profiles parse with the right roles.
     expect((await buyer.auth.getUserDoc(buyer.uid))!.role, 'buyer');
     expect((await seller.auth.getUserDoc(seller.uid))!.isSeller, isTrue);
-    expect((await admin.auth.getUserDoc(buyer.uid))!.email, 'buyer@poojapasal.test');
+    expect((await admin.auth.getUserDoc(buyer.uid))!.email,
+        'buyer@poojapasal.test');
 
     // Catalog.
-    final categories = await CategoryRemoteDataSource(buyer.api).streamActiveCategories().first;
+    final categories = await CategoryRemoteDataSource(buyer.api)
+        .streamActiveCategories()
+        .first;
     expect(categories, isNotEmpty);
     final products = ProductRemoteDataSource(buyer.api);
-    final page = await products.fetchActiveProductsPage(limit: 5, sort: ProductSort.priceLowToHigh);
+    final page = await products.fetchActiveProductsPage(
+        limit: 5, sort: ProductSort.priceLowToHigh);
     expect(page.items, hasLength(5));
     expect(page.items.first.price, lessThanOrEqualTo(page.items.last.price));
     expect(page.cursor, 2);
     final all = await products.streamActiveProducts().first;
     expect(all.length, greaterThanOrEqualTo(page.items.length));
-    final sellerProducts =
-        await ProductRemoteDataSource(seller.api).streamSellerProducts(seller.uid).first;
-    final product = sellerProducts.firstWhere((p) => p.isActive && p.stock >= 3);
+    final sellerProducts = await ProductRemoteDataSource(seller.api)
+        .streamSellerProducts(seller.uid)
+        .first;
+    final product =
+        sellerProducts.firstWhere((p) => p.isActive && p.stock >= 3);
     expect((await products.getProduct(product.id))!.sellerName, isNotEmpty);
-    expect(await products.getProduct('00000000-0000-0000-0000-000000000000'), isNull);
+    expect(await products.getProduct('00000000-0000-0000-0000-000000000000'),
+        isNull);
     expect(await products.search(product.name.split(' ').first), isNotEmpty);
 
     // Wishlist toggles.
     final wishlist = WishlistRemoteDataSource(buyer.api);
     final saved = await wishlist.toggle(buyer.uid, product.id);
-    expect((await wishlist.streamWishlist(buyer.uid).first).any((w) => w.productId == product.id),
+    expect(
+        (await wishlist.streamWishlist(buyer.uid).first)
+            .any((w) => w.productId == product.id),
         saved);
     await wishlist.toggle(buyer.uid, product.id);
 
@@ -112,15 +121,20 @@ void main() {
     await addresses.add(
         buyer.uid,
         const Address(
-            label: 'Home', recipientName: 'E2E Buyer', phone: '9800000000', fullAddress: 'Thamel'));
+            label: 'Home',
+            recipientName: 'E2E Buyer',
+            phone: '9800000000',
+            fullAddress: 'Thamel'));
     final address = (await addresses.streamAddresses(buyer.uid).first).first;
 
     // Coupon preview (seeded DASHAIN10).
-    final quote = await CouponRemoteDataSource(buyer.api).validate('dashain10', 2000);
+    final quote =
+        await CouponRemoteDataSource(buyer.api).validate('dashain10', 2000);
     expect(quote.discount, greaterThan(0));
 
     // Checkout with COD; the server prices the order.
-    final orders = OrderRemoteDataSource(buyer.api, currentUid: () => buyer.uid);
+    final orders =
+        OrderRemoteDataSource(buyer.api, currentUid: () => buyer.uid);
     final created = await orders.createOrder(
       items: lines,
       shippingAddress: address.formatted,
@@ -132,7 +146,8 @@ void main() {
     final placed = (await orders.streamOrder(created.orderId).first)!;
     expect(placed.status, 'pending');
     expect(placed.items.single.qty, 2);
-    expect((await orders.streamBuyerOrders(buyer.uid).first).first.id, created.orderId);
+    expect((await orders.streamBuyerOrders(buyer.uid).first).first.id,
+        created.orderId);
 
     // A buyer can't move their order forward.
     await expectLater(
@@ -141,25 +156,38 @@ void main() {
     );
 
     // The seller fulfils it and confirms the cash.
-    final sellerOrders = OrderRemoteDataSource(seller.api, currentUid: () => seller.uid);
-    expect((await sellerOrders.streamSellerOrders(seller.uid).first).map((o) => o.id),
+    final sellerOrders =
+        OrderRemoteDataSource(seller.api, currentUid: () => seller.uid);
+    expect(
+        (await sellerOrders.streamSellerOrders(seller.uid).first)
+            .map((o) => o.id),
         contains(created.orderId));
     for (final status in ['confirmed', 'processing', 'shipped', 'delivered']) {
-      await sellerOrders.updateOrderStatus(orderId: created.orderId, status: status);
+      await sellerOrders.updateOrderStatus(
+          orderId: created.orderId, status: status);
     }
-    await PaymentRemoteDataSource(seller.api).confirmCodPayment(created.orderId);
+    await PaymentRemoteDataSource(seller.api)
+        .confirmCodPayment(created.orderId);
     final delivered = (await orders.streamOrder(created.orderId).first)!;
     expect(delivered.status, 'delivered');
     expect(delivered.paymentStatus, 'paid');
-    expect(delivered.statusHistory.map((e) => e.status), containsAll(['pending', 'delivered']));
+    expect(delivered.statusHistory.map((e) => e.status),
+        containsAll(['pending', 'delivered']));
 
     // The buyer reviews it once.
     final reviews = ReviewRemoteDataSource(buyer.api);
     final existing = await reviews.streamReviewsForProduct(product.id).first;
     if (!existing.any((r) => r.buyerId == buyer.uid)) {
       await reviews.createReview(
-          productId: product.id, orderId: created.orderId, rating: 5, text: 'Lovely');
-      expect((await reviews.streamReviewsForProduct(product.id).first).first.buyerName, isNotEmpty);
+          productId: product.id,
+          orderId: created.orderId,
+          rating: 5,
+          text: 'Lovely');
+      expect(
+          (await reviews.streamReviewsForProduct(product.id).first)
+              .first
+              .buyerName,
+          isNotEmpty);
     }
 
     // The buyer returns it; the admin records the refund and the buyer
@@ -170,26 +198,34 @@ void main() {
     expect(returned.status, 'returned');
     expect(returned.statusHistory.last.note, 'Arrived damaged');
     await OrderRemoteDataSource(admin.api, currentUid: () => admin.uid)
-        .updatePaymentStatus(orderId: created.orderId, paymentStatus: 'refunded');
-    expect((await orders.streamOrder(created.orderId).first)!.paymentStatus, 'refunded');
-    final refundNotes =
-        await NotificationRemoteDataSource(buyer.api).streamNotifications(buyer.uid).first;
+        .updatePaymentStatus(
+            orderId: created.orderId, paymentStatus: 'refunded');
+    expect((await orders.streamOrder(created.orderId).first)!.paymentStatus,
+        'refunded');
+    final refundNotes = await NotificationRemoteDataSource(buyer.api)
+        .streamNotifications(buyer.uid)
+        .first;
     expect(refundNotes.map((n) => n.type), contains('payment_refunded'));
 
     // Notifications reached both sides.
-    final buyerNotes =
-        await NotificationRemoteDataSource(buyer.api).streamNotifications(buyer.uid).first;
+    final buyerNotes = await NotificationRemoteDataSource(buyer.api)
+        .streamNotifications(buyer.uid)
+        .first;
     expect(buyerNotes.map((n) => n.type), contains('order_placed'));
-    final sellerNotes =
-        await NotificationRemoteDataSource(seller.api).streamNotifications(seller.uid).first;
+    final sellerNotes = await NotificationRemoteDataSource(seller.api)
+        .streamNotifications(seller.uid)
+        .first;
     expect(sellerNotes.map((n) => n.type), contains('seller_new_order'));
 
     // Admin views.
     final stats = await AdminDashboardDataSource(admin.api).fetchStats();
     expect(stats.totalOrders, greaterThan(0));
-    expect(await AdminUserRemoteDataSource(admin.api).streamUsers().first, isNotEmpty);
+    expect(await AdminUserRemoteDataSource(admin.api).streamUsers().first,
+        isNotEmpty);
     final allOrders =
-        await OrderRemoteDataSource(admin.api, currentUid: () => admin.uid).streamAllOrders().first;
+        await OrderRemoteDataSource(admin.api, currentUid: () => admin.uid)
+            .streamAllOrders()
+            .first;
     expect(allOrders.map((o) => o.id), contains(created.orderId));
     final adminSellers = AdminSellerRemoteDataSource(admin.api);
     expect(await adminSellers.streamSellers().first, isNotEmpty);
@@ -198,27 +234,35 @@ void main() {
     final pending = await adminSellers.streamPendingApplications().first;
     if (pending.isNotEmpty) {
       await adminSellers.approveApplication(pending.first.uid);
-      await expectLater(
-          adminSellers.approveApplication(pending.first.uid), throwsA(isA<AppFunctionException>()));
+      await expectLater(adminSellers.approveApplication(pending.first.uid),
+          throwsA(isA<AppFunctionException>()));
     }
 
     // Non-admins are refused admin data.
-    await expectLater(AdminDashboardDataSource(buyer.api).fetchStats(),
-        throwsA(isA<AppFunctionException>().having((e) => e.code, 'code', 'permission-denied')));
+    await expectLater(
+        AdminDashboardDataSource(buyer.api).fetchStats(),
+        throwsA(isA<AppFunctionException>()
+            .having((e) => e.code, 'code', 'permission-denied')));
 
     // Signing out revokes the token.
     await buyer.auth.signOut();
     expect(buyer.auth.currentUser, isNull);
-  }, skip: _baseUrl.isEmpty ? 'Set API_E2E_BASE_URL to run against a live API' : false);
+  },
+      skip: _baseUrl.isEmpty
+          ? 'Set API_E2E_BASE_URL to run against a live API'
+          : false);
 
   test('eSewa checkout gets signed form fields from the API', () async {
     final buyer = await _Actor.signIn('buyer@poojapasal.test');
-    final product = (await ProductRemoteDataSource(buyer.api).streamActiveProducts().first)
-        .firstWhere((p) => p.stock > 0);
+    final product =
+        (await ProductRemoteDataSource(buyer.api).streamActiveProducts().first)
+            .firstWhere((p) => p.stock > 0);
     final payments = PaymentRemoteDataSource(buyer.api);
     if (!(await payments.availableMethods()).contains('esewa')) return;
 
-    final created = await OrderRemoteDataSource(buyer.api, currentUid: () => buyer.uid).createOrder(
+    final created =
+        await OrderRemoteDataSource(buyer.api, currentUid: () => buyer.uid)
+            .createOrder(
       items: [
         CartItem(
             productId: product.id,
@@ -238,5 +282,8 @@ void main() {
     expect(fields.signature, isNotEmpty);
     expect(fields.successUrl, contains('/payments/esewa/success'));
     expect(fields.failureUrl, contains('/failure'));
-  }, skip: _baseUrl.isEmpty ? 'Set API_E2E_BASE_URL to run against a live API' : false);
+  },
+      skip: _baseUrl.isEmpty
+          ? 'Set API_E2E_BASE_URL to run against a live API'
+          : false);
 }

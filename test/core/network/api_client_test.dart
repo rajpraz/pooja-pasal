@@ -16,7 +16,7 @@ class _MemoryTokenStore extends TokenStore {
   Future<String?> read() async => _token;
 
   @override
-  Future<void> write(String token) async => _token = token;
+  Future<void> write(String token, {bool persist = true}) async => _token = token;
 
   @override
   Future<void> clear() async => _token = null;
@@ -29,10 +29,12 @@ ApiClient _client(MockClientHandler handler, {String? token}) => ApiClient(
     );
 
 http.Response _json(Object body, [int status = 200]) =>
-    http.Response(jsonEncode(body), status, headers: {'content-type': 'application/json'});
+    http.Response(jsonEncode(body), status,
+        headers: {'content-type': 'application/json'});
 
 void main() {
-  test('sends the bearer token, JSON body and query, and decodes the reply', () async {
+  test('sends the bearer token, JSON body and query, and decodes the reply',
+      () async {
     late http.Request seen;
     final api = _client((request) async {
       seen = request;
@@ -45,13 +47,16 @@ void main() {
     expect(seen.headers['Accept'], 'application/json');
     expect(jsonDecode(seen.body), {'qty': 2});
 
-    await api.get('/products', query: {'page': 2, 'inStock': true, 'skip': false, 'none': null});
-    expect(seen.url.toString(), 'https://api.test/api/products?page=2&inStock=1');
+    await api.get('/products',
+        query: {'page': 2, 'inStock': true, 'skip': false, 'none': null});
+    expect(
+        seen.url.toString(), 'https://api.test/api/products?page=2&inStock=1');
   });
 
-  test('maps API errors to AppFunctionException with the API code and message', () async {
-    final api =
-        _client((_) async => _json({'message': 'Only 2 left.', 'code': 'out-of-stock'}, 409));
+  test('maps API errors to AppFunctionException with the API code and message',
+      () async {
+    final api = _client((_) async =>
+        _json({'message': 'Only 2 left.', 'code': 'out-of-stock'}, 409));
     await expectLater(
       api.post('/orders'),
       throwsA(isA<AppFunctionException>()
@@ -71,40 +76,50 @@ void main() {
       api.post('/auth/register'),
       throwsA(isA<AppFunctionException>()
           .having((e) => e.code, 'code', 'invalid-argument')
-          .having((e) => e.message, 'message', 'An account already exists with this email.')),
+          .having((e) => e.message, 'message',
+              'An account already exists with this email.')),
     );
   });
 
   test('server errors never leak their details', () async {
-    final api = _client((_) async => _json({'message': 'SQLSTATE[HY000] secret'}, 500));
+    final api =
+        _client((_) async => _json({'message': 'SQLSTATE[HY000] secret'}, 500));
     await expectLater(
       api.get('/cart'),
-      throwsA(isA<AppFunctionException>()
-          .having((e) => e.message, 'message', 'Something went wrong. Please try again.')),
+      throwsA(isA<AppFunctionException>().having((e) => e.message, 'message',
+          'Something went wrong. Please try again.')),
     );
   });
 
   test('a 401 calls onUnauthorized', () async {
-    final api = _client((_) async => _json({'message': 'Unauthenticated.'}, 401));
+    final api =
+        _client((_) async => _json({'message': 'Unauthenticated.'}, 401));
     var called = false;
     api.onUnauthorized = () => called = true;
-    await expectLater(api.get('/auth/me'),
-        throwsA(isA<AppFunctionException>().having((e) => e.isAuthError, 'isAuthError', true)));
+    await expectLater(
+        api.get('/auth/me'),
+        throwsA(isA<AppFunctionException>()
+            .having((e) => e.isAuthError, 'isAuthError', true)));
     expect(called, isTrue);
   });
 
   test('network failures become a friendly "unavailable" error', () async {
-    final api = _client((_) async => throw http.ClientException('connection refused'));
-    await expectLater(api.get('/products'),
-        throwsA(isA<AppFunctionException>().having((e) => e.code, 'code', 'unavailable')));
+    final api =
+        _client((_) async => throw http.ClientException('connection refused'));
+    await expectLater(
+        api.get('/products'),
+        throwsA(isA<AppFunctionException>()
+            .having((e) => e.code, 'code', 'unavailable')));
   });
 
   test('watch re-fetches when one of its topics changes', () async {
     var calls = 0;
     final api = _client((_) async => _json({'n': ++calls}));
     final values = <int>[];
-    final sub = api.watch({ApiTopics.cart},
-        () async => (await api.get('/cart') as Map)['n'] as int).listen(values.add);
+    final sub = api.watch(
+        {ApiTopics.cart},
+        () async =>
+            (await api.get('/cart') as Map)['n'] as int).listen(values.add);
     await pumpEventQueue();
     api.notifyChanged(const [ApiTopics.orders]); // other topic: ignored
     await pumpEventQueue();
@@ -131,7 +146,8 @@ void main() {
         }),
         {'id': 'a'});
     expect(asJsonMap({'token': 't'}), {'token': 't'});
-    expect(parseApiDate('2026-10-24T10:00:00+00:00')!.toUtc(), DateTime.utc(2026, 10, 24, 10));
+    expect(parseApiDate('2026-10-24T10:00:00+00:00')!.toUtc(),
+        DateTime.utc(2026, 10, 24, 10));
     expect(parseApiDate(null), isNull);
   });
 }

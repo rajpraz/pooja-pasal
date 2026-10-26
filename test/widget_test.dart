@@ -36,10 +36,27 @@ class _FakeAuthRepository implements AuthRepository {
 
   @override
   Future<void> applyToSell(
-      {required String shopName, required String phone, String? reason}) async {}
+      {required String shopName,
+      required String phone,
+      String? reason}) async {}
 
   @override
-  Future<void> signIn({required String email, required String password}) async {}
+  Future<void> signIn(
+      {required String email,
+      required String password,
+      bool rememberMe = true}) async {}
+
+  @override
+  Future<String?> rememberedEmail() async => null;
+
+  @override
+  Future<bool> signInWithGoogle({bool rememberMe = true}) async => true;
+
+  @override
+  Future<void> sendOtp(String phone) async {}
+
+  @override
+  Future<void> verifyOtp(String phone, String code, {bool rememberMe = true}) async {}
 
   @override
   Future<void> sendPasswordResetEmail(String email) async {}
@@ -58,13 +75,16 @@ class _FakeAuthRepository implements AuthRepository {
 }
 
 void main() {
-  testWidgets('shows the pooja store branding on launch', (WidgetTester tester) async {
+  testWidgets('shows the pooja store branding on launch',
+      (WidgetTester tester) async {
     // SplashPage reads SharedPreferences (for "seen_onboarding") as part of
     // resolving where to navigate after the splash delay.
     SharedPreferences.setMockInitialValues({});
 
     await tester.pumpWidget(ProviderScope(
-      overrides: [authRepositoryProvider.overrideWithValue(_FakeAuthRepository())],
+      overrides: [
+        authRepositoryProvider.overrideWithValue(_FakeAuthRepository())
+      ],
       child: const App(),
     ));
 

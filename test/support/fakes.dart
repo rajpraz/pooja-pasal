@@ -40,7 +40,22 @@ class FakeAuthRepository implements AuthRepository {
   }) async {}
 
   @override
-  Future<void> signIn({required String email, required String password}) async {}
+  Future<void> signIn(
+      {required String email,
+      required String password,
+      bool rememberMe = true}) async {}
+
+  @override
+  Future<String?> rememberedEmail() async => null;
+
+  @override
+  Future<bool> signInWithGoogle({bool rememberMe = true}) async => true;
+
+  @override
+  Future<void> sendOtp(String phone) async {}
+
+  @override
+  Future<void> verifyOtp(String phone, String code, {bool rememberMe = true}) async {}
 
   @override
   Future<void> sendPasswordResetEmail(String email) async {}
@@ -55,7 +70,10 @@ class FakeAuthRepository implements AuthRepository {
   }) async {}
 
   @override
-  Future<void> applyToSell({required String shopName, required String phone, String? reason}) async {}
+  Future<void> applyToSell(
+      {required String shopName,
+      required String phone,
+      String? reason}) async {}
 
   @override
   Future<void> signOut() async {}
@@ -112,8 +130,8 @@ class FakeOrderRepository implements OrderRepository {
   final placed = <Map<String, Object?>>[];
   final statusChanges = <String>[];
   List<PoojaOrder> sellerOrders = const [];
-  CreateOrderResult result =
-      const CreateOrderResult(orderId: 'o1', totalAmount: 1080, deduplicated: false);
+  CreateOrderResult result = const CreateOrderResult(
+      orderId: 'o1', totalAmount: 1080, deduplicated: false);
   Object? error;
 
   @override
@@ -135,16 +153,19 @@ class FakeOrderRepository implements OrderRepository {
   }
 
   @override
-  Stream<List<PoojaOrder>> streamBuyerOrders(String buyerId) => const Stream.empty();
+  Stream<List<PoojaOrder>> streamBuyerOrders(String buyerId) =>
+      const Stream.empty();
 
   @override
-  Stream<List<PoojaOrder>> streamSellerOrders(String sellerId) => Stream.value(sellerOrders);
+  Stream<List<PoojaOrder>> streamSellerOrders(String sellerId) =>
+      Stream.value(sellerOrders);
 
   @override
   Stream<PoojaOrder?> streamOrder(String orderId) => const Stream.empty();
 
   @override
-  Stream<List<PoojaOrder>> streamAllOrders({int limit = 200}) => const Stream.empty();
+  Stream<List<PoojaOrder>> streamAllOrders({int limit = 200}) =>
+      const Stream.empty();
 
   @override
   Future<void> updateOrderStatus({
@@ -155,7 +176,8 @@ class FakeOrderRepository implements OrderRepository {
       statusChanges.add('$orderId→$status');
 
   @override
-  Future<void> updatePaymentStatus({required String orderId, required String paymentStatus}) async {}
+  Future<void> updatePaymentStatus(
+      {required String orderId, required String paymentStatus}) async {}
 
   @override
   Future<void> cancelOrder(String orderId, {String? note}) async {}

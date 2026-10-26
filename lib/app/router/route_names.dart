@@ -11,6 +11,7 @@ class RouteNames {
   static const login = '/login';
   static const signup = '/signup';
   static const forgotPassword = '/forgot-password';
+  static const otpLogin = '/otp-login';
 
   static const home = '/home';
 
@@ -76,7 +77,8 @@ class RouteNames {
   static const sellerDashboard = '/seller/dashboard';
   static const sellerProductNew = '/seller/products/new';
   static const sellerProductEdit = '/seller/products/:productId/edit';
-  static String sellerProductEditPath(String productId) => '/seller/products/$productId/edit';
+  static String sellerProductEditPath(String productId) =>
+      '/seller/products/$productId/edit';
 
   static const adminDashboard = '/admin/dashboard';
 
@@ -90,7 +92,8 @@ class RouteNames {
 
   static const adminOrders = '/admin/orders';
   static const adminOrderDetail = '/admin/orders/:orderId';
-  static String adminOrderDetailPath(String orderId) => '/admin/orders/$orderId';
+  static String adminOrderDetailPath(String orderId) =>
+      '/admin/orders/$orderId';
 
   static const adminUsers = '/admin/users';
   static const adminUserDetail = '/admin/users/:uid';

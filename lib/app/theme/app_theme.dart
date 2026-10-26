@@ -3,7 +3,7 @@ import 'package:pooja_pasal/app/theme/app_colors.dart';
 
 class AppTheme {
   /// Corner radius used across cards, inputs, buttons and sheets.
-  static const double radius = 14;
+  static const double radius = 16;
 
   static ThemeData light() => _build(AppPalette.light, Brightness.light);
 
@@ -25,8 +25,10 @@ class AppTheme {
       outline: p.border,
       outlineVariant: p.border,
     );
-    final rounded = RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius));
-    OutlineInputBorder inputBorder(Color color, [double width = 1]) => OutlineInputBorder(
+    final rounded =
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius));
+    OutlineInputBorder inputBorder(Color color, [double width = 1]) =>
+        OutlineInputBorder(
           borderRadius: BorderRadius.circular(radius),
           borderSide: BorderSide(color: color, width: width),
         );
@@ -62,8 +64,9 @@ class AppTheme {
           disabledBackgroundColor: p.border,
           disabledForegroundColor: p.muted,
           elevation: 0,
+          minimumSize: const Size.fromHeight(52),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
-          textStyle: const TextStyle(fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
           shape: rounded,
         ),
       ),
@@ -104,7 +107,8 @@ class AppTheme {
         labelStyle: TextStyle(color: p.muted),
         prefixIconColor: p.muted,
         suffixIconColor: p.muted,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         border: inputBorder(p.border),
         enabledBorder: inputBorder(p.border),
         focusedBorder: inputBorder(p.accent, 1.4),
@@ -126,7 +130,8 @@ class AppTheme {
         backgroundColor: p.surface,
         selectedColor: p.accent.withValues(alpha: 0.16),
         side: BorderSide(color: p.border),
-        labelStyle: TextStyle(color: p.text, fontSize: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        labelStyle: TextStyle(color: p.text, fontSize: 12.5, fontWeight: FontWeight.w500),
         secondaryLabelStyle: TextStyle(color: p.accent, fontSize: 12),
         checkmarkColor: p.accent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -135,7 +140,8 @@ class AppTheme {
         backgroundColor: p.surface,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        titleTextStyle: TextStyle(color: p.text, fontSize: 18, fontWeight: FontWeight.w700),
+        titleTextStyle:
+            TextStyle(color: p.text, fontSize: 18, fontWeight: FontWeight.w700),
         contentTextStyle: TextStyle(color: p.muted, fontSize: 14, height: 1.4),
       ),
       bottomSheetTheme: BottomSheetThemeData(
@@ -162,10 +168,10 @@ class AppTheme {
       ),
       dividerTheme: DividerThemeData(color: p.border, thickness: 1, space: 1),
       switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith(
-            (states) => states.contains(WidgetState.selected) ? Colors.white : p.muted),
-        trackColor: WidgetStateProperty.resolveWith(
-            (states) => states.contains(WidgetState.selected) ? p.accent : p.border),
+        thumbColor: WidgetStateProperty.resolveWith((states) =>
+            states.contains(WidgetState.selected) ? Colors.white : p.muted),
+        trackColor: WidgetStateProperty.resolveWith((states) =>
+            states.contains(WidgetState.selected) ? p.accent : p.border),
         trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(color: p.accent),
@@ -181,7 +187,10 @@ class AppTheme {
         unselectedItemColor: p.muted,
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
-        elevation: 8,
+        elevation: 12,
+        selectedLabelStyle:
+            const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700),
+        unselectedLabelStyle: const TextStyle(fontSize: 11.5),
       ),
       textTheme: TextTheme(
         headlineSmall: TextStyle(color: p.text, fontWeight: FontWeight.w700),

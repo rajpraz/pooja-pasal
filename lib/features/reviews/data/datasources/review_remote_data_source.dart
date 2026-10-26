@@ -35,7 +35,9 @@ class ReviewRemoteDataSource {
 
   /// Admin moderation list, newest first.
   Future<List<Review>> fetchRecentReviews({int limit = 100}) async {
-    final reviews = asJsonList(await _api.get('/admin/reviews')).map(Review.fromJson).toList();
+    final reviews = asJsonList(await _api.get('/admin/reviews'))
+        .map(Review.fromJson)
+        .toList();
     return reviews.take(limit).toList();
   }
 

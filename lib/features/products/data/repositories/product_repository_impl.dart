@@ -10,7 +10,8 @@ class ProductRepositoryImpl implements ProductRepository {
   ProductRepositoryImpl(this._dataSource);
 
   @override
-  Stream<List<Product>> streamActiveProducts() => _dataSource.streamActiveProducts();
+  Stream<List<Product>> streamActiveProducts() =>
+      _dataSource.streamActiveProducts();
 
   @override
   Future<ProductPage> fetchActiveProductsPage({
@@ -18,7 +19,8 @@ class ProductRepositoryImpl implements ProductRepository {
     int limit = 20,
     ProductSort sort = ProductSort.newest,
   }) =>
-      _dataSource.fetchActiveProductsPage(startAfter: startAfter, limit: limit, sort: sort);
+      _dataSource.fetchActiveProductsPage(
+          startAfter: startAfter, limit: limit, sort: sort);
 
   @override
   Stream<List<Product>> streamSellerProducts(String sellerId) =>
@@ -29,7 +31,8 @@ class ProductRepositoryImpl implements ProductRepository {
       _dataSource.streamAllProductsForAdmin(limit: limit);
 
   @override
-  Future<Product?> getProduct(String productId) => _dataSource.getProduct(productId);
+  Future<Product?> getProduct(String productId) =>
+      _dataSource.getProduct(productId);
 
   @override
   Future<List<Product>> search(String query) => _dataSource.search(query);
@@ -42,5 +45,6 @@ class ProductRepositoryImpl implements ProductRepository {
       _dataSource.updateProduct(productId, updates);
 
   @override
-  Future<void> deleteProduct(String productId) => _dataSource.deleteProduct(productId);
+  Future<void> deleteProduct(String productId) =>
+      _dataSource.deleteProduct(productId);
 }

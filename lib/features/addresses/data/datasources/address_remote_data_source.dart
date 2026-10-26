@@ -11,7 +11,9 @@ class AddressRemoteDataSource {
 
   Stream<List<Address>> streamAddresses(String uid) => _api.watch(
         {ApiTopics.addresses},
-        () async => asJsonList(await _api.get('/addresses')).map(Address.fromJson).toList(),
+        () async => asJsonList(await _api.get('/addresses'))
+            .map(Address.fromJson)
+            .toList(),
       );
 
   Future<void> add(String uid, Address address) async {

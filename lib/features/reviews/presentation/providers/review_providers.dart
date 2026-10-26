@@ -8,7 +8,8 @@ import 'package:pooja_pasal/features/reviews/domain/entities/review.dart';
 import 'package:pooja_pasal/features/reviews/domain/repositories/review_repository.dart';
 
 final reviewRepositoryProvider = Provider<ReviewRepository>((ref) {
-  return ReviewRepositoryImpl(ReviewRemoteDataSource(ref.watch(apiClientProvider)));
+  return ReviewRepositoryImpl(
+      ReviewRemoteDataSource(ref.watch(apiClientProvider)));
 });
 
 final reviewsForProductProvider =
@@ -17,7 +18,8 @@ final reviewsForProductProvider =
 });
 
 /// Admin moderation list — bounded fetch, not the whole collection.
-final adminRecentReviewsProvider = FutureProvider.autoDispose<List<Review>>((ref) {
+final adminRecentReviewsProvider =
+    FutureProvider.autoDispose<List<Review>>((ref) {
   return ref.watch(reviewRepositoryProvider).fetchRecentReviews();
 });
 

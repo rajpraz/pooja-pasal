@@ -37,7 +37,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           child: TextField(
             controller: _controller,
             autofocus: true,
-            onChanged: (value) => ref.read(searchQueryProvider.notifier).update(value),
+            onChanged: (value) =>
+                ref.read(searchQueryProvider.notifier).update(value),
             onSubmitted: (value) {
               if (value.trim().isNotEmpty) {
                 ref.read(searchHistoryProvider.notifier).record(value.trim());
@@ -46,7 +47,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             decoration: InputDecoration(
               hintText: 'Search for pooja items, brands...',
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               suffixIcon: rawQuery.isEmpty
                   ? null
                   : IconButton(
@@ -60,8 +62,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           ),
         ),
       ),
-      body:
-          debouncedQuery.isEmpty ? _buildHistory(context) : _buildResults(context, debouncedQuery),
+      body: debouncedQuery.isEmpty
+          ? _buildHistory(context)
+          : _buildResults(context, debouncedQuery),
     );
   }
 
@@ -76,7 +79,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             child: Padding(
               padding: const EdgeInsets.all(24),
               child: Text('Search for pooja items, idols, incense and more.',
-                  textAlign: TextAlign.center, style: TextStyle(color: AppColors.muted)),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.muted)),
             ),
           );
         }
@@ -89,9 +93,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('Recent searches',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                   TextButton(
-                    onPressed: () => ref.read(searchHistoryProvider.notifier).clear(),
+                    onPressed: () =>
+                        ref.read(searchHistoryProvider.notifier).clear(),
                     child: const Text('Clear'),
                   ),
                 ],
@@ -134,7 +140,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   Text('No results for "$query"',
                       style: const TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 4),
-                  Text('Try a different keyword.', style: TextStyle(color: AppColors.muted)),
+                  Text('Try a different keyword.',
+                      style: TextStyle(color: AppColors.muted)),
                 ],
               ),
             ),
@@ -145,7 +152,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           child: GridView.builder(
             itemCount: results.length,
             gridDelegate: const ProductGridDelegate(),
-            itemBuilder: (context, index) => ProductCard(product: results[index]),
+            itemBuilder: (context, index) =>
+                ProductCard(product: results[index]),
           ),
         );
       },

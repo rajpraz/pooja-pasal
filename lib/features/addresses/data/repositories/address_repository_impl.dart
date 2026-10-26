@@ -8,17 +8,22 @@ class AddressRepositoryImpl implements AddressRepository {
   AddressRepositoryImpl(this._dataSource);
 
   @override
-  Stream<List<Address>> streamAddresses(String uid) => _dataSource.streamAddresses(uid);
+  Stream<List<Address>> streamAddresses(String uid) =>
+      _dataSource.streamAddresses(uid);
 
   @override
-  Future<void> add(String uid, Address address) => _dataSource.add(uid, address);
+  Future<void> add(String uid, Address address) =>
+      _dataSource.add(uid, address);
 
   @override
-  Future<void> update(String uid, Address address) => _dataSource.update(uid, address);
+  Future<void> update(String uid, Address address) =>
+      _dataSource.update(uid, address);
 
   @override
-  Future<void> delete(String uid, String addressId) => _dataSource.delete(uid, addressId);
+  Future<void> delete(String uid, String addressId) =>
+      _dataSource.delete(uid, addressId);
 
   @override
-  Future<void> setDefault(String uid, String addressId) => _dataSource.setDefault(uid, addressId);
+  Future<void> setDefault(String uid, String addressId) =>
+      _dataSource.setDefault(uid, addressId);
 }

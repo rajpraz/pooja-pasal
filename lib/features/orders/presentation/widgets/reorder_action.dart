@@ -11,7 +11,8 @@ import 'package:pooja_pasal/features/products/presentation/providers/product_pro
 /// are no longer purchasable are skipped and reported back to the buyer by
 /// name rather than silently dropped. The API still re-validates
 /// everything again at checkout regardless.
-Future<void> reorder(BuildContext context, WidgetRef ref, PoojaOrder order) async {
+Future<void> reorder(
+    BuildContext context, WidgetRef ref, PoojaOrder order) async {
   final uid = ref.read(authRepositoryProvider).currentUser?.uid;
   if (uid == null) return;
 
@@ -37,8 +38,9 @@ Future<void> reorder(BuildContext context, WidgetRef ref, PoojaOrder order) asyn
 
   if (!context.mounted) return;
   if (addedCount == 0) {
-    ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('None of these items are available to reorder right now.')));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content:
+            Text('None of these items are available to reorder right now.')));
     return;
   }
   final message = unavailable.isEmpty

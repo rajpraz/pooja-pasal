@@ -64,7 +64,8 @@ class AdminOrdersPage extends ConsumerWidget {
               SizedBox(
                 height: 44,
                 child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   scrollDirection: Axis.horizontal,
                   itemCount: adminOrderFilterTabs.length,
                   separatorBuilder: (_, __) => const SizedBox(width: 8),
@@ -77,11 +78,14 @@ class AdminOrdersPage extends ConsumerWidget {
                     return ChoiceChip(
                       label: Text('${_filterLabel(tab)} ($count)'),
                       selected: selected,
-                      onSelected: (_) => ref.read(adminOrderStatusFilterProvider.notifier).set(tab),
+                      onSelected: (_) => ref
+                          .read(adminOrderStatusFilterProvider.notifier)
+                          .set(tab),
                       selectedColor: AppColors.accent.withValues(alpha: 0.2),
                       labelStyle: TextStyle(
                           color: selected ? AppColors.accent : AppColors.muted,
-                          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                          fontWeight:
+                              selected ? FontWeight.w600 : FontWeight.normal,
                           fontSize: 12),
                     );
                   },
@@ -91,7 +95,8 @@ class AdminOrdersPage extends ConsumerWidget {
                 child: orders.isEmpty
                     ? EmptyView(
                         icon: Icons.filter_list_off,
-                        title: 'No ${_filterLabel(activeFilter).toLowerCase()} orders',
+                        title:
+                            'No ${_filterLabel(activeFilter).toLowerCase()} orders',
                         subtitle: 'Try a different filter.',
                       )
                     : ListView.builder(
@@ -104,13 +109,16 @@ class AdminOrdersPage extends ConsumerWidget {
                             child: ListTile(
                               title: Text(
                                   'Order #${order.id.substring(0, order.id.length.clamp(0, 8))}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold)),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold)),
                               subtitle: Text(
                                   '${order.items.length} item(s) • Rs.${order.totalAmount.toStringAsFixed(2)} • ${order.paymentStatus.toUpperCase()}'),
                               trailing: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: statusColor(order.status).withValues(alpha: 0.15),
+                                  color: statusColor(order.status)
+                                      .withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(order.status.toUpperCase(),
@@ -119,7 +127,8 @@ class AdminOrdersPage extends ConsumerWidget {
                                         fontWeight: FontWeight.w600,
                                         fontSize: 11)),
                               ),
-                              onTap: () => context.push(RouteNames.adminOrderDetailPath(order.id)),
+                              onTap: () => context.push(
+                                  RouteNames.adminOrderDetailPath(order.id)),
                             ),
                           );
                         },

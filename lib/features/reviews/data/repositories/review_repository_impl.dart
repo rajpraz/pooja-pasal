@@ -33,5 +33,6 @@ class ReviewRepositoryImpl implements ReviewRepository {
       _dataSource.fetchRecentReviews(limit: limit);
 
   @override
-  Future<void> deleteReview(String reviewId) => _dataSource.deleteReview(reviewId);
+  Future<void> deleteReview(String reviewId) =>
+      _dataSource.deleteReview(reviewId);
 }

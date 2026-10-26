@@ -7,7 +7,8 @@ import 'package:pooja_pasal/features/auth/domain/entities/app_user.dart';
 import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
 
 final adminUserRepositoryProvider = Provider<AdminUserRepository>((ref) {
-  return AdminUserRepositoryImpl(AdminUserRemoteDataSource(ref.watch(apiClientProvider)));
+  return AdminUserRepositoryImpl(
+      AdminUserRemoteDataSource(ref.watch(apiClientProvider)));
 });
 
 final allUsersProvider = StreamProvider<List<AppUser>>((ref) {

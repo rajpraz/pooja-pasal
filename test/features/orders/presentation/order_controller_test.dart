@@ -13,8 +13,8 @@ import 'package:pooja_pasal/features/orders/presentation/providers/order_provide
 class _FakeOrderRepository implements OrderRepository {
   final calls = <String>[];
   Object? errorToThrow;
-  CreateOrderResult createOrderResult =
-      const CreateOrderResult(orderId: 'order-1', totalAmount: 180, deduplicated: false);
+  CreateOrderResult createOrderResult = const CreateOrderResult(
+      orderId: 'order-1', totalAmount: 180, deduplicated: false);
 
   @override
   Future<CreateOrderResult> createOrder({
@@ -38,7 +38,8 @@ class _FakeOrderRepository implements OrderRepository {
   }
 
   @override
-  Future<void> updatePaymentStatus({required String orderId, required String paymentStatus}) async {
+  Future<void> updatePaymentStatus(
+      {required String orderId, required String paymentStatus}) async {
     calls.add('updatePaymentStatus($orderId, $paymentStatus)');
     if (errorToThrow != null) throw errorToThrow!;
   }
@@ -50,13 +51,16 @@ class _FakeOrderRepository implements OrderRepository {
   }
 
   @override
-  Stream<List<PoojaOrder>> streamBuyerOrders(String buyerId) => const Stream.empty();
+  Stream<List<PoojaOrder>> streamBuyerOrders(String buyerId) =>
+      const Stream.empty();
   @override
-  Stream<List<PoojaOrder>> streamSellerOrders(String sellerId) => const Stream.empty();
+  Stream<List<PoojaOrder>> streamSellerOrders(String sellerId) =>
+      const Stream.empty();
   @override
   Stream<PoojaOrder?> streamOrder(String orderId) => const Stream.empty();
   @override
-  Stream<List<PoojaOrder>> streamAllOrders({int limit = 200}) => const Stream.empty();
+  Stream<List<PoojaOrder>> streamAllOrders({int limit = 200}) =>
+      const Stream.empty();
 }
 
 CartItem _cartItem() => const CartItem(
@@ -81,8 +85,10 @@ void main() {
   });
 
   group('OrderController.placeOrder', () {
-    test('delegates to the repository and returns its server-computed result', () async {
-      final result = await container.read(orderControllerProvider.notifier).placeOrder(
+    test('delegates to the repository and returns its server-computed result',
+        () async {
+      final result =
+          await container.read(orderControllerProvider.notifier).placeOrder(
         items: [_cartItem()],
         shippingAddress: 'Kathmandu',
         paymentMethod: 'khalti',
@@ -94,15 +100,18 @@ void main() {
       ]);
       expect(result.orderId, 'order-1');
       expect(result.totalAmount, 180);
-      expect(container.read(orderControllerProvider), const AsyncData<void>(null));
+      expect(
+          container.read(orderControllerProvider), const AsyncData<void>(null));
     });
 
-    test('never invents its own total — it only ever returns exactly what the repository gave it',
+    test(
+        'never invents its own total — it only ever returns exactly what the repository gave it',
         () async {
-      fakeRepo.createOrderResult =
-          const CreateOrderResult(orderId: 'order-2', totalAmount: 999.5, deduplicated: true);
+      fakeRepo.createOrderResult = const CreateOrderResult(
+          orderId: 'order-2', totalAmount: 999.5, deduplicated: true);
 
-      final result = await container.read(orderControllerProvider.notifier).placeOrder(
+      final result =
+          await container.read(orderControllerProvider.notifier).placeOrder(
         items: [_cartItem()],
         shippingAddress: 'Pokhara',
         paymentMethod: 'cod',
@@ -113,7 +122,9 @@ void main() {
       expect(result.deduplicated, isTrue);
     });
 
-    test('propagates repository failure as AsyncError and rethrows to the caller', () async {
+    test(
+        'propagates repository failure as AsyncError and rethrows to the caller',
+        () async {
       fakeRepo.errorToThrow = Exception('out of stock');
 
       await expectLater(
@@ -132,11 +143,11 @@ void main() {
 
   group('OrderController.updateStatus / cancelOrder', () {
     test('updateStatus passes orderId/status/note through unchanged', () async {
-      await container
-          .read(orderControllerProvider.notifier)
-          .updateStatus(orderId: 'order-1', status: 'confirmed', note: 'ready to ship');
+      await container.read(orderControllerProvider.notifier).updateStatus(
+          orderId: 'order-1', status: 'confirmed', note: 'ready to ship');
 
-      expect(fakeRepo.calls, ['updateOrderStatus(order-1, confirmed, note: ready to ship)']);
+      expect(fakeRepo.calls,
+          ['updateOrderStatus(order-1, confirmed, note: ready to ship)']);
     });
 
     test(
@@ -146,15 +157,20 @@ void main() {
           .read(orderControllerProvider.notifier)
           .cancelOrder('order-1', note: 'buyer changed mind');
 
-      expect(fakeRepo.calls, ['updateOrderStatus(order-1, cancelled, note: buyer changed mind)']);
+      expect(fakeRepo.calls,
+          ['updateOrderStatus(order-1, cancelled, note: buyer changed mind)']);
     });
 
-    test('a rejected status transition (e.g. backend state-machine failure) surfaces as AsyncError',
+    test(
+        'a rejected status transition (e.g. backend state-machine failure) surfaces as AsyncError',
         () async {
-      fakeRepo.errorToThrow = Exception('Order cannot move from "delivered" to "cancelled"');
+      fakeRepo.errorToThrow =
+          Exception('Order cannot move from "delivered" to "cancelled"');
 
       await expectLater(
-        () => container.read(orderControllerProvider.notifier).cancelOrder('order-1'),
+        () => container
+            .read(orderControllerProvider.notifier)
+            .cancelOrder('order-1'),
         throwsA(isA<Exception>()),
       );
 

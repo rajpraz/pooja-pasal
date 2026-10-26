@@ -12,6 +12,6 @@ class AdminProductFilterNotifier extends Notifier<AdminProductFilter> {
   void set(AdminProductFilter value) => state = value;
 }
 
-final adminProductFilterProvider =
-    NotifierProvider.autoDispose<AdminProductFilterNotifier, AdminProductFilter>(
-        AdminProductFilterNotifier.new);
+final adminProductFilterProvider = NotifierProvider.autoDispose<
+    AdminProductFilterNotifier,
+    AdminProductFilter>(AdminProductFilterNotifier.new);

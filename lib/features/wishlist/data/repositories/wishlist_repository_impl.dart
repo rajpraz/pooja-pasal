@@ -8,11 +8,14 @@ class WishlistRepositoryImpl implements WishlistRepository {
   WishlistRepositoryImpl(this._dataSource);
 
   @override
-  Stream<List<WishlistItem>> streamWishlist(String uid) => _dataSource.streamWishlist(uid);
+  Stream<List<WishlistItem>> streamWishlist(String uid) =>
+      _dataSource.streamWishlist(uid);
 
   @override
-  Future<bool> toggle(String uid, String productId) => _dataSource.toggle(uid, productId);
+  Future<bool> toggle(String uid, String productId) =>
+      _dataSource.toggle(uid, productId);
 
   @override
-  Future<void> remove(String uid, String productId) => _dataSource.remove(uid, productId);
+  Future<void> remove(String uid, String productId) =>
+      _dataSource.remove(uid, productId);
 }

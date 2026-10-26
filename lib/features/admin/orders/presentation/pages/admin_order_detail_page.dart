@@ -30,7 +30,8 @@ class AdminOrderDetailPage extends ConsumerWidget {
 
   const AdminOrderDetailPage({super.key, required this.orderId});
 
-  Future<void> _changeStatus(BuildContext context, WidgetRef ref, String orderId, String to) async {
+  Future<void> _changeStatus(
+      BuildContext context, WidgetRef ref, String orderId, String to) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -40,7 +41,8 @@ class AdminOrderDetailPage extends ConsumerWidget {
             : 'The buyer will be notified of this change.'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text('Confirm', style: TextStyle(color: statusColor(to))),
@@ -55,18 +57,22 @@ class AdminOrderDetailPage extends ConsumerWidget {
           .read(orderControllerProvider.notifier)
           .updateStatus(orderId: orderId, status: to, note: 'Updated by admin');
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Order marked as $to.')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Order marked as $to.')));
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
     }
   }
 
   /// Paid, but the order won't be fulfilled: the money has to go back.
   static bool _needsRefundRecord(PoojaOrder order) =>
-      order.paymentStatus == 'paid' && (order.status == 'cancelled' || order.status == 'returned');
+      order.paymentStatus == 'paid' &&
+      (order.status == 'cancelled' || order.status == 'returned');
 
-  Future<void> _markRefunded(BuildContext context, WidgetRef ref, String orderId) async {
+  Future<void> _markRefunded(
+      BuildContext context, WidgetRef ref, String orderId) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -75,7 +81,8 @@ class AdminOrderDetailPage extends ConsumerWidget {
             'Only do this once the money has been sent back to the buyer. The buyer is notified.'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel')),
           TextButton(
               onPressed: () => Navigator.pop(dialogContext, true),
               child: const Text('Mark refunded')),
@@ -105,7 +112,8 @@ class AdminOrderDetailPage extends ConsumerWidget {
         loading: () => const LoadingView(),
         error: (err, st) => Center(child: Text('Could not load order: $err')),
         data: (order) {
-          if (order == null) return const Center(child: Text('Order not found'));
+          if (order == null)
+            return const Center(child: Text('Order not found'));
           final nextOptions = _adminNextStatuses[order.status] ?? const [];
 
           return ListView(
@@ -114,10 +122,13 @@ class AdminOrderDetailPage extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Order #${order.id.substring(0, order.id.length.clamp(0, 8))}',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(
+                      'Order #${order.id.substring(0, order.id.length.clamp(0, 8))}',
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: statusColor(order.status).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
@@ -145,8 +156,10 @@ class AdminOrderDetailPage extends ConsumerWidget {
                           'Payment: ${order.paymentMethod.toUpperCase()} • ${order.paymentStatus.toUpperCase()}',
                           style: TextStyle(color: AppColors.muted)),
                       const SizedBox(height: 4),
-                      Text('Placed: ${order.createdAt?.toString().substring(0, 16) ?? '—'}',
-                          style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                      Text(
+                          'Placed: ${order.createdAt?.toString().substring(0, 16) ?? '—'}',
+                          style:
+                              TextStyle(color: AppColors.muted, fontSize: 12)),
                       const SizedBox(height: 8),
                       Text('Shipping to: ${order.shippingAddress}',
                           style: TextStyle(color: AppColors.muted)),
@@ -155,7 +168,8 @@ class AdminOrderDetailPage extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text('Items', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('Items',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               for (final item in order.items)
                 Padding(
@@ -171,17 +185,20 @@ class AdminOrderDetailPage extends ConsumerWidget {
                   ),
                 ),
               const SizedBox(height: 16),
-              const Text('Status history', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('Status history',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               if (order.statusHistory.isEmpty)
-                Text('No history recorded.', style: TextStyle(color: AppColors.muted))
+                Text('No history recorded.',
+                    style: TextStyle(color: AppColors.muted))
               else
                 for (final entry in order.statusHistory)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 3),
                     child: Row(
                       children: [
-                        Icon(Icons.circle, size: 8, color: statusColor(entry.status)),
+                        Icon(Icons.circle,
+                            size: 8, color: statusColor(entry.status)),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Column(
@@ -191,18 +208,21 @@ class AdminOrderDetailPage extends ConsumerWidget {
                               // e.g. the buyer's return reason.
                               if (entry.note.isNotEmpty)
                                 Text(entry.note,
-                                    style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                                    style: TextStyle(
+                                        color: AppColors.muted, fontSize: 12)),
                             ],
                           ),
                         ),
                         Text(entry.timestamp?.toString().substring(0, 16) ?? '',
-                            style: TextStyle(color: AppColors.muted, fontSize: 11)),
+                            style: TextStyle(
+                                color: AppColors.muted, fontSize: 11)),
                       ],
                     ),
                   ),
               if (_needsRefundRecord(order)) ...[
                 const SizedBox(height: 20),
-                const Text('Payment', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('Payment',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
                 Text(
                     'This order was paid but is ${order.status}. After refunding it from the '
@@ -210,14 +230,17 @@ class AdminOrderDetailPage extends ConsumerWidget {
                     style: TextStyle(color: AppColors.muted, fontSize: 12)),
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
-                  onPressed: isBusy ? null : () => _markRefunded(context, ref, order.id),
+                  onPressed: isBusy
+                      ? null
+                      : () => _markRefunded(context, ref, order.id),
                   icon: const Icon(Icons.currency_exchange, size: 18),
                   label: const Text('Mark payment refunded'),
                 ),
               ],
               if (nextOptions.isNotEmpty) ...[
                 const SizedBox(height: 20),
-                const Text('Change status', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('Change status',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -225,12 +248,16 @@ class AdminOrderDetailPage extends ConsumerWidget {
                   children: [
                     for (final option in nextOptions)
                       OutlinedButton(
-                        onPressed:
-                            isBusy ? null : () => _changeStatus(context, ref, order.id, option),
+                        onPressed: isBusy
+                            ? null
+                            : () =>
+                                _changeStatus(context, ref, order.id, option),
                         style: OutlinedButton.styleFrom(
                             foregroundColor: statusColor(option),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10)),
-                        child: Text('Mark as ${option[0].toUpperCase()}${option.substring(1)}'),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 10)),
+                        child: Text(
+                            'Mark as ${option[0].toUpperCase()}${option.substring(1)}'),
                       ),
                   ],
                 ),

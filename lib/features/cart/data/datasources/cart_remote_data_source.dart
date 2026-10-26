@@ -13,7 +13,8 @@ class CartRemoteDataSource {
 
   Stream<List<CartItem>> streamCart(String uid) => _api.watch(
         {ApiTopics.cart},
-        () async => asJsonList(await _api.get('/cart')).map(CartItem.fromJson).toList(),
+        () async =>
+            asJsonList(await _api.get('/cart')).map(CartItem.fromJson).toList(),
       );
 
   Future<void> addToCart(String uid, Product product, {int qty = 1}) async {

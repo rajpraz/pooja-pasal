@@ -32,7 +32,10 @@ class RelatedProductsRow extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('You may also like',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.text)),
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.text)),
             const SizedBox(height: 10),
             SizedBox(
               height: ProductCard.heightFor(150),
@@ -40,8 +43,8 @@ class RelatedProductsRow extends ConsumerWidget {
                 scrollDirection: Axis.horizontal,
                 itemCount: related.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 12),
-                itemBuilder: (context, index) =>
-                    SizedBox(width: 150, child: ProductCard(product: related[index])),
+                itemBuilder: (context, index) => SizedBox(
+                    width: 150, child: ProductCard(product: related[index])),
               ),
             ),
           ],

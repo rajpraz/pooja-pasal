@@ -65,19 +65,27 @@ void main() {
   });
 
   group('CartController', () {
-    test('addToCart delegates to the repository with the right arguments', () async {
-      await container.read(cartControllerProvider.notifier).addToCart('u1', _product(), qty: 3);
+    test('addToCart delegates to the repository with the right arguments',
+        () async {
+      await container
+          .read(cartControllerProvider.notifier)
+          .addToCart('u1', _product(), qty: 3);
       expect(fakeRepo.calls, ['addToCart(u1, p1, qty: 3)']);
-      expect(container.read(cartControllerProvider), const AsyncData<void>(null));
+      expect(
+          container.read(cartControllerProvider), const AsyncData<void>(null));
     });
 
     test('updateQty delegates to the repository', () async {
-      await container.read(cartControllerProvider.notifier).updateQty('u1', 'p1', 5);
+      await container
+          .read(cartControllerProvider.notifier)
+          .updateQty('u1', 'p1', 5);
       expect(fakeRepo.calls, ['updateQty(u1, p1, 5)']);
     });
 
     test('removeItem delegates to the repository', () async {
-      await container.read(cartControllerProvider.notifier).removeItem('u1', 'p1');
+      await container
+          .read(cartControllerProvider.notifier)
+          .removeItem('u1', 'p1');
       expect(fakeRepo.calls, ['removeItem(u1, p1)']);
     });
 
@@ -86,11 +94,14 @@ void main() {
       expect(fakeRepo.calls, ['clearCart(u1)']);
     });
 
-    test('state becomes AsyncError and rethrows when the repository throws', () async {
+    test('state becomes AsyncError and rethrows when the repository throws',
+        () async {
       fakeRepo.errorToThrow = Exception('network down');
 
       await expectLater(
-        () => container.read(cartControllerProvider.notifier).addToCart('u1', _product()),
+        () => container
+            .read(cartControllerProvider.notifier)
+            .addToCart('u1', _product()),
         throwsA(isA<Exception>()),
       );
 
@@ -98,17 +109,24 @@ void main() {
       expect(state.hasError, isTrue);
     });
 
-    test('a later successful call recovers state back to AsyncData after a prior error', () async {
+    test(
+        'a later successful call recovers state back to AsyncData after a prior error',
+        () async {
       fakeRepo.errorToThrow = Exception('boom');
       await expectLater(
-        () => container.read(cartControllerProvider.notifier).addToCart('u1', _product()),
+        () => container
+            .read(cartControllerProvider.notifier)
+            .addToCart('u1', _product()),
         throwsA(isA<Exception>()),
       );
       expect(container.read(cartControllerProvider).hasError, isTrue);
 
       fakeRepo.errorToThrow = null;
-      await container.read(cartControllerProvider.notifier).addToCart('u1', _product());
-      expect(container.read(cartControllerProvider), const AsyncData<void>(null));
+      await container
+          .read(cartControllerProvider.notifier)
+          .addToCart('u1', _product());
+      expect(
+          container.read(cartControllerProvider), const AsyncData<void>(null));
     });
   });
 }

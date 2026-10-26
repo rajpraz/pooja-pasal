@@ -49,7 +49,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
   Future<void> _pickPhoto() async {
     final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+    final picked =
+        await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
     if (picked == null) return;
     final authRepository = ref.read(authRepositoryProvider);
     final user = authRepository.currentUser;
@@ -68,7 +69,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       setState(() => _existingPhotoUrl = url);
       showMessage(context, 'Profile photo updated');
     } catch (e) {
-      if (mounted) showMessage(context, 'Could not upload photo: ${friendlyErrorMessage(e)}');
+      if (mounted)
+        showMessage(
+            context, 'Could not upload photo: ${friendlyErrorMessage(e)}');
     } finally {
       if (mounted) setState(() => _isUploadingPhoto = false);
     }
@@ -95,7 +98,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       showMessage(context, 'Profile updated');
       Navigator.pop(context, true);
     } catch (e) {
-      showMessage(context, 'Could not update profile: ${friendlyErrorMessage(e)}');
+      showMessage(
+          context, 'Could not update profile: ${friendlyErrorMessage(e)}');
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -132,9 +136,11 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                               : (_existingPhotoUrl.isNotEmpty
                                   ? NetworkImage(_existingPhotoUrl)
                                   : null) as ImageProvider?,
-                          child: _pickedPhoto == null && _existingPhotoUrl.isEmpty
-                              ? Icon(Icons.person, size: 48, color: AppColors.accent)
-                              : null,
+                          child:
+                              _pickedPhoto == null && _existingPhotoUrl.isEmpty
+                                  ? Icon(Icons.person,
+                                      size: 48, color: AppColors.accent)
+                                  : null,
                         ),
                         if (_isUploadingPhoto)
                           const Positioned.fill(
@@ -161,7 +167,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                               style: IconButton.styleFrom(
                                   backgroundColor: AppColors.accent,
                                   minimumSize: const Size(32, 32)),
-                              icon: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
+                              icon: const Icon(Icons.camera_alt,
+                                  size: 16, color: Colors.white),
                             ),
                           ),
                         ),
@@ -169,26 +176,32 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                     ),
                   ),
                   const SizedBox(height: 28),
-                  const Text('Full Name', style: TextStyle(fontWeight: FontWeight.w600)),
+                  const Text('Full Name',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _nameController,
-                    decoration: const InputDecoration(prefixIcon: Icon(Icons.person_outline)),
+                    decoration: const InputDecoration(
+                        prefixIcon: Icon(Icons.person_outline)),
                   ),
                   const SizedBox(height: 16),
-                  const Text('Phone Number', style: TextStyle(fontWeight: FontWeight.w600)),
+                  const Text('Phone Number',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
-                    decoration: const InputDecoration(prefixIcon: Icon(Icons.phone_outlined)),
+                    decoration: const InputDecoration(
+                        prefixIcon: Icon(Icons.phone_outlined)),
                   ),
                   const SizedBox(height: 16),
-                  const Text('Address', style: TextStyle(fontWeight: FontWeight.w600)),
+                  const Text('Address',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _addressController,
-                    decoration: const InputDecoration(prefixIcon: Icon(Icons.location_on_outlined)),
+                    decoration: const InputDecoration(
+                        prefixIcon: Icon(Icons.location_on_outlined)),
                   ),
                   const SizedBox(height: 28),
                   SizedBox(
@@ -200,8 +213,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                           ? const SizedBox(
                               width: 22,
                               height: 22,
-                              child:
-                                  CircularProgressIndicator(color: Colors.white, strokeWidth: 2.4),
+                              child: CircularProgressIndicator(
+                                  color: Colors.white, strokeWidth: 2.4),
                             )
                           : const Text('Save Changes'),
                     ),

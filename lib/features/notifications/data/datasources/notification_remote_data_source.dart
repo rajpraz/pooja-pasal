@@ -10,8 +10,9 @@ class NotificationRemoteDataSource {
 
   Stream<List<AppNotification>> streamNotifications(String uid) => _api.watch(
         {ApiTopics.notifications},
-        () async =>
-            asJsonList(await _api.get('/notifications')).map(AppNotification.fromJson).toList(),
+        () async => asJsonList(await _api.get('/notifications'))
+            .map(AppNotification.fromJson)
+            .toList(),
         pollEvery: const Duration(seconds: 30),
       );
 
@@ -21,7 +22,8 @@ class NotificationRemoteDataSource {
   }
 
   /// Registers this install's FCM token so the API pushes to it.
-  Future<void> registerDevice({required String token, required String platform}) async {
+  Future<void> registerDevice(
+      {required String token, required String platform}) async {
     await _api.post('/devices', {'token': token, 'platform': platform});
   }
 

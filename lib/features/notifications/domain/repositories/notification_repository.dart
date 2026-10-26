@@ -8,7 +8,8 @@ abstract class NotificationRepository {
 
   Future<void> markRead(String uid, String notificationId);
 
-  Future<void> registerDevice({required String token, required String platform});
+  Future<void> registerDevice(
+      {required String token, required String platform});
 
   Future<void> unregisterDevice(String token);
 }

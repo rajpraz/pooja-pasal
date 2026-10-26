@@ -39,5 +39,6 @@ abstract class OrderRepository {
   /// Admin: records a payment's state — typically `refunded` once money for
   /// a cancelled or returned order was sent back from the gateway's
   /// dashboard.
-  Future<void> updatePaymentStatus({required String orderId, required String paymentStatus});
+  Future<void> updatePaymentStatus(
+      {required String orderId, required String paymentStatus});
 }

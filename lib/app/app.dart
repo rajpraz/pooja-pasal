@@ -45,8 +45,10 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
 
     final mode = ref.watch(themeModeProvider);
     final platformDark =
-        WidgetsBinding.instance.platformDispatcher.platformBrightness == Brightness.dark;
-    final dark = mode == ThemeMode.dark || (mode == ThemeMode.system && platformDark);
+        WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+            Brightness.dark;
+    final dark =
+        mode == ThemeMode.dark || (mode == ThemeMode.system && platformDark);
     // Widgets read AppColors directly, so the palette is switched here and
     // the app below is rebuilt from scratch (the key) when it changes. The
     // router keeps its location across that rebuild.
@@ -59,7 +61,8 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
       title: 'Pooja Pasal',
       theme: dark ? AppTheme.dark() : AppTheme.light(),
       routerConfig: router,
-      builder: (context, child) => ResponsiveFrame(child: child ?? const SizedBox.shrink()),
+      builder: (context, child) =>
+          ResponsiveFrame(child: child ?? const SizedBox.shrink()),
     );
   }
 }

@@ -10,7 +10,8 @@ class CouponRemoteDataSource {
   final ApiClient _api;
 
   Future<CouponQuote> validate(String code, double subtotal) async {
-    final data = await _api.post('/coupons/validate', {'code': code, 'subtotal': subtotal})
+    final data = await _api
+            .post('/coupons/validate', {'code': code, 'subtotal': subtotal})
         as Map<String, dynamic>;
     return CouponQuote(
       code: data['code'] as String? ?? code.toUpperCase(),

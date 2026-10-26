@@ -25,7 +25,8 @@ class AdminSellersPage extends StatelessWidget {
         backgroundColor: AppColors.background,
         appBar: AppBar(
           title: const Text('Sellers'),
-          bottom: const TabBar(tabs: [Tab(text: 'Applications'), Tab(text: 'All Sellers')]),
+          bottom: const TabBar(
+              tabs: [Tab(text: 'Applications'), Tab(text: 'All Sellers')]),
         ),
         body: const TabBarView(
           children: [_PendingApplicationsTab(), _AllSellersTab()],
@@ -60,12 +61,16 @@ class _AllSellersTab extends ConsumerWidget {
             return Card(
               margin: const EdgeInsets.only(bottom: 10),
               child: ListTile(
-                leading: Icon(Icons.storefront_outlined, color: AppColors.primary),
+                leading:
+                    Icon(Icons.storefront_outlined, color: AppColors.primary),
                 title: Text(seller.name.isEmpty ? seller.email : seller.name,
                     style: const TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: Text(seller.email, style: TextStyle(color: AppColors.muted)),
-                trailing: Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.muted),
-                onTap: () => context.push(RouteNames.adminSellerDetailPath(seller.uid)),
+                subtitle: Text(seller.email,
+                    style: TextStyle(color: AppColors.muted)),
+                trailing: Icon(Icons.arrow_forward_ios,
+                    size: 14, color: AppColors.muted),
+                onTap: () =>
+                    context.push(RouteNames.adminSellerDetailPath(seller.uid)),
               ),
             );
           },
@@ -78,15 +83,18 @@ class _AllSellersTab extends ConsumerWidget {
 class _PendingApplicationsTab extends ConsumerWidget {
   const _PendingApplicationsTab();
 
-  Future<void> _approve(BuildContext context, WidgetRef ref, SellerApplication app) async {
+  Future<void> _approve(
+      BuildContext context, WidgetRef ref, SellerApplication app) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Approve seller?'),
-        content: Text('"${app.shopName}" will be granted seller access immediately.'),
+        content: Text(
+            '"${app.shopName}" will be granted seller access immediately.'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text('Approve', style: TextStyle(color: AppColors.success)),
@@ -99,15 +107,17 @@ class _PendingApplicationsTab extends ConsumerWidget {
     try {
       await ref.read(adminSellerControllerProvider.notifier).approve(app.uid);
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('${app.shopName} approved as seller.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${app.shopName} approved as seller.')));
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
     }
   }
 
-  Future<void> _reject(BuildContext context, WidgetRef ref, SellerApplication app) async {
+  Future<void> _reject(
+      BuildContext context, WidgetRef ref, SellerApplication app) async {
     final reasonController = TextEditingController();
     final confirmed = await showDialog<bool>(
       context: context,
@@ -127,7 +137,8 @@ class _PendingApplicationsTab extends ConsumerWidget {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text('Reject', style: TextStyle(color: AppColors.error)),
@@ -146,7 +157,8 @@ class _PendingApplicationsTab extends ConsumerWidget {
           .showSnackBar(SnackBar(content: Text('${app.shopName} rejected.')));
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
     }
   }
 
@@ -157,7 +169,8 @@ class _PendingApplicationsTab extends ConsumerWidget {
 
     return applicationsAsync.when(
       loading: () => const LoadingView(),
-      error: (err, st) => Center(child: Text('Could not load applications: $err')),
+      error: (err, st) =>
+          Center(child: Text('Could not load applications: $err')),
       data: (applications) {
         if (applications.isEmpty) {
           return const EmptyView(
@@ -179,32 +192,45 @@ class _PendingApplicationsTab extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(app.shopName,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16)),
                     const SizedBox(height: 4),
                     // Who is applying, not just the shop they want to open.
                     if (app.name.isNotEmpty || app.email.isNotEmpty)
-                      Text([app.name, app.email].where((part) => part.isNotEmpty).join(' • '),
+                      Text(
+                          [app.name, app.email]
+                              .where((part) => part.isNotEmpty)
+                              .join(' • '),
                           style: TextStyle(color: AppColors.muted)),
-                    Text('Phone: ${app.phone}', style: TextStyle(color: AppColors.muted)),
+                    Text('Phone: ${app.phone}',
+                        style: TextStyle(color: AppColors.muted)),
                     if (app.reason.isNotEmpty) ...[
                       const SizedBox(height: 4),
-                      Text(app.reason, style: TextStyle(color: AppColors.muted, fontSize: 13)),
+                      Text(app.reason,
+                          style:
+                              TextStyle(color: AppColors.muted, fontSize: 13)),
                     ],
                     const SizedBox(height: 12),
                     Row(
                       children: [
                         Expanded(
                           child: OutlinedButton(
-                            onPressed: isBusy ? null : () => _reject(context, ref, app),
-                            style: OutlinedButton.styleFrom(foregroundColor: AppColors.error),
+                            onPressed: isBusy
+                                ? null
+                                : () => _reject(context, ref, app),
+                            style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.error),
                             child: const Text('Reject'),
                           ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: isBusy ? null : () => _approve(context, ref, app),
-                            style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
+                            onPressed: isBusy
+                                ? null
+                                : () => _approve(context, ref, app),
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.success),
                             child: const Text('Approve'),
                           ),
                         ),

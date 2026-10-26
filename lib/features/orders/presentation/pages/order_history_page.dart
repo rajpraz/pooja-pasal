@@ -66,7 +66,8 @@ class OrderHistoryPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final uid = ref.watch(authRepositoryProvider).currentUser?.uid;
     if (uid == null) {
-      return const Scaffold(body: Center(child: Text('Please log in to view your orders')));
+      return const Scaffold(
+          body: Center(child: Text('Please log in to view your orders')));
     }
     final ordersAsync = ref.watch(buyerOrdersProvider(uid));
 
@@ -93,7 +94,8 @@ class OrderHistoryPage extends ConsumerWidget {
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),
                 child: InkWell(
-                  onTap: () => context.push(RouteNames.orderTrackingPath(order.id)),
+                  onTap: () =>
+                      context.push(RouteNames.orderTrackingPath(order.id)),
                   child: Padding(
                     padding: const EdgeInsets.all(14),
                     child: Column(
@@ -104,12 +106,15 @@ class OrderHistoryPage extends ConsumerWidget {
                             Expanded(
                               child: Text(
                                   'Order #${order.id.substring(0, order.id.length.clamp(0, 8))}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold)),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold)),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: _statusColor(order.status).withValues(alpha: 0.15),
+                                color: _statusColor(order.status)
+                                    .withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(order.status.toUpperCase(),
@@ -127,9 +132,12 @@ class OrderHistoryPage extends ConsumerWidget {
                         Row(
                           children: [
                             Text(_formatDate(order.createdAt),
-                                style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                                style: TextStyle(
+                                    color: AppColors.muted, fontSize: 12)),
                             const Spacer(),
-                            Icon(Icons.circle, size: 6, color: _paymentColor(order.paymentStatus)),
+                            Icon(Icons.circle,
+                                size: 6,
+                                color: _paymentColor(order.paymentStatus)),
                             const SizedBox(width: 4),
                             Text(
                                 'Payment: ${order.paymentStatus.replaceAll('_', ' ').toUpperCase()}',

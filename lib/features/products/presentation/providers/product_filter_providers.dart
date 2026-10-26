@@ -13,4 +13,5 @@ class ProductFilterNotifier extends Notifier<ProductFilter> {
 }
 
 final productFilterProvider =
-    NotifierProvider<ProductFilterNotifier, ProductFilter>(ProductFilterNotifier.new);
+    NotifierProvider<ProductFilterNotifier, ProductFilter>(
+        ProductFilterNotifier.new);

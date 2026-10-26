@@ -8,7 +8,10 @@ class CheckoutTotals {
   final double discount;
   final double deliveryFee;
 
-  const CheckoutTotals({required this.subtotal, required this.discount, required this.deliveryFee});
+  const CheckoutTotals(
+      {required this.subtotal,
+      required this.discount,
+      required this.deliveryFee});
 
   /// [items] priced as the server reported them; [fallbackSubtotal] is used
   /// until they have loaded. A coupon never takes off more than the items

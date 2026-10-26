@@ -20,7 +20,8 @@ class _SellerOrderStatusFilter extends Notifier<String?> {
 }
 
 final _sellerOrderStatusFilterProvider =
-    NotifierProvider.autoDispose<_SellerOrderStatusFilter, String?>(_SellerOrderStatusFilter.new);
+    NotifierProvider.autoDispose<_SellerOrderStatusFilter, String?>(
+        _SellerOrderStatusFilter.new);
 
 const _filterTabs = <String?>[
   null,
@@ -87,7 +88,8 @@ class SellerOrdersPage extends ConsumerWidget {
   bool _canCancel(String status) =>
       status == 'pending' || status == 'confirmed' || status == 'processing';
 
-  Future<void> _advanceStatus(BuildContext context, WidgetRef ref, PoojaOrder order) async {
+  Future<void> _advanceStatus(
+      BuildContext context, WidgetRef ref, PoojaOrder order) async {
     final next = _nextStatus(order.status);
     if (next == null) return;
     try {
@@ -106,7 +108,8 @@ class SellerOrdersPage extends ConsumerWidget {
     }
   }
 
-  Future<void> _confirmCancel(BuildContext context, WidgetRef ref, PoojaOrder order) async {
+  Future<void> _confirmCancel(
+      BuildContext context, WidgetRef ref, PoojaOrder order) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -119,7 +122,8 @@ class SellerOrdersPage extends ConsumerWidget {
               child: const Text('Keep order')),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text('Cancel order', style: TextStyle(color: AppColors.error)),
+            child:
+                Text('Cancel order', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -131,22 +135,28 @@ class SellerOrdersPage extends ConsumerWidget {
           .read(orderControllerProvider.notifier)
           .cancelOrder(order.id, note: 'Cancelled by seller');
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Order cancelled')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Order cancelled')));
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
     }
   }
 
-  Future<void> _confirmCodPayment(BuildContext context, WidgetRef ref, PoojaOrder order) async {
+  Future<void> _confirmCodPayment(
+      BuildContext context, WidgetRef ref, PoojaOrder order) async {
     try {
-      await ref.read(paymentControllerProvider.notifier).confirmCodPayment(order.id);
+      await ref
+          .read(paymentControllerProvider.notifier)
+          .confirmCodPayment(order.id);
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Payment collection confirmed')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Payment collection confirmed')));
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
     }
   }
 
@@ -182,7 +192,8 @@ class SellerOrdersPage extends ConsumerWidget {
             SizedBox(
               height: 44,
               child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 scrollDirection: Axis.horizontal,
                 itemCount: _filterTabs.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 8),
@@ -195,11 +206,14 @@ class SellerOrdersPage extends ConsumerWidget {
                   return ChoiceChip(
                     label: Text('${_filterLabel(tab)} ($count)'),
                     selected: selected,
-                    onSelected: (_) => ref.read(_sellerOrderStatusFilterProvider.notifier).set(tab),
+                    onSelected: (_) => ref
+                        .read(_sellerOrderStatusFilterProvider.notifier)
+                        .set(tab),
                     selectedColor: AppColors.accent.withValues(alpha: 0.2),
                     labelStyle: TextStyle(
                         color: selected ? AppColors.accent : AppColors.muted,
-                        fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                        fontWeight:
+                            selected ? FontWeight.w600 : FontWeight.normal,
                         fontSize: 12),
                   );
                 },
@@ -209,7 +223,8 @@ class SellerOrdersPage extends ConsumerWidget {
               child: orders.isEmpty
                   ? EmptyView(
                       icon: Icons.filter_list_off,
-                      title: 'No ${_filterLabel(activeFilter).toLowerCase()} orders',
+                      title:
+                          'No ${_filterLabel(activeFilter).toLowerCase()} orders',
                       subtitle: 'Try a different filter.',
                     )
                   : ListView.builder(
@@ -217,19 +232,24 @@ class SellerOrdersPage extends ConsumerWidget {
                       itemCount: orders.length,
                       itemBuilder: (context, index) {
                         final order = orders[index];
-                        final myItems = order.items.where((item) => item.sellerId == uid).toList();
+                        final myItems = order.items
+                            .where((item) => item.sellerId == uid)
+                            .toList();
                         // An unpaid Khalti/eSewa order is confirmed by its
                         // payment verification, not by the seller.
                         final awaitingPayment =
-                            (order.paymentMethod == 'khalti' || order.paymentMethod == 'esewa') &&
+                            (order.paymentMethod == 'khalti' ||
+                                    order.paymentMethod == 'esewa') &&
                                 order.paymentStatus != 'paid';
-                        final next = awaitingPayment && order.status == 'pending'
-                            ? null
-                            : _nextStatus(order.status);
+                        final next =
+                            awaitingPayment && order.status == 'pending'
+                                ? null
+                                : _nextStatus(order.status);
                         final canCancel = _canCancel(order.status);
-                        final needsCodConfirmation = order.paymentMethod == 'cod' &&
-                            order.status == 'delivered' &&
-                            order.paymentStatus != 'paid';
+                        final needsCodConfirmation =
+                            order.paymentMethod == 'cod' &&
+                                order.status == 'delivered' &&
+                                order.paymentStatus != 'paid';
 
                         return Card(
                           margin: const EdgeInsets.only(bottom: 12),
@@ -239,18 +259,21 @@ class SellerOrdersPage extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Expanded(
                                       child: Text(
                                           'Order #${order.id.substring(0, order.id.length.clamp(0, 8))}',
-                                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold)),
                                     ),
                                     Container(
-                                      padding:
-                                          const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 4),
                                       decoration: BoxDecoration(
-                                        color: _statusColor(order.status).withValues(alpha: 0.15),
+                                        color: _statusColor(order.status)
+                                            .withValues(alpha: 0.15),
                                         borderRadius: BorderRadius.circular(20),
                                       ),
                                       child: Text(order.status.toUpperCase(),
@@ -264,23 +287,28 @@ class SellerOrdersPage extends ConsumerWidget {
                                 const SizedBox(height: 8),
                                 for (final item in myItems)
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 2),
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 2),
                                     child: Text(
                                         '${item.name} × ${item.qty} — Rs.${(item.price * item.qty).toStringAsFixed(0)}'),
                                   ),
                                 const SizedBox(height: 6),
                                 Text('Ship to: ${order.shippingAddress}',
-                                    style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                                    style: TextStyle(
+                                        color: AppColors.muted, fontSize: 12)),
                                 Text(
                                     'Payment: ${order.paymentMethod.toUpperCase()} • ${order.paymentStatus.toUpperCase()}',
-                                    style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                                    style: TextStyle(
+                                        color: AppColors.muted, fontSize: 12)),
                                 if (next != null) ...[
                                   const SizedBox(height: 10),
                                   SizedBox(
                                     width: double.infinity,
                                     child: OutlinedButton(
-                                      onPressed:
-                                          isBusy ? null : () => _advanceStatus(context, ref, order),
+                                      onPressed: isBusy
+                                          ? null
+                                          : () => _advanceStatus(
+                                              context, ref, order),
                                       child: Text(
                                           'Mark as ${next[0].toUpperCase()}${next.substring(1)}'),
                                     ),
@@ -293,8 +321,10 @@ class SellerOrdersPage extends ConsumerWidget {
                                     child: OutlinedButton(
                                       onPressed: isBusy
                                           ? null
-                                          : () => _confirmCodPayment(context, ref, order),
-                                      child: const Text('Confirm Cash Payment Collected'),
+                                          : () => _confirmCodPayment(
+                                              context, ref, order),
+                                      child: const Text(
+                                          'Confirm Cash Payment Collected'),
                                     ),
                                   ),
                                 ],
@@ -303,9 +333,12 @@ class SellerOrdersPage extends ConsumerWidget {
                                   SizedBox(
                                     width: double.infinity,
                                     child: TextButton(
-                                      onPressed:
-                                          isBusy ? null : () => _confirmCancel(context, ref, order),
-                                      style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                                      onPressed: isBusy
+                                          ? null
+                                          : () => _confirmCancel(
+                                              context, ref, order),
+                                      style: TextButton.styleFrom(
+                                          foregroundColor: AppColors.error),
                                       child: const Text('Cancel Order'),
                                     ),
                                   ),

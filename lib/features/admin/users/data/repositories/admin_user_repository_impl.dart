@@ -8,5 +8,6 @@ class AdminUserRepositoryImpl implements AdminUserRepository {
   AdminUserRepositoryImpl(this._dataSource);
 
   @override
-  Stream<List<AppUser>> streamUsers({int limit = 200}) => _dataSource.streamUsers(limit: limit);
+  Stream<List<AppUser>> streamUsers({int limit = 200}) =>
+      _dataSource.streamUsers(limit: limit);
 }

@@ -53,10 +53,12 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
             ? Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.mark_email_read_outlined, size: 64, color: AppColors.success),
+                  Icon(Icons.mark_email_read_outlined,
+                      size: 64, color: AppColors.success),
                   const SizedBox(height: 16),
                   const Text('Check your email',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   Text(
                       'If an account exists for ${_emailController.text.trim()}, '
@@ -79,9 +81,12 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                 children: [
                   Text('Forgot your password?',
                       style: TextStyle(
-                          fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary)),
                   const SizedBox(height: 8),
-                  Text('Enter your email and we\'ll send you instructions to reset it.',
+                  Text(
+                      'Enter your email and we\'ll send you instructions to reset it.',
                       style: TextStyle(color: AppColors.muted)),
                   const SizedBox(height: 28),
                   TextFormField(
@@ -102,7 +107,8 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                           ? const SizedBox(
                               height: 20,
                               width: 20,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              child: CircularProgressIndicator(
+                                  color: Colors.white, strokeWidth: 2),
                             )
                           : const Text('Send Reset Link'),
                     ),

@@ -28,8 +28,8 @@ final cartProvider = StreamProvider.family<List<CartItem>, String>((ref, uid) {
 /// UX nicety to warn the buyer *before* they hit checkout — the actual
 /// safety net is `createOrder` re-reading every product fresh inside a
 /// transaction, which still runs even if this client-side check is stale.
-final cartValidationProvider =
-    FutureProvider.autoDispose.family<List<CartLineValidation>, String>((ref, uid) async {
+final cartValidationProvider = FutureProvider.autoDispose
+    .family<List<CartLineValidation>, String>((ref, uid) async {
   final items = await ref.watch(cartProvider(uid).future);
   if (items.isEmpty) return const [];
   final productRepository = ref.watch(productRepositoryProvider);
@@ -94,4 +94,5 @@ class CartController extends AsyncNotifier<void> {
   }
 }
 
-final cartControllerProvider = AsyncNotifierProvider<CartController, void>(CartController.new);
+final cartControllerProvider =
+    AsyncNotifierProvider<CartController, void>(CartController.new);

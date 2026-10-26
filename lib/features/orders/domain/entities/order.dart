@@ -136,7 +136,8 @@ class PoojaOrder {
       paymentMethod: map.str('paymentMethod', 'cod'),
       paymentRef: map.strOrNull('paymentRef'),
       shippingAddress: map.str('shippingAddress'),
-      statusHistory: map.objects('statusHistory').map(StatusHistoryEntry.fromMap).toList(),
+      statusHistory:
+          map.objects('statusHistory').map(StatusHistoryEntry.fromMap).toList(),
       createdAt: map.date('createdAt'),
       couponCode: map.strOrNull('couponCode'),
     );

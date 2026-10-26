@@ -47,7 +47,8 @@ class ProductListController extends AsyncNotifier<ProductListState> {
     final repository = ref.watch(productRepositoryProvider);
     final sort = ref.watch(productFilterProvider.select((f) => f.sort));
     final page = await repository.fetchActiveProductsPage(sort: sort);
-    return ProductListState(rawItems: page.items, cursor: page.cursor, hasMore: page.hasMore);
+    return ProductListState(
+        rawItems: page.items, cursor: page.cursor, hasMore: page.hasMore);
   }
 
   Future<void> loadMore() async {
@@ -76,4 +77,5 @@ class ProductListController extends AsyncNotifier<ProductListState> {
 }
 
 final productListControllerProvider =
-    AsyncNotifierProvider<ProductListController, ProductListState>(ProductListController.new);
+    AsyncNotifierProvider<ProductListController, ProductListState>(
+        ProductListController.new);

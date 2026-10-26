@@ -20,8 +20,9 @@ class OrderRemoteDataSource {
       asJsonList(payload).map(PoojaOrder.fromJson).toList();
 
   /// The signed-in buyer's own orders.
-  Stream<List<PoojaOrder>> streamBuyerOrders(String buyerId) => _api
-      .watch({ApiTopics.orders}, () async => _orders(await _api.get('/orders')), pollEvery: _poll);
+  Stream<List<PoojaOrder>> streamBuyerOrders(String buyerId) => _api.watch(
+      {ApiTopics.orders}, () async => _orders(await _api.get('/orders')),
+      pollEvery: _poll);
 
   /// Orders containing [sellerId]'s products, with only that seller's lines.
   /// The seller themselves uses the seller portal; an admin looking at a
@@ -29,8 +30,10 @@ class OrderRemoteDataSource {
   Stream<List<PoojaOrder>> streamSellerOrders(String sellerId) => _api.watch(
         {ApiTopics.orders},
         () async {
-          if (sellerId == _currentUid()) return _orders(await _api.get('/seller/orders'));
-          return _orders(await _api.get('/admin/orders', query: {'sellerId': sellerId}));
+          if (sellerId == _currentUid())
+            return _orders(await _api.get('/seller/orders'));
+          return _orders(
+              await _api.get('/admin/orders', query: {'sellerId': sellerId}));
         },
         pollEvery: _poll,
       );
@@ -41,7 +44,8 @@ class OrderRemoteDataSource {
         {ApiTopics.orders},
         () async {
           try {
-            return PoojaOrder.fromJson(asJsonMap(await _api.get('/orders/$orderId')));
+            return PoojaOrder.fromJson(
+                asJsonMap(await _api.get('/orders/$orderId')));
           } on AppFunctionException catch (e) {
             if (e.code == 'not-found') return null;
             rethrow;
@@ -53,7 +57,8 @@ class OrderRemoteDataSource {
   /// Admin: every order, newest first.
   Stream<List<PoojaOrder>> streamAllOrders({int limit = 200}) => _api.watch(
         {ApiTopics.orders},
-        () async => _orders(await _api.get('/admin/orders', query: {'limit': limit})),
+        () async =>
+            _orders(await _api.get('/admin/orders', query: {'limit': limit})),
         pollEvery: _poll,
       );
 
@@ -65,14 +70,19 @@ class OrderRemoteDataSource {
     String? couponCode,
   }) async {
     final data = await _api.post('/orders', {
-      'items': items.map((e) => {'productId': e.productId, 'qty': e.qty}).toList(),
+      'items':
+          items.map((e) => {'productId': e.productId, 'qty': e.qty}).toList(),
       'shippingAddress': shippingAddress,
       'paymentMethod': paymentMethod,
       'idempotencyKey': idempotencyKey,
       if (couponCode != null && couponCode.isNotEmpty) 'couponCode': couponCode,
     }) as Map<String, dynamic>;
-    _api.notifyChanged(
-        const [ApiTopics.orders, ApiTopics.cart, ApiTopics.products, ApiTopics.notifications]);
+    _api.notifyChanged(const [
+      ApiTopics.orders,
+      ApiTopics.cart,
+      ApiTopics.products,
+      ApiTopics.notifications
+    ]);
     return CreateOrderResult(
       orderId: data['orderId'] as String? ?? '',
       totalAmount: (data['totalAmount'] as num?)?.toDouble() ?? 0.0,
@@ -80,8 +90,10 @@ class OrderRemoteDataSource {
     );
   }
 
-  Future<void> updatePaymentStatus({required String orderId, required String paymentStatus}) async {
-    await _api.patch('/admin/orders/$orderId/payment', {'paymentStatus': paymentStatus});
+  Future<void> updatePaymentStatus(
+      {required String orderId, required String paymentStatus}) async {
+    await _api.patch(
+        '/admin/orders/$orderId/payment', {'paymentStatus': paymentStatus});
     _api.notifyChanged(const [ApiTopics.orders, ApiTopics.notifications]);
   }
 
@@ -94,6 +106,7 @@ class OrderRemoteDataSource {
       'status': status,
       if (note != null && note.isNotEmpty) 'note': note,
     });
-    _api.notifyChanged(const [ApiTopics.orders, ApiTopics.products, ApiTopics.notifications]);
+    _api.notifyChanged(
+        const [ApiTopics.orders, ApiTopics.products, ApiTopics.notifications]);
   }
 }

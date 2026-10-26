@@ -30,11 +30,13 @@ class EmptyView extends StatelessWidget {
             const SizedBox(height: 16),
             Text(title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
             if (subtitle != null) ...[
               const SizedBox(height: 6),
               Text(subtitle!,
-                  textAlign: TextAlign.center, style: TextStyle(color: AppColors.muted)),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.muted)),
             ],
             if (action != null) ...[
               const SizedBox(height: 20),

@@ -32,7 +32,8 @@ class AdminSellerRemoteDataSource {
 
   Stream<List<AppUser>> streamSellers() => _api.watch(
         {ApiTopics.users},
-        () async => asJsonList(await _api.get('/admin/users', query: {'role': 'seller'}))
+        () async => asJsonList(
+                await _api.get('/admin/users', query: {'role': 'seller'}))
             .map(AppUser.fromJson)
             .toList(),
       );

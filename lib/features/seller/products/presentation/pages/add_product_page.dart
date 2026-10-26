@@ -176,7 +176,8 @@ class _AddProductFormState extends ConsumerState<_AddProductForm> {
           'name': name,
           'price': parsedPrice,
           'stock': parsedStock,
-          'description': description.isEmpty ? 'No description provided.' : description,
+          'description':
+              description.isEmpty ? 'No description provided.' : description,
           'category': _category,
           'festivalTag': _festivalTag,
           'images': images,
@@ -185,7 +186,8 @@ class _AddProductFormState extends ConsumerState<_AddProductForm> {
         await productRepository.addProduct(Product(
           id: '',
           name: name,
-          description: description.isEmpty ? 'No description provided.' : description,
+          description:
+              description.isEmpty ? 'No description provided.' : description,
           price: parsedPrice,
           category: _category,
           festivalTag: _festivalTag,
@@ -200,7 +202,8 @@ class _AddProductFormState extends ConsumerState<_AddProductForm> {
       if (!mounted) return;
       Navigator.pop(context, true);
     } catch (e) {
-      showMessage(context, 'Could not save product: ${friendlyErrorMessage(e)}');
+      showMessage(
+          context, 'Could not save product: ${friendlyErrorMessage(e)}');
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -226,7 +229,8 @@ class _AddProductFormState extends ConsumerState<_AddProductForm> {
               padding: const EdgeInsets.all(20.0),
               child: ListView(
                 children: [
-                  const Text('Product Images', style: TextStyle(fontWeight: FontWeight.w600)),
+                  const Text('Product Images',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 16,
@@ -234,7 +238,8 @@ class _AddProductFormState extends ConsumerState<_AddProductForm> {
                     children: [
                       for (int i = 0; i < _existingImageUrls.length; i++)
                         _imageTile(
-                          child: Image.network(_existingImageUrls[i], fit: BoxFit.cover),
+                          child: Image.network(_existingImageUrls[i],
+                              fit: BoxFit.cover),
                           onRemove: () => _removeExistingImage(i),
                         ),
                       for (int i = 0; i < _newImages.length; i++)
@@ -256,18 +261,21 @@ class _AddProductFormState extends ConsumerState<_AddProductForm> {
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(color: AppColors.border),
                             ),
-                            child: Icon(Icons.add_a_photo_outlined, color: AppColors.primary),
+                            child: Icon(Icons.add_a_photo_outlined,
+                                color: AppColors.primary),
                           ),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  const Text('Product Name', style: TextStyle(fontWeight: FontWeight.w600)),
+                  const Text('Product Name',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _nameController,
-                    decoration: const InputDecoration(hintText: 'e.g. Brass Diya Set'),
+                    decoration:
+                        const InputDecoration(hintText: 'e.g. Brass Diya Set'),
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -281,8 +289,11 @@ class _AddProductFormState extends ConsumerState<_AddProductForm> {
                             const SizedBox(height: 8),
                             TextField(
                               controller: _priceController,
-                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                              decoration: const InputDecoration(hintText: 'e.g. 850'),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                      decimal: true),
+                              decoration:
+                                  const InputDecoration(hintText: 'e.g. 850'),
                             ),
                           ],
                         ),
@@ -292,12 +303,14 @@ class _AddProductFormState extends ConsumerState<_AddProductForm> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Stock Qty', style: TextStyle(fontWeight: FontWeight.w600)),
+                            const Text('Stock Qty',
+                                style: TextStyle(fontWeight: FontWeight.w600)),
                             const SizedBox(height: 8),
                             TextField(
                               controller: _stockController,
                               keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(hintText: 'e.g. 20'),
+                              decoration:
+                                  const InputDecoration(hintText: 'e.g. 20'),
                             ),
                           ],
                         ),
@@ -305,13 +318,16 @@ class _AddProductFormState extends ConsumerState<_AddProductForm> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  const Text('Category', style: TextStyle(fontWeight: FontWeight.w600)),
+                  const Text('Category',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
                     initialValue: _category,
-                    items:
-                        _categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                    onChanged: (value) => setState(() => _category = value ?? _category),
+                    items: _categories
+                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                        .toList(),
+                    onChanged: (value) =>
+                        setState(() => _category = value ?? _category),
                   ),
                   const SizedBox(height: 16),
                   const Text('Festival Tag (optional)',
@@ -324,12 +340,15 @@ class _AddProductFormState extends ConsumerState<_AddProductForm> {
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          initialValue: _festivalTag.isEmpty ? null : _festivalTag,
+                          initialValue:
+                              _festivalTag.isEmpty ? null : _festivalTag,
                           hint: const Text('None'),
                           items: _festivals
-                              .map((f) => DropdownMenuItem(value: f, child: Text(f)))
+                              .map((f) =>
+                                  DropdownMenuItem(value: f, child: Text(f)))
                               .toList(),
-                          onChanged: (value) => setState(() => _festivalTag = value ?? ''),
+                          onChanged: (value) =>
+                              setState(() => _festivalTag = value ?? ''),
                           isExpanded: true,
                         ),
                       ),
@@ -342,12 +361,14 @@ class _AddProductFormState extends ConsumerState<_AddProductForm> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  const Text('Description', style: TextStyle(fontWeight: FontWeight.w600)),
+                  const Text('Description',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _descriptionController,
                     maxLines: 3,
-                    decoration: const InputDecoration(hintText: 'Tell buyers about this product'),
+                    decoration: const InputDecoration(
+                        hintText: 'Tell buyers about this product'),
                   ),
                   const SizedBox(height: 28),
                   SizedBox(
@@ -383,7 +404,8 @@ class _AddProductFormState extends ConsumerState<_AddProductForm> {
               tooltip: 'Remove image',
               padding: EdgeInsets.zero,
               style: IconButton.styleFrom(
-                  backgroundColor: Colors.black54, minimumSize: const Size(32, 32)),
+                  backgroundColor: Colors.black54,
+                  minimumSize: const Size(32, 32)),
               icon: const Icon(Icons.close, size: 16, color: Colors.white),
             ),
           ),

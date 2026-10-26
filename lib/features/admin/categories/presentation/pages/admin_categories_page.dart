@@ -17,7 +17,8 @@ import 'package:pooja_pasal/shared/widgets/loading_view.dart';
 class AdminCategoriesPage extends ConsumerWidget {
   const AdminCategoriesPage({super.key});
 
-  Future<void> _toggleActive(BuildContext context, WidgetRef ref, Category category) async {
+  Future<void> _toggleActive(
+      BuildContext context, WidgetRef ref, Category category) async {
     try {
       await ref
           .read(categoryControllerProvider.notifier)
@@ -29,7 +30,8 @@ class AdminCategoriesPage extends ConsumerWidget {
               : '${category.name} activated.')));
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
     }
   }
 
@@ -54,7 +56,8 @@ class AdminCategoriesPage extends ConsumerWidget {
       ),
       body: categoriesAsync.when(
         loading: () => const LoadingView(),
-        error: (err, st) => Center(child: Text('Could not load categories: $err')),
+        error: (err, st) =>
+            Center(child: Text('Could not load categories: $err')),
         data: (categories) {
           if (categories.isEmpty) {
             return const EmptyView(
@@ -84,18 +87,20 @@ class AdminCategoriesPage extends ConsumerWidget {
                             ? Container(
                                 color: AppColors.card,
                                 alignment: Alignment.center,
-                                child: Icon(Icons.category_outlined, color: AppColors.primary),
+                                child: Icon(Icons.category_outlined,
+                                    color: AppColors.primary),
                               )
                             : Image.network(category.imageUrl,
                                 fit: BoxFit.cover,
                                 errorBuilder: (_, __, ___) => Container(
                                     color: AppColors.card,
                                     alignment: Alignment.center,
-                                    child:
-                                        Icon(Icons.category_outlined, color: AppColors.primary))),
+                                    child: Icon(Icons.category_outlined,
+                                        color: AppColors.primary))),
                       ),
                     ),
-                    title: Text(category.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                    title: Text(category.name,
+                        style: const TextStyle(fontWeight: FontWeight.w600)),
                     subtitle: Text(category.isActive
                         ? 'Active • sort ${category.sortOrder}'
                         : 'Inactive • sort ${category.sortOrder}'),
@@ -103,18 +108,24 @@ class AdminCategoriesPage extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: Icon(Icons.edit_outlined, color: AppColors.primary),
+                          icon: Icon(Icons.edit_outlined,
+                              color: AppColors.primary),
                           tooltip: 'Edit',
-                          onPressed: () => _openForm(context, ref, existing: category),
+                          onPressed: () =>
+                              _openForm(context, ref, existing: category),
                         ),
                         IconButton(
                           icon: Icon(
                               category.isActive
                                   ? Icons.visibility_off_outlined
                                   : Icons.visibility_outlined,
-                              color: category.isActive ? AppColors.error : AppColors.success),
-                          tooltip: category.isActive ? 'Deactivate' : 'Activate',
-                          onPressed: () => _toggleActive(context, ref, category),
+                              color: category.isActive
+                                  ? AppColors.error
+                                  : AppColors.success),
+                          tooltip:
+                              category.isActive ? 'Deactivate' : 'Activate',
+                          onPressed: () =>
+                              _toggleActive(context, ref, category),
                         ),
                       ],
                     ),
@@ -167,7 +178,8 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
   }
 
   Future<void> _pickImage() async {
-    final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
+    final picked = await ImagePicker()
+        .pickImage(source: ImageSource.gallery, imageQuality: 85);
     if (picked == null) return;
     setState(() => _pickedImage = File(picked.path));
   }
@@ -175,8 +187,8 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
   Future<void> _save() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Category name is required.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Category name is required.')));
       return;
     }
     final sortOrder = int.tryParse(_sortOrderController.text.trim()) ?? 0;
@@ -191,7 +203,9 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
       }
 
       if (_isEditing) {
-        await ref.read(categoryControllerProvider.notifier).editCategory(widget.existing!.id, {
+        await ref
+            .read(categoryControllerProvider.notifier)
+            .editCategory(widget.existing!.id, {
           'name': name,
           'imageUrl': imageUrl,
           'sortOrder': sortOrder,
@@ -211,7 +225,8 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -221,14 +236,18 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom, left: 16, right: 16, top: 16),
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: 16,
+          right: 16,
+          top: 16),
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(_isEditing ? 'Edit Category' : 'New Category',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             Center(
               child: InkWell(
@@ -249,8 +268,10 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
                       : _existingImageUrl.isNotEmpty
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(10),
-                              child: Image.network(_existingImageUrl, fit: BoxFit.cover))
-                          : Icon(Icons.add_a_photo_outlined, color: AppColors.primary),
+                              child: Image.network(_existingImageUrl,
+                                  fit: BoxFit.cover))
+                          : Icon(Icons.add_a_photo_outlined,
+                              color: AppColors.primary),
                 ),
               ),
             ),
@@ -279,7 +300,9 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
                 onPressed: _isSaving ? null : _save,
                 child: _isSaving
                     ? const SizedBox(
-                        width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2))
                     : Text(_isEditing ? 'Save Changes' : 'Create Category'),
               ),
             ),

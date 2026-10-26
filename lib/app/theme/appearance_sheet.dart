@@ -22,7 +22,10 @@ Future<void> showAppearanceSheet(BuildContext context, WidgetRef ref) {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Appearance',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.text)),
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.text)),
             const SizedBox(height: 12),
             for (final (mode, icon) in const [
               (ThemeMode.system, Icons.brightness_auto_outlined),
@@ -32,9 +35,13 @@ Future<void> showAppearanceSheet(BuildContext context, WidgetRef ref) {
               ListTile(
                 leading: Icon(icon),
                 title: Text(themeModeLabel(mode)),
-                subtitle: mode == ThemeMode.system ? const Text('Match your phone') : null,
+                subtitle: mode == ThemeMode.system
+                    ? const Text('Match your phone')
+                    : null,
                 trailing: Icon(
-                  mode == current ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                  mode == current
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_unchecked,
                   color: mode == current ? AppColors.accent : AppColors.muted,
                 ),
                 onTap: () {
@@ -58,7 +65,9 @@ class AppearanceButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return IconButton(
       tooltip: 'Appearance',
-      icon: Icon(AppColors.isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined),
+      icon: Icon(AppColors.isDark
+          ? Icons.dark_mode_outlined
+          : Icons.light_mode_outlined),
       onPressed: () => showAppearanceSheet(context, ref),
     );
   }

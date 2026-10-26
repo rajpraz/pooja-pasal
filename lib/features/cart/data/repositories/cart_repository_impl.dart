@@ -20,7 +20,8 @@ class CartRepositoryImpl implements CartRepository {
       _dataSource.updateQty(uid, productId, qty);
 
   @override
-  Future<void> removeItem(String uid, String productId) => _dataSource.removeItem(uid, productId);
+  Future<void> removeItem(String uid, String productId) =>
+      _dataSource.removeItem(uid, productId);
 
   @override
   Future<void> clearCart(String uid) => _dataSource.clearCart(uid);

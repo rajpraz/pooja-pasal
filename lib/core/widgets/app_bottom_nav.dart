@@ -46,11 +46,15 @@ class AppBottomNav extends StatelessWidget {
       currentIndex: currentIndex,
       onTap: (index) => _onTap(context, index),
       items: [
-        const BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
-        const BottomNavigationBarItem(icon: Icon(Icons.grid_view_outlined), label: 'Categories'),
+        const BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined), label: 'Home'),
+        const BottomNavigationBarItem(
+            icon: Icon(Icons.grid_view_outlined), label: 'Categories'),
         BottomNavigationBarItem(icon: cartIcon, label: 'Cart'),
-        const BottomNavigationBarItem(icon: Icon(Icons.favorite_border), label: 'Wishlist'),
-        const BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
+        const BottomNavigationBarItem(
+            icon: Icon(Icons.favorite_border), label: 'Wishlist'),
+        const BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline), label: 'Profile'),
       ],
     );
   }

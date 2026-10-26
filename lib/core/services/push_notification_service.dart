@@ -50,13 +50,15 @@ class PushNotificationService {
       (defaultTargetPlatform == TargetPlatform.android ||
           defaultTargetPlatform == TargetPlatform.iOS);
 
-  static String get _platform => defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android';
+  static String get _platform =>
+      defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android';
 
   /// Never throws: push is optional and must not stop the app starting.
   static Future<void> bootstrap() async {
     if (!isSupported) return;
     try {
-      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+      await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform);
       FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundHandler);
       _firebaseReady = true;
     } catch (e) {
@@ -129,10 +131,12 @@ class PushNotificationService {
       },
     );
     await _localNotifications
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(_androidChannel);
     await FirebaseMessaging.instance
-        .setForegroundNotificationPresentationOptions(alert: true, badge: true, sound: true);
+        .setForegroundNotificationPresentationOptions(
+            alert: true, badge: true, sound: true);
 
     final messaging = FirebaseMessaging.instance;
     _subscriptions
@@ -166,7 +170,8 @@ class PushNotificationService {
     _refreshInAppData();
     final notification = message.notification;
     // iOS shows foreground pushes itself; Android needs a local one.
-    if (notification == null || defaultTargetPlatform != TargetPlatform.android) return;
+    if (notification == null || defaultTargetPlatform != TargetPlatform.android)
+      return;
     _localNotifications.show(
       id: message.messageId.hashCode,
       title: notification.title,
@@ -198,7 +203,8 @@ class PushNotificationService {
           .markRead(uid, notificationId)
           .catchError((_) {}));
     }
-    unawaited(_pushWhenRouterReady(routeForPush(data['type'] ?? '', data['orderId'] ?? '')));
+    unawaited(_pushWhenRouterReady(
+        routeForPush(data['type'] ?? '', data['orderId'] ?? '')));
   }
 
   /// A tap can cold-start the app; wait until splash/sign-in redirects are
@@ -236,15 +242,20 @@ String routeForPush(String type, String orderId) {
     case 'out_of_stock':
       return RouteNames.sellerDashboard;
     case 'refund_needed':
-      return orderId.isEmpty ? RouteNames.adminOrders : RouteNames.adminOrderDetailPath(orderId);
+      return orderId.isEmpty
+          ? RouteNames.adminOrders
+          : RouteNames.adminOrderDetailPath(orderId);
     case 'seller_application':
       return RouteNames.profile;
     default:
-      return orderId.isEmpty ? RouteNames.notifications : RouteNames.orderTrackingPath(orderId);
+      return orderId.isEmpty
+          ? RouteNames.notifications
+          : RouteNames.orderTrackingPath(orderId);
   }
 }
 
-final pushNotificationServiceProvider = Provider<PushNotificationService>((ref) {
+final pushNotificationServiceProvider =
+    Provider<PushNotificationService>((ref) {
   final service = PushNotificationService(ref);
   ref.onDispose(service.dispose);
   return service;

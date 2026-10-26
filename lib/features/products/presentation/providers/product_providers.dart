@@ -8,21 +8,24 @@ import 'package:pooja_pasal/features/products/domain/entities/product_page.dart'
 import 'package:pooja_pasal/features/products/domain/repositories/product_repository.dart';
 
 final productRepositoryProvider = Provider<ProductRepository>((ref) {
-  return ProductRepositoryImpl(ProductRemoteDataSource(ref.watch(apiClientProvider)));
+  return ProductRepositoryImpl(
+      ProductRemoteDataSource(ref.watch(apiClientProvider)));
 });
 
 final activeProductsProvider = StreamProvider<List<Product>>((ref) {
   return ref.watch(productRepositoryProvider).streamActiveProducts();
 });
 
-final sellerProductsProvider = StreamProvider.family<List<Product>, String>((ref, sellerId) {
+final sellerProductsProvider =
+    StreamProvider.family<List<Product>, String>((ref, sellerId) {
   if (!watchSignedIn(ref)) return const Stream.empty();
   return ref.watch(productRepositoryProvider).streamSellerProducts(sellerId);
 });
 
 /// Single-product lookup by ID, used by product detail/edit routes so
 /// navigation only has to carry a productId, not a whole `Product`.
-final productProvider = FutureProvider.autoDispose.family<Product?, String>((ref, productId) {
+final productProvider =
+    FutureProvider.autoDispose.family<Product?, String>((ref, productId) {
   return ref.watch(productRepositoryProvider).getProduct(productId);
 });
 
@@ -31,8 +34,11 @@ final productProvider = FutureProvider.autoDispose.family<Product?, String>((ref
 /// (backed by `productListControllerProvider`) for the real paginated
 /// browse. Avoids Home paying for the full unbounded `activeProductsProvider`
 /// stream just to show 8-12 cards.
-final homeFeaturedProductsProvider = FutureProvider.autoDispose<ProductPage>((ref) {
-  return ref.watch(productRepositoryProvider).fetchActiveProductsPage(limit: 10);
+final homeFeaturedProductsProvider =
+    FutureProvider.autoDispose<ProductPage>((ref) {
+  return ref
+      .watch(productRepositoryProvider)
+      .fetchActiveProductsPage(limit: 10);
 });
 
 /// Admin-only: every product (active/inactive), for the admin product

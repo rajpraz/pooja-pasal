@@ -18,7 +18,8 @@ class AdminUserDetailPage extends ConsumerWidget {
 
   const AdminUserDetailPage({super.key, required this.uid});
 
-  Future<void> _confirmPromoteToAdmin(BuildContext context, WidgetRef ref, AppUser user) async {
+  Future<void> _confirmPromoteToAdmin(
+      BuildContext context, WidgetRef ref, AppUser user) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -30,10 +31,12 @@ class AdminUserDetailPage extends ConsumerWidget {
             'screen once granted (only another admin, or the manual bootstrap script, can reverse it).'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text('Grant Admin Access', style: TextStyle(color: AppColors.error)),
+            child: Text('Grant Admin Access',
+                style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -41,13 +44,16 @@ class AdminUserDetailPage extends ConsumerWidget {
     if (confirmed != true || !context.mounted) return;
 
     try {
-      await ref.read(adminSellerControllerProvider.notifier).setRole(uid, 'admin');
+      await ref
+          .read(adminSellerControllerProvider.notifier)
+          .setRole(uid, 'admin');
       if (!context.mounted) return;
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Admin access granted.')));
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
     }
   }
 
@@ -59,7 +65,8 @@ class AdminUserDetailPage extends ConsumerWidget {
         children: [
           SizedBox(
               width: 90,
-              child: Text(label, style: TextStyle(color: AppColors.muted, fontSize: 12))),
+              child: Text(label,
+                  style: TextStyle(color: AppColors.muted, fontSize: 12))),
           Expanded(child: Text(value.isEmpty ? '—' : value)),
         ],
       ),
@@ -87,7 +94,9 @@ class AdminUserDetailPage extends ConsumerWidget {
                   child: CircleAvatar(
                     radius: 40,
                     backgroundColor: AppColors.card,
-                    backgroundImage: user.photoUrl.isNotEmpty ? NetworkImage(user.photoUrl) : null,
+                    backgroundImage: user.photoUrl.isNotEmpty
+                        ? NetworkImage(user.photoUrl)
+                        : null,
                     child: user.photoUrl.isEmpty
                         ? Icon(Icons.person, size: 40, color: AppColors.primary)
                         : null,
@@ -119,10 +128,15 @@ class AdminUserDetailPage extends ConsumerWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: isBusy ? null : () => _confirmPromoteToAdmin(context, ref, user),
-                      icon: Icon(Icons.admin_panel_settings_outlined, color: AppColors.error),
-                      label: Text('Grant Admin Access', style: TextStyle(color: AppColors.error)),
-                      style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.error)),
+                      onPressed: isBusy
+                          ? null
+                          : () => _confirmPromoteToAdmin(context, ref, user),
+                      icon: Icon(Icons.admin_panel_settings_outlined,
+                          color: AppColors.error),
+                      label: Text('Grant Admin Access',
+                          style: TextStyle(color: AppColors.error)),
+                      style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: AppColors.error)),
                     ),
                   )
                 else

@@ -8,7 +8,8 @@ class AppFunctionException implements Exception {
   final String message;
   const AppFunctionException(this.code, this.message);
 
-  bool get isAuthError => code == 'unauthenticated' || code == 'permission-denied';
+  bool get isAuthError =>
+      code == 'unauthenticated' || code == 'permission-denied';
   bool get isTimeout => code == 'deadline-exceeded' || code == 'unavailable';
 
   @override

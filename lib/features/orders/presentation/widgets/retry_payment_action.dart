@@ -43,7 +43,8 @@ class _RetryPaymentButtonState extends ConsumerState<RetryPaymentButton> {
           .showSnackBar(const SnackBar(content: Text('Payment confirmed!')));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -51,7 +52,8 @@ class _RetryPaymentButtonState extends ConsumerState<RetryPaymentButton> {
 
   Future<void> _retryEsewa() async {
     setState(() => _busy = true);
-    final paid = await context.push<bool>(RouteNames.esewaPaymentPath(widget.order.id));
+    final paid =
+        await context.push<bool>(RouteNames.esewaPaymentPath(widget.order.id));
     if (!mounted) return;
     setState(() => _busy = false);
     if (paid == true) {
@@ -65,11 +67,16 @@ class _RetryPaymentButtonState extends ConsumerState<RetryPaymentButton> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed:
-            _busy ? null : (widget.order.paymentMethod == 'khalti' ? _retryKhalti : _retryEsewa),
+        onPressed: _busy
+            ? null
+            : (widget.order.paymentMethod == 'khalti'
+                ? _retryKhalti
+                : _retryEsewa),
         icon: _busy
             ? const SizedBox(
-                width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2))
             : const Icon(Icons.payment),
         label: Text(_busy ? 'Confirming...' : 'Complete Payment'),
         style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent),

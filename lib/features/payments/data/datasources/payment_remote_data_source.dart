@@ -16,24 +16,31 @@ class PaymentRemoteDataSource {
 
   /// Payment methods the server currently accepts, e.g. `[cod, khalti]`.
   Future<List<String>> availableMethods() async {
-    final data = (await _api.get('/payment-methods') as Map<String, dynamic>)['data'];
-    return data is List ? data.map((e) => e.toString()).toList() : const ['cod'];
+    final data =
+        (await _api.get('/payment-methods') as Map<String, dynamic>)['data'];
+    return data is List
+        ? data.map((e) => e.toString()).toList()
+        : const ['cod'];
   }
 
   Future<KhaltiInitiation> initiateKhalti(String orderId) async {
-    final data = await _api.post('/orders/$orderId/pay') as Map<String, dynamic>;
+    final data =
+        await _api.post('/orders/$orderId/pay') as Map<String, dynamic>;
     _api.notifyChanged(_changed);
     return KhaltiInitiation.fromMap(data);
   }
 
-  Future<void> verifyKhalti({required String orderId, required String pidx}) async {
+  Future<void> verifyKhalti(
+      {required String orderId, required String pidx}) async {
     await _verify(orderId, {'pidx': pidx});
   }
 
   Future<EsewaInitiation> initiateEsewa(String orderId) async {
-    final data = await _api.post('/orders/$orderId/pay') as Map<String, dynamic>;
+    final data =
+        await _api.post('/orders/$orderId/pay') as Map<String, dynamic>;
     _api.notifyChanged(_changed);
-    return EsewaInitiation.fromMap((data['esewa'] as Map?)?.cast<String, dynamic>() ?? const {});
+    return EsewaInitiation.fromMap(
+        (data['esewa'] as Map?)?.cast<String, dynamic>() ?? const {});
   }
 
   Future<void> verifyEsewa(String orderId) => _verify(orderId, const {});
@@ -41,7 +48,8 @@ class PaymentRemoteDataSource {
   /// Asks the server to re-check the attempt with the gateway. Throws when
   /// the order still isn't paid, so callers never report success early.
   Future<void> _verify(String orderId, Map<String, dynamic> body) async {
-    final order = asJsonMap(await _api.post('/orders/$orderId/verify-payment', body));
+    final order =
+        asJsonMap(await _api.post('/orders/$orderId/verify-payment', body));
     _api.notifyChanged(_changed);
     switch (order['paymentStatus']) {
       case 'paid':

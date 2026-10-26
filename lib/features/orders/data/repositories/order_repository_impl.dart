@@ -17,7 +17,8 @@ class OrderRepositoryImpl implements OrderRepository {
       _dataSource.streamSellerOrders(sellerId);
 
   @override
-  Stream<PoojaOrder?> streamOrder(String orderId) => _dataSource.streamOrder(orderId);
+  Stream<PoojaOrder?> streamOrder(String orderId) =>
+      _dataSource.streamOrder(orderId);
 
   @override
   Stream<List<PoojaOrder>> streamAllOrders({int limit = 200}) =>
@@ -46,12 +47,15 @@ class OrderRepositoryImpl implements OrderRepository {
     required String status,
     String? note,
   }) {
-    return _dataSource.updateOrderStatus(orderId: orderId, status: status, note: note);
+    return _dataSource.updateOrderStatus(
+        orderId: orderId, status: status, note: note);
   }
 
   @override
-  Future<void> updatePaymentStatus({required String orderId, required String paymentStatus}) =>
-      _dataSource.updatePaymentStatus(orderId: orderId, paymentStatus: paymentStatus);
+  Future<void> updatePaymentStatus(
+          {required String orderId, required String paymentStatus}) =>
+      _dataSource.updatePaymentStatus(
+          orderId: orderId, paymentStatus: paymentStatus);
 
   @override
   Future<void> cancelOrder(String orderId, {String? note}) =>

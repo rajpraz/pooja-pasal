@@ -26,8 +26,8 @@ final sellerDashboardStatsProvider =
   }
   final error = productsAsync.error ?? ordersAsync.error;
   if (error != null) {
-    return AsyncError(
-        error, productsAsync.stackTrace ?? ordersAsync.stackTrace ?? StackTrace.empty);
+    return AsyncError(error,
+        productsAsync.stackTrace ?? ordersAsync.stackTrace ?? StackTrace.empty);
   }
 
   final products = productsAsync.value ?? const [];
@@ -54,11 +54,15 @@ final sellerDashboardStatsProvider =
         break;
     }
 
-    if (order.status == 'cancelled' || order.status == 'returned' || order.status == 'refunded') {
+    if (order.status == 'cancelled' ||
+        order.status == 'returned' ||
+        order.status == 'refunded') {
       continue;
     }
-    if (order.paymentStatus == 'refunded' || order.paymentStatus == 'partially_refunded') continue;
-    final isOnlinePayment = order.paymentMethod == 'khalti' || order.paymentMethod == 'esewa';
+    if (order.paymentStatus == 'refunded' ||
+        order.paymentStatus == 'partially_refunded') continue;
+    final isOnlinePayment =
+        order.paymentMethod == 'khalti' || order.paymentMethod == 'esewa';
     if (isOnlinePayment && order.paymentStatus != 'paid') continue;
 
     final myTotal = order.items

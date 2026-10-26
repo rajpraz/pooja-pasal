@@ -17,15 +17,19 @@ import 'package:pooja_pasal/shared/widgets/loading_view.dart';
 class WishlistPage extends ConsumerWidget {
   const WishlistPage({super.key});
 
-  Future<void> _remove(BuildContext context, WidgetRef ref, String uid, String productId) async {
+  Future<void> _remove(
+      BuildContext context, WidgetRef ref, String uid, String productId) async {
     try {
-      await ref.read(wishlistControllerProvider.notifier).remove(uid, productId);
+      await ref
+          .read(wishlistControllerProvider.notifier)
+          .remove(uid, productId);
       if (!context.mounted) return;
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Removed from wishlist')));
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
     }
   }
 
@@ -39,7 +43,8 @@ class WishlistPage extends ConsumerWidget {
         body: EmptyView(
           icon: Icons.favorite_border,
           title: 'Sign in to save items',
-          subtitle: 'Your wishlist syncs across devices once you\'re signed in.',
+          subtitle:
+              'Your wishlist syncs across devices once you\'re signed in.',
           action: ElevatedButton(
             onPressed: () => context.go('${RouteNames.login}?role=buyer'),
             child: const Text('Sign In'),
@@ -64,7 +69,8 @@ class WishlistPage extends ConsumerWidget {
       ),
       body: wishlistAsync.when(
         loading: () => const LoadingView(),
-        error: (err, st) => Center(child: Text('Could not load wishlist: $err')),
+        error: (err, st) =>
+            Center(child: Text('Could not load wishlist: $err')),
         data: (items) {
           if (items.isEmpty) {
             return const EmptyView(
@@ -80,12 +86,15 @@ class WishlistPage extends ConsumerWidget {
               children: [
                 Text('Favorites',
                     style: TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.text)),
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.text)),
                 const SizedBox(height: 14),
                 Expanded(
                   child: GridView.builder(
                     itemCount: items.length,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       mainAxisSpacing: 14,
                       crossAxisSpacing: 14,
@@ -94,7 +103,8 @@ class WishlistPage extends ConsumerWidget {
                     itemBuilder: (context, index) {
                       return _WishlistTile(
                         item: items[index],
-                        onRemove: () => _remove(context, ref, uid, items[index].productId),
+                        onRemove: () =>
+                            _remove(context, ref, uid, items[index].productId),
                       );
                     },
                   ),
@@ -128,7 +138,10 @@ class _WishlistTile extends ConsumerWidget {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: const [
-          BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.06), blurRadius: 8, spreadRadius: 1),
+          BoxShadow(
+              color: Color.fromRGBO(0, 0, 0, 0.06),
+              blurRadius: 8,
+              spreadRadius: 1),
         ],
       ),
       child: productAsync.when(
@@ -149,19 +162,23 @@ class _WishlistTile extends ConsumerWidget {
         Expanded(
           child: Container(
             width: double.infinity,
-            decoration:
-                BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+                color: AppColors.card, borderRadius: BorderRadius.circular(12)),
             alignment: Alignment.center,
-            child: Icon(Icons.remove_shopping_cart_outlined, color: AppColors.muted, size: 32),
+            child: Icon(Icons.remove_shopping_cart_outlined,
+                color: AppColors.muted, size: 32),
           ),
         ),
         const SizedBox(height: 8),
         Text(message,
-            maxLines: 2, style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600)),
+            maxLines: 2,
+            style:
+                TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600)),
         const SizedBox(height: 6),
         SizedBox(
           width: double.infinity,
-          child: OutlinedButton(onPressed: onRemove, child: const Text('Remove')),
+          child:
+              OutlinedButton(onPressed: onRemove, child: const Text('Remove')),
         ),
       ],
     );
@@ -192,12 +209,16 @@ class _WishlistTile extends ConsumerWidget {
                     left: 6,
                     top: 6,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                          color: AppColors.error, borderRadius: BorderRadius.circular(6)),
+                          color: AppColors.error,
+                          borderRadius: BorderRadius.circular(6)),
                       child: const Text('Out of stock',
                           style: TextStyle(
-                              color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600)),
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600)),
                     ),
                   ),
                 Positioned(
@@ -211,8 +232,10 @@ class _WishlistTile extends ConsumerWidget {
                       tooltip: 'Remove from wishlist',
                       padding: EdgeInsets.zero,
                       style: IconButton.styleFrom(
-                          backgroundColor: AppColors.surface, minimumSize: const Size(44, 44)),
-                      icon: Icon(Icons.favorite, size: 16, color: AppColors.accent),
+                          backgroundColor: AppColors.surface,
+                          minimumSize: const Size(44, 44)),
+                      icon: Icon(Icons.favorite,
+                          size: 16, color: AppColors.accent),
                     ),
                   ),
                 ),
@@ -226,7 +249,8 @@ class _WishlistTile extends ConsumerWidget {
               style: const TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
           Text('Rs.${product.price.toStringAsFixed(0)}',
-              style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+              style: TextStyle(
+                  color: AppColors.primary, fontWeight: FontWeight.w600)),
         ],
       ),
     );

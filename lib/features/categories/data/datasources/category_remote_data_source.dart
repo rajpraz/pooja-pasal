@@ -10,15 +10,18 @@ class CategoryRemoteDataSource {
 
   Stream<List<Category>> streamActiveCategories() => _api.watch(
         {ApiTopics.categories},
-        () async => asJsonList(await _api.get('/categories')).map(Category.fromJson).toList(),
+        () async => asJsonList(await _api.get('/categories'))
+            .map(Category.fromJson)
+            .toList(),
       );
 
   /// Includes inactive categories (the API only does so for staff).
   Stream<List<Category>> streamAllCategories() => _api.watch(
         {ApiTopics.categories},
-        () async => asJsonList(await _api.get('/categories', query: {'all': true}))
-            .map(Category.fromJson)
-            .toList(),
+        () async =>
+            asJsonList(await _api.get('/categories', query: {'all': true}))
+                .map(Category.fromJson)
+                .toList(),
       );
 
   Future<void> createCategory(Category category) async {

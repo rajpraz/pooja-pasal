@@ -37,7 +37,8 @@ class AdminProductsPage extends ConsumerWidget {
         AdminProductFilter.lowStock => 'Low stock',
       };
 
-  Future<void> _toggleActive(BuildContext context, WidgetRef ref, Product product) async {
+  Future<void> _toggleActive(
+      BuildContext context, WidgetRef ref, Product product) async {
     final activating = !product.isActive;
     final confirmed = await showDialog<bool>(
       context: context,
@@ -48,11 +49,13 @@ class AdminProductsPage extends ConsumerWidget {
             : '"${product.name}" will be hidden from buyers immediately.'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(activating ? 'Reactivate' : 'Deactivate',
-                style: TextStyle(color: activating ? AppColors.success : AppColors.error)),
+                style: TextStyle(
+                    color: activating ? AppColors.success : AppColors.error)),
           ),
         ],
       ),
@@ -60,14 +63,19 @@ class AdminProductsPage extends ConsumerWidget {
     if (confirmed != true || !context.mounted) return;
 
     try {
-      await ref.read(productRepositoryProvider).updateProduct(product.id, {'isActive': activating});
+      await ref
+          .read(productRepositoryProvider)
+          .updateProduct(product.id, {'isActive': activating});
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(activating ? 'Product reactivated.' : 'Product deactivated.')),
+        SnackBar(
+            content: Text(
+                activating ? 'Product reactivated.' : 'Product deactivated.')),
       );
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
     }
   }
 
@@ -81,17 +89,22 @@ class AdminProductsPage extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(product.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(product.name,
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
             Text(
                 'Rs.${product.price.toStringAsFixed(0)} • Stock: ${product.stock} • ${product.category}',
                 style: TextStyle(color: AppColors.muted)),
             if (product.sellerName.isNotEmpty) ...[
               const SizedBox(height: 4),
-              Text('Sold by ${product.sellerName}', style: TextStyle(color: AppColors.muted)),
+              Text('Sold by ${product.sellerName}',
+                  style: TextStyle(color: AppColors.muted)),
             ],
             const SizedBox(height: 10),
-            Text(product.description.isEmpty ? 'No description.' : product.description),
+            Text(product.description.isEmpty
+                ? 'No description.'
+                : product.description),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
@@ -101,7 +114,8 @@ class AdminProductsPage extends ConsumerWidget {
                   _toggleActive(context, ref, product);
                 },
                 style: OutlinedButton.styleFrom(
-                    foregroundColor: product.isActive ? AppColors.error : AppColors.success),
+                    foregroundColor:
+                        product.isActive ? AppColors.error : AppColors.success),
                 child: Text(product.isActive ? 'Deactivate' : 'Reactivate'),
               ),
             ),
@@ -121,30 +135,36 @@ class AdminProductsPage extends ConsumerWidget {
       appBar: AppBar(title: const Text('Products')),
       body: productsAsync.when(
         loading: () => const LoadingView(),
-        error: (err, st) => Center(child: Text('Could not load products: $err')),
+        error: (err, st) =>
+            Center(child: Text('Could not load products: $err')),
         data: (allProducts) {
-          final filtered = allProducts.where((p) => _matches(p, filter)).toList();
+          final filtered =
+              allProducts.where((p) => _matches(p, filter)).toList();
           return Column(
             children: [
               SizedBox(
                 height: 44,
                 child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   scrollDirection: Axis.horizontal,
                   itemCount: AdminProductFilter.values.length,
                   separatorBuilder: (_, __) => const SizedBox(width: 8),
                   itemBuilder: (context, index) {
                     final f = AdminProductFilter.values[index];
                     final selected = f == filter;
-                    final count = allProducts.where((p) => _matches(p, f)).length;
+                    final count =
+                        allProducts.where((p) => _matches(p, f)).length;
                     return ChoiceChip(
                       label: Text('${_label(f)} ($count)'),
                       selected: selected,
-                      onSelected: (_) => ref.read(adminProductFilterProvider.notifier).set(f),
+                      onSelected: (_) =>
+                          ref.read(adminProductFilterProvider.notifier).set(f),
                       selectedColor: AppColors.accent.withValues(alpha: 0.2),
                       labelStyle: TextStyle(
                           color: selected ? AppColors.accent : AppColors.muted,
-                          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                          fontWeight:
+                              selected ? FontWeight.w600 : FontWeight.normal,
                           fontSize: 12),
                     );
                   },
@@ -177,20 +197,26 @@ class AdminProductsPage extends ConsumerWidget {
                                 ),
                               ),
                               title: Text(product.name,
-                                  style: const TextStyle(fontWeight: FontWeight.w600)),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600)),
                               subtitle: Text(
                                   'Rs.${product.price.toStringAsFixed(0)} • Stock: ${product.stock}${product.isOutOfStock ? " (out)" : product.isLowStock ? " (low)" : ""}'),
                               trailing: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: (product.isActive ? AppColors.success : AppColors.muted)
+                                  color: (product.isActive
+                                          ? AppColors.success
+                                          : AppColors.muted)
                                       .withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
-                                child: Text(product.isActive ? 'ACTIVE' : 'INACTIVE',
+                                child: Text(
+                                    product.isActive ? 'ACTIVE' : 'INACTIVE',
                                     style: TextStyle(
-                                        color:
-                                            product.isActive ? AppColors.success : AppColors.muted,
+                                        color: product.isActive
+                                            ? AppColors.success
+                                            : AppColors.muted,
                                         fontWeight: FontWeight.w600,
                                         fontSize: 10)),
                               ),

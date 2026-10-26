@@ -10,7 +10,8 @@ class HelpSupportPage extends StatelessWidget {
   static const List<Map<String, String>> faqs = [
     {
       'q': 'How do I track my order?',
-      'a': 'Go to Profile > My Orders to see the live status and timeline of your order.',
+      'a':
+          'Go to Profile > My Orders to see the live status and timeline of your order.',
     },
     {
       'q': 'What payment methods are supported?',
@@ -23,7 +24,8 @@ class HelpSupportPage extends StatelessWidget {
     },
     {
       'q': 'How do I become a seller?',
-      'a': 'Log out and choose "Seller" on the login screen, then create a seller account.',
+      'a':
+          'Log out and choose "Seller" on the login screen, then create a seller account.',
     },
   ];
 
@@ -47,7 +49,8 @@ class HelpSupportPage extends StatelessWidget {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
           ...faqs.map((faq) => Theme(
-                data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                data: Theme.of(context)
+                    .copyWith(dividerColor: Colors.transparent),
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 10),
                   decoration: BoxDecoration(
@@ -57,7 +60,8 @@ class HelpSupportPage extends StatelessWidget {
                   ),
                   child: ExpansionTile(
                     title: Text(faq['q']!,
-                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 14)),
                     childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
                     expandedCrossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -67,7 +71,8 @@ class HelpSupportPage extends StatelessWidget {
                 ),
               )),
           const SizedBox(height: 20),
-          const Text('Contact Us', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const Text('Contact Us',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
           DecoratedBox(
             decoration: BoxDecoration(
@@ -81,7 +86,8 @@ class HelpSupportPage extends StatelessWidget {
                   leading: Icon(Icons.phone_outlined, color: AppColors.accent),
                   title: const Text('Call us'),
                   subtitle: const Text(SupportContact.phoneLabel),
-                  onTap: () => _open(context, Uri(scheme: 'tel', path: SupportContact.phone)),
+                  onTap: () => _open(
+                      context, Uri(scheme: 'tel', path: SupportContact.phone)),
                 ),
                 Divider(height: 1, color: AppColors.border),
                 ListTile(

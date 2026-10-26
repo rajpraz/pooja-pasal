@@ -16,12 +16,14 @@ final orderRepositoryProvider = Provider<OrderRepository>((ref) {
   ));
 });
 
-final buyerOrdersProvider = StreamProvider.family<List<PoojaOrder>, String>((ref, buyerId) {
+final buyerOrdersProvider =
+    StreamProvider.family<List<PoojaOrder>, String>((ref, buyerId) {
   if (!watchSignedIn(ref)) return const Stream.empty();
   return ref.watch(orderRepositoryProvider).streamBuyerOrders(buyerId);
 });
 
-final sellerOrdersProvider = StreamProvider.family<List<PoojaOrder>, String>((ref, sellerId) {
+final sellerOrdersProvider =
+    StreamProvider.family<List<PoojaOrder>, String>((ref, sellerId) {
   if (!watchSignedIn(ref)) return const Stream.empty();
   return ref.watch(orderRepositoryProvider).streamSellerOrders(sellerId);
 });
@@ -32,7 +34,8 @@ final sellerOrdersProvider = StreamProvider.family<List<PoojaOrder>, String>((re
 /// notifications; without autoDispose each one would keep polling the API
 /// for the rest of the app's lifetime instead of stopping when the
 /// track-order page is no longer watched.
-final orderProvider = StreamProvider.autoDispose.family<PoojaOrder?, String>((ref, orderId) {
+final orderProvider =
+    StreamProvider.autoDispose.family<PoojaOrder?, String>((ref, orderId) {
   return ref.watch(orderRepositoryProvider).streamOrder(orderId);
 });
 
@@ -88,7 +91,8 @@ class OrderController extends AsyncNotifier<void> {
   }) async {
     state = const AsyncLoading();
     try {
-      await _repository.updateOrderStatus(orderId: orderId, status: status, note: note);
+      await _repository.updateOrderStatus(
+          orderId: orderId, status: status, note: note);
       state = const AsyncData(null);
     } catch (error, stackTrace) {
       state = AsyncError(error, stackTrace);
@@ -96,10 +100,12 @@ class OrderController extends AsyncNotifier<void> {
     }
   }
 
-  Future<void> updatePaymentStatus({required String orderId, required String paymentStatus}) async {
+  Future<void> updatePaymentStatus(
+      {required String orderId, required String paymentStatus}) async {
     state = const AsyncLoading();
     try {
-      await _repository.updatePaymentStatus(orderId: orderId, paymentStatus: paymentStatus);
+      await _repository.updatePaymentStatus(
+          orderId: orderId, paymentStatus: paymentStatus);
       state = const AsyncData(null);
     } catch (error, stackTrace) {
       state = AsyncError(error, stackTrace);
@@ -111,4 +117,5 @@ class OrderController extends AsyncNotifier<void> {
       updateStatus(orderId: orderId, status: 'cancelled', note: note);
 }
 
-final orderControllerProvider = AsyncNotifierProvider<OrderController, void>(OrderController.new);
+final orderControllerProvider =
+    AsyncNotifierProvider<OrderController, void>(OrderController.new);

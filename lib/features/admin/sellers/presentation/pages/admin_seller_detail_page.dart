@@ -17,7 +17,8 @@ class AdminSellerDetailPage extends ConsumerWidget {
 
   const AdminSellerDetailPage({super.key, required this.uid});
 
-  Future<void> _confirmDemote(BuildContext context, WidgetRef ref, AppUser seller) async {
+  Future<void> _confirmDemote(
+      BuildContext context, WidgetRef ref, AppUser seller) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -29,10 +30,12 @@ class AdminSellerDetailPage extends ConsumerWidget {
             'affect any of their existing orders.'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text('Demote to Buyer', style: TextStyle(color: AppColors.error)),
+            child: Text('Demote to Buyer',
+                style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -40,25 +43,32 @@ class AdminSellerDetailPage extends ConsumerWidget {
     if (confirmed != true || !context.mounted) return;
 
     try {
-      await ref.read(adminSellerControllerProvider.notifier).setRole(uid, 'buyer');
+      await ref
+          .read(adminSellerControllerProvider.notifier)
+          .setRole(uid, 'buyer');
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Seller access removed.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Seller access removed.')));
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
     }
   }
 
-  Future<void> _confirmRestore(BuildContext context, WidgetRef ref, AppUser user) async {
+  Future<void> _confirmRestore(
+      BuildContext context, WidgetRef ref, AppUser user) async {
     try {
-      await ref.read(adminSellerControllerProvider.notifier).setRole(uid, 'seller');
+      await ref
+          .read(adminSellerControllerProvider.notifier)
+          .setRole(uid, 'seller');
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Seller access restored.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Seller access restored.')));
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
     }
   }
 
@@ -76,22 +86,27 @@ class AdminSellerDetailPage extends ConsumerWidget {
         loading: () => const LoadingView(),
         error: (err, st) => Center(child: Text('Could not load seller: $err')),
         data: (user) {
-          if (user == null) return const Center(child: Text('Seller not found'));
+          if (user == null)
+            return const Center(child: Text('Seller not found'));
           return Padding(
             padding: const EdgeInsets.all(16),
             child: ListView(
               children: [
                 Text(user.name.isEmpty ? user.email : user.name,
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
                 Text(user.email, style: TextStyle(color: AppColors.muted)),
                 if (user.phone.isNotEmpty)
                   Text(user.phone, style: TextStyle(color: AppColors.muted)),
                 const SizedBox(height: 16),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: (user.role == 'seller' ? AppColors.success : AppColors.muted)
+                    color: (user.role == 'seller'
+                            ? AppColors.success
+                            : AppColors.muted)
                         .withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -100,7 +115,9 @@ class AdminSellerDetailPage extends ConsumerWidget {
                           ? 'ACTIVE SELLER'
                           : 'NOT CURRENTLY A SELLER (${user.role.toUpperCase()})',
                       style: TextStyle(
-                          color: user.role == 'seller' ? AppColors.success : AppColors.muted,
+                          color: user.role == 'seller'
+                              ? AppColors.success
+                              : AppColors.muted,
                           fontWeight: FontWeight.w600,
                           fontSize: 11)),
                 ),
@@ -114,10 +131,12 @@ class AdminSellerDetailPage extends ConsumerWidget {
                           child: Column(
                             children: [
                               Text('${productsAsync.value?.length ?? 0}',
-                                  style:
-                                      const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                                  style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold)),
                               Text('Products',
-                                  style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                                  style: TextStyle(
+                                      color: AppColors.muted, fontSize: 12)),
                             ],
                           ),
                         ),
@@ -131,10 +150,12 @@ class AdminSellerDetailPage extends ConsumerWidget {
                           child: Column(
                             children: [
                               Text('${ordersAsync.value?.length ?? 0}',
-                                  style:
-                                      const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                                  style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold)),
                               Text('Orders',
-                                  style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                                  style: TextStyle(
+                                      color: AppColors.muted, fontSize: 12)),
                             ],
                           ),
                         ),
@@ -147,17 +168,24 @@ class AdminSellerDetailPage extends ConsumerWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
-                      onPressed: isBusy ? null : () => _confirmDemote(context, ref, user),
-                      style: OutlinedButton.styleFrom(foregroundColor: AppColors.error),
-                      child: const Text('Demote to Buyer (remove seller access)'),
+                      onPressed: isBusy
+                          ? null
+                          : () => _confirmDemote(context, ref, user),
+                      style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.error),
+                      child:
+                          const Text('Demote to Buyer (remove seller access)'),
                     ),
                   )
                 else if (user.role == 'buyer')
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: isBusy ? null : () => _confirmRestore(context, ref, user),
-                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
+                      onPressed: isBusy
+                          ? null
+                          : () => _confirmRestore(context, ref, user),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.success),
                       child: const Text('Restore Seller Access'),
                     ),
                   ),

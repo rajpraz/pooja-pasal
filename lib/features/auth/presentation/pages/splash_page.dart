@@ -45,7 +45,8 @@ class _SplashPageState extends ConsumerState<SplashPage> {
       } else if (appUser.role == 'admin') {
         destination = RouteNames.adminDashboard;
       } else {
-        destination = appUser.isSeller ? RouteNames.sellerDashboard : RouteNames.home;
+        destination =
+            appUser.isSeller ? RouteNames.sellerDashboard : RouteNames.home;
       }
     }
 
@@ -79,7 +80,8 @@ class _SplashPageState extends ConsumerState<SplashPage> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.white.withValues(alpha: 0.12),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1.5),
+                  border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.25), width: 1.5),
                   boxShadow: [
                     BoxShadow(
                         color: AppColors.saffron.withValues(alpha: 0.45),
@@ -87,7 +89,8 @@ class _SplashPageState extends ConsumerState<SplashPage> {
                         spreadRadius: 4),
                   ],
                 ),
-                child: const Icon(Icons.temple_hindu, size: 84, color: Colors.white),
+                child: const Icon(Icons.temple_hindu,
+                    size: 84, color: Colors.white),
               ),
               const SizedBox(height: 28),
               const Text('Pooja Pasal',
@@ -99,13 +102,16 @@ class _SplashPageState extends ConsumerState<SplashPage> {
               const SizedBox(height: 8),
               Text('Everything for your puja, delivered with devotion',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 14, color: Colors.white.withValues(alpha: 0.85))),
+                  style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white.withValues(alpha: 0.85))),
               const Spacer(flex: 3),
               SizedBox(
                 width: 22,
                 height: 22,
                 child: CircularProgressIndicator(
-                    strokeWidth: 2.2, color: Colors.white.withValues(alpha: 0.85)),
+                    strokeWidth: 2.2,
+                    color: Colors.white.withValues(alpha: 0.85)),
               ),
               const SizedBox(height: 40),
             ],

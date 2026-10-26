@@ -31,7 +31,8 @@ class ReviewList extends ConsumerWidget {
       ),
       error: (err, st) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Text('Could not load reviews: $err', style: TextStyle(color: AppColors.muted)),
+        child: Text('Could not load reviews: $err',
+            style: TextStyle(color: AppColors.muted)),
       ),
       data: (reviews) {
         if (reviews.isEmpty) {
@@ -61,7 +62,9 @@ class ReviewList extends ConsumerWidget {
                               children: List.generate(
                                 5,
                                 (i) => Icon(
-                                  i < review.rating ? Icons.star : Icons.star_border,
+                                  i < review.rating
+                                      ? Icons.star
+                                      : Icons.star_border,
                                   size: 14,
                                   color: AppColors.accent,
                                 ),
@@ -70,17 +73,22 @@ class ReviewList extends ConsumerWidget {
                             if (review.verifiedPurchase) ...[
                               const SizedBox(width: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                    color: AppColors.success.withValues(alpha: 0.15),
+                                    color: AppColors.success
+                                        .withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(6)),
                                 child: Text('Verified Purchase',
-                                    style: TextStyle(fontSize: 10, color: AppColors.success)),
+                                    style: TextStyle(
+                                        fontSize: 10,
+                                        color: AppColors.success)),
                               ),
                             ],
                             const Spacer(),
                             Text(_timeAgo(review.createdAt),
-                                style: TextStyle(fontSize: 11, color: AppColors.muted)),
+                                style: TextStyle(
+                                    fontSize: 11, color: AppColors.muted)),
                           ],
                         ),
                         const SizedBox(height: 6),

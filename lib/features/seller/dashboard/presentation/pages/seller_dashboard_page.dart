@@ -18,7 +18,8 @@ class SellerDashboardPage extends ConsumerStatefulWidget {
   const SellerDashboardPage({super.key});
 
   @override
-  ConsumerState<SellerDashboardPage> createState() => _SellerDashboardPageState();
+  ConsumerState<SellerDashboardPage> createState() =>
+      _SellerDashboardPageState();
 }
 
 class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
@@ -38,11 +39,13 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
             : '"${product.name}" will be hidden from buyers. You can reactivate it any time.'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(activating ? 'Reactivate' : 'Deactivate',
-                style: TextStyle(color: activating ? AppColors.success : AppColors.error)),
+                style: TextStyle(
+                    color: activating ? AppColors.success : AppColors.error)),
           ),
         ],
       ),
@@ -50,14 +53,19 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
     if (confirmed != true) return;
 
     try {
-      await ref.read(productRepositoryProvider).updateProduct(product.id, {'isActive': activating});
+      await ref
+          .read(productRepositoryProvider)
+          .updateProduct(product.id, {'isActive': activating});
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(activating ? 'Product reactivated.' : 'Product deactivated.')),
+        SnackBar(
+            content: Text(
+                activating ? 'Product reactivated.' : 'Product deactivated.')),
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
     }
   }
 
@@ -102,8 +110,10 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
         type: BottomNavigationBarType.fixed,
         selectedItemColor: AppColors.accent,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.storefront_outlined), label: 'My Products'),
-          BottomNavigationBarItem(icon: Icon(Icons.receipt_long_outlined), label: 'Orders'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.storefront_outlined), label: 'My Products'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.receipt_long_outlined), label: 'Orders'),
         ],
       ),
       body: _tab == 0
@@ -117,7 +127,8 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
                     physics: const NeverScrollableScrollPhysics(),
                     // A fixed tile height (not an aspect ratio) so the value and label
                     // always fit, whatever the screen width.
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       mainAxisSpacing: 10,
                       crossAxisSpacing: 10,
@@ -148,24 +159,31 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
                           icon: Icons.warning_amber_outlined,
                           label: 'Low Stock',
                           value: '${stats.lowStockProducts}',
-                          color: stats.lowStockProducts > 0 ? AppColors.error : null),
+                          color: stats.lowStockProducts > 0
+                              ? AppColors.error
+                              : null),
                     ],
                   ),
                   const SizedBox(height: 16),
                   Expanded(
                     child: productsAsync.when(
-                      loading: () => const Center(child: CircularProgressIndicator()),
-                      error: (err, st) => Center(child: Text('Could not load products: $err')),
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (err, st) =>
+                          Center(child: Text('Could not load products: $err')),
                       data: (products) {
                         if (products.isEmpty) {
                           return Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.storefront_outlined, size: 70, color: AppColors.primary),
+                              Icon(Icons.storefront_outlined,
+                                  size: 70, color: AppColors.primary),
                               const SizedBox(height: 16),
                               const Text('No products yet',
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold)),
                               const SizedBox(height: 8),
                               const Text(
                                 'Add your own pooja items and let buyers discover them.',
@@ -173,8 +191,10 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
                               ),
                               const SizedBox(height: 24),
                               ElevatedButton(
-                                onPressed: () => context.push(RouteNames.sellerProductNew),
-                                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                                onPressed: () =>
+                                    context.push(RouteNames.sellerProductNew),
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary),
                                 child: const Text('Add your first item'),
                               )
                             ],
@@ -204,8 +224,8 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
                                   title: Row(
                                     children: [
                                       Expanded(
-                                          child:
-                                              Text(product.name, overflow: TextOverflow.ellipsis)),
+                                          child: Text(product.name,
+                                              overflow: TextOverflow.ellipsis)),
                                       if (!product.isActive)
                                         _badge('Inactive', AppColors.muted)
                                       else if (product.isOutOfStock)
@@ -220,10 +240,12 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       IconButton(
-                                        icon: Icon(Icons.edit_outlined, color: AppColors.primary),
+                                        icon: Icon(Icons.edit_outlined,
+                                            color: AppColors.primary),
                                         tooltip: 'Edit product',
-                                        onPressed: () => context
-                                            .push(RouteNames.sellerProductEditPath(product.id)),
+                                        onPressed: () => context.push(
+                                            RouteNames.sellerProductEditPath(
+                                                product.id)),
                                       ),
                                       IconButton(
                                         icon: Icon(
@@ -233,8 +255,11 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
                                             color: product.isActive
                                                 ? AppColors.error
                                                 : AppColors.success),
-                                        tooltip: product.isActive ? 'Deactivate' : 'Reactivate',
-                                        onPressed: () => _confirmToggleActive(product),
+                                        tooltip: product.isActive
+                                            ? 'Deactivate'
+                                            : 'Reactivate',
+                                        onPressed: () =>
+                                            _confirmToggleActive(product),
                                       ),
                                     ],
                                   ),
@@ -258,8 +283,11 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
       margin: const EdgeInsets.only(left: 6),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20)),
-      child: Text(label, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w600)),
+          color: color.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(20)),
+      child: Text(label,
+          style: TextStyle(
+              color: color, fontSize: 10, fontWeight: FontWeight.w600)),
     );
   }
 }

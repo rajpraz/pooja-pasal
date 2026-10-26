@@ -36,7 +36,8 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels > _scrollController.position.maxScrollExtent - 300) {
+    if (_scrollController.position.pixels >
+        _scrollController.position.maxScrollExtent - 300) {
       ref.read(productListControllerProvider.notifier).loadMore();
     }
   }
@@ -63,7 +64,8 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage> {
       ),
       body: listAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, st) => Center(child: Text('Could not load products: $err')),
+        error: (err, st) =>
+            Center(child: Text('Could not load products: $err')),
         data: (list) {
           final visible = list.rawItems.where(filter.matches).toList();
 
@@ -72,9 +74,11 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.inventory_2_outlined, size: 56, color: AppColors.muted),
+                  Icon(Icons.inventory_2_outlined,
+                      size: 56, color: AppColors.muted),
                   const SizedBox(height: 12),
-                  Text('No products match your filters.', style: TextStyle(color: AppColors.muted)),
+                  Text('No products match your filters.',
+                      style: TextStyle(color: AppColors.muted)),
                 ],
               ),
             );
@@ -89,8 +93,9 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage> {
               itemBuilder: (context, index) {
                 if (index >= visible.length) {
                   return const Center(
-                      child:
-                          Padding(padding: EdgeInsets.all(12), child: CircularProgressIndicator()));
+                      child: Padding(
+                          padding: EdgeInsets.all(12),
+                          child: CircularProgressIndicator()));
                 }
                 final Product product = visible[index];
                 return ProductCard(product: product);

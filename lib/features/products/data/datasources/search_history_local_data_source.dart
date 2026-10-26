@@ -19,7 +19,8 @@ class SearchHistoryLocalDataSource {
     final current = prefs.getStringList(_key) ?? <String>[];
     current.removeWhere((e) => e.toLowerCase() == trimmed.toLowerCase());
     current.insert(0, trimmed);
-    if (current.length > _maxEntries) current.removeRange(_maxEntries, current.length);
+    if (current.length > _maxEntries)
+      current.removeRange(_maxEntries, current.length);
     await prefs.setStringList(_key, current);
   }
 

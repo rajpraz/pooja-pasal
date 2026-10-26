@@ -13,11 +13,15 @@ import 'package:pooja_pasal/shared/widgets/loading_view.dart';
 class AddressesPage extends ConsumerWidget {
   const AddressesPage({super.key});
 
-  void _openForm(BuildContext context, WidgetRef ref, String uid, {Address? existing}) {
-    final labelController = TextEditingController(text: existing?.label ?? 'Home');
-    final nameController = TextEditingController(text: existing?.recipientName ?? '');
+  void _openForm(BuildContext context, WidgetRef ref, String uid,
+      {Address? existing}) {
+    final labelController =
+        TextEditingController(text: existing?.label ?? 'Home');
+    final nameController =
+        TextEditingController(text: existing?.recipientName ?? '');
     final phoneController = TextEditingController(text: existing?.phone ?? '');
-    final addressController = TextEditingController(text: existing?.fullAddress ?? '');
+    final addressController =
+        TextEditingController(text: existing?.fullAddress ?? '');
     bool isDefault = existing?.isDefault ?? false;
 
     showModalBottomSheet<void>(
@@ -26,14 +30,18 @@ class AddressesPage extends ConsumerWidget {
       builder: (sheetContext) => StatefulBuilder(
         builder: (sheetContext, setSheetState) => Padding(
           padding: EdgeInsets.only(
-              bottom: MediaQuery.of(sheetContext).viewInsets.bottom, left: 16, right: 16, top: 16),
+              bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+              left: 16,
+              right: 16,
+              top: 16),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(existing == null ? 'Add new address' : 'Edit address',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 12),
                 Wrap(
                   spacing: 8,
@@ -41,14 +49,16 @@ class AddressesPage extends ConsumerWidget {
                     return ChoiceChip(
                       label: Text(option),
                       selected: labelController.text == option,
-                      onSelected: (_) => setSheetState(() => labelController.text = option),
+                      onSelected: (_) =>
+                          setSheetState(() => labelController.text = option),
                     );
                   }).toList(),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: nameController,
-                  decoration: const InputDecoration(labelText: 'Recipient name'),
+                  decoration:
+                      const InputDecoration(labelText: 'Recipient name'),
                 ),
                 const SizedBox(height: 10),
                 TextField(
@@ -68,7 +78,8 @@ class AddressesPage extends ConsumerWidget {
                   controlAffinity: ListTileControlAffinity.leading,
                   title: const Text('Set as default address'),
                   value: isDefault,
-                  onChanged: (value) => setSheetState(() => isDefault = value ?? false),
+                  onChanged: (value) =>
+                      setSheetState(() => isDefault = value ?? false),
                 ),
                 const SizedBox(height: 10),
                 SizedBox(
@@ -78,14 +89,19 @@ class AddressesPage extends ConsumerWidget {
                       final name = nameController.text.trim();
                       final phone = phoneController.text.trim();
                       final fullAddress = addressController.text.trim();
-                      if (name.isEmpty || phone.isEmpty || fullAddress.isEmpty) {
+                      if (name.isEmpty ||
+                          phone.isEmpty ||
+                          fullAddress.isEmpty) {
                         ScaffoldMessenger.of(sheetContext).showSnackBar(
-                            const SnackBar(content: Text('Please fill in all fields.')));
+                            const SnackBar(
+                                content: Text('Please fill in all fields.')));
                         return;
                       }
                       if (!RegExp(r'^[0-9+ -]{7,15}$').hasMatch(phone)) {
                         ScaffoldMessenger.of(sheetContext).showSnackBar(
-                            const SnackBar(content: Text('Please enter a valid phone number.')));
+                            const SnackBar(
+                                content: Text(
+                                    'Please enter a valid phone number.')));
                         return;
                       }
                       final address = Address(
@@ -100,7 +116,9 @@ class AddressesPage extends ConsumerWidget {
                       );
                       try {
                         if (existing == null) {
-                          await ref.read(addressControllerProvider.notifier).add(uid, address);
+                          await ref
+                              .read(addressControllerProvider.notifier)
+                              .add(uid, address);
                         } else {
                           await ref
                               .read(addressControllerProvider.notifier)
@@ -109,11 +127,12 @@ class AddressesPage extends ConsumerWidget {
                         if (sheetContext.mounted) Navigator.pop(sheetContext);
                       } catch (e) {
                         if (!sheetContext.mounted) return;
-                        ScaffoldMessenger.of(sheetContext)
-                            .showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+                        ScaffoldMessenger.of(sheetContext).showSnackBar(
+                            SnackBar(content: Text(friendlyErrorMessage(e))));
                       }
                     },
-                    child: Text(existing == null ? 'Save Address' : 'Save Changes'),
+                    child: Text(
+                        existing == null ? 'Save Address' : 'Save Changes'),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -125,24 +144,30 @@ class AddressesPage extends ConsumerWidget {
     );
   }
 
-  Future<void> _delete(BuildContext context, WidgetRef ref, String uid, String addressId) async {
+  Future<void> _delete(
+      BuildContext context, WidgetRef ref, String uid, String addressId) async {
     try {
       await ref.read(addressControllerProvider.notifier).delete(uid, addressId);
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Address removed')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Address removed')));
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
     }
   }
 
   Future<void> _setDefault(
       BuildContext context, WidgetRef ref, String uid, String addressId) async {
     try {
-      await ref.read(addressControllerProvider.notifier).setDefault(uid, addressId);
+      await ref
+          .read(addressControllerProvider.notifier)
+          .setDefault(uid, addressId);
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
     }
   }
 
@@ -167,7 +192,8 @@ class AddressesPage extends ConsumerWidget {
         body: EmptyView(
           icon: Icons.location_on_outlined,
           title: 'Sign in to manage addresses',
-          subtitle: 'Saved addresses sync across devices once you\'re signed in.',
+          subtitle:
+              'Saved addresses sync across devices once you\'re signed in.',
           action: ElevatedButton(
             onPressed: () => context.go('${RouteNames.login}?role=buyer'),
             child: const Text('Sign In'),
@@ -187,7 +213,8 @@ class AddressesPage extends ConsumerWidget {
       ),
       body: addressesAsync.when(
         loading: () => const LoadingView(),
-        error: (err, st) => Center(child: Text('Could not load addresses: $err')),
+        error: (err, st) =>
+            Center(child: Text('Could not load addresses: $err')),
         data: (addresses) {
           if (addresses.isEmpty) {
             return const EmptyView(
@@ -209,7 +236,9 @@ class AddressesPage extends ConsumerWidget {
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                      color: address.isDefault ? AppColors.accent : AppColors.border,
+                      color: address.isDefault
+                          ? AppColors.accent
+                          : AppColors.border,
                       width: address.isDefault ? 1.4 : 1),
                 ),
                 child: Column(
@@ -226,15 +255,17 @@ class AddressesPage extends ConsumerWidget {
                               Row(
                                 children: [
                                   Text(address.label,
-                                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold)),
                                   if (address.isDefault) ...[
                                     const SizedBox(width: 6),
                                     Container(
-                                      padding:
-                                          const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 2),
                                       decoration: BoxDecoration(
                                           color: AppColors.accent,
-                                          borderRadius: BorderRadius.circular(6)),
+                                          borderRadius:
+                                              BorderRadius.circular(6)),
                                       child: const Text('DEFAULT',
                                           style: TextStyle(
                                               color: Colors.white,
@@ -246,9 +277,12 @@ class AddressesPage extends ConsumerWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(address.recipientName,
-                                  style: const TextStyle(fontWeight: FontWeight.w600)),
-                              Text(address.phone, style: TextStyle(color: AppColors.muted)),
-                              Text(address.fullAddress, style: TextStyle(color: AppColors.muted)),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600)),
+                              Text(address.phone,
+                                  style: TextStyle(color: AppColors.muted)),
+                              Text(address.fullAddress,
+                                  style: TextStyle(color: AppColors.muted)),
                             ],
                           ),
                         ),
@@ -264,9 +298,13 @@ class AddressesPage extends ConsumerWidget {
                           },
                           itemBuilder: (context) => [
                             if (!address.isDefault)
-                              const PopupMenuItem(value: 'default', child: Text('Set as default')),
-                            const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                            const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                              const PopupMenuItem(
+                                  value: 'default',
+                                  child: Text('Set as default')),
+                            const PopupMenuItem(
+                                value: 'edit', child: Text('Edit')),
+                            const PopupMenuItem(
+                                value: 'delete', child: Text('Delete')),
                           ],
                         ),
                       ],

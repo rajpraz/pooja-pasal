@@ -34,7 +34,8 @@ class FestivalCollectionPage extends ConsumerWidget {
             width: double.infinity,
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(16)),
+            decoration: BoxDecoration(
+                color: color, borderRadius: BorderRadius.circular(16)),
             child: Row(
               children: [
                 Expanded(
@@ -43,10 +44,13 @@ class FestivalCollectionPage extends ConsumerWidget {
                     children: [
                       Text('$festival Special',
                           style: const TextStyle(
-                              color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold)),
                       const SizedBox(height: 6),
                       const Text('Handpicked essentials for the festival',
-                          style: TextStyle(color: Colors.white70, fontSize: 13)),
+                          style:
+                              TextStyle(color: Colors.white70, fontSize: 13)),
                     ],
                   ),
                 ),
@@ -57,16 +61,19 @@ class FestivalCollectionPage extends ConsumerWidget {
           Expanded(
             child: productsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, st) => Center(child: Text('Could not load products: $err')),
+              error: (err, st) =>
+                  Center(child: Text('Could not load products: $err')),
               data: (products) {
-                final items = products.where((p) => p.festivalTag == festival).toList();
+                final items =
+                    products.where((p) => p.festivalTag == festival).toList();
 
                 if (items.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.temple_hindu, size: 56, color: AppColors.muted),
+                        Icon(Icons.temple_hindu,
+                            size: 56, color: AppColors.muted),
                         const SizedBox(height: 12),
                         Text('More items coming soon for this collection.',
                             style: TextStyle(color: AppColors.muted)),
@@ -81,7 +88,8 @@ class FestivalCollectionPage extends ConsumerWidget {
                   itemBuilder: (context, index) {
                     final product = items[index];
                     return GestureDetector(
-                      onTap: () => context.push(RouteNames.productDetailPath(product.id)),
+                      onTap: () => context
+                          .push(RouteNames.productDetailPath(product.id)),
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 14),
                         padding: const EdgeInsets.all(10),
@@ -112,16 +120,20 @@ class FestivalCollectionPage extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(product.name,
-                                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold)),
                                   const SizedBox(height: 4),
                                   Text(product.description,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          color: AppColors.muted)),
                                   const SizedBox(height: 4),
                                   Text('Rs.${product.price.toStringAsFixed(0)}',
                                       style: TextStyle(
-                                          fontWeight: FontWeight.bold, color: AppColors.primary)),
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.primary)),
                                 ],
                               ),
                             ),
@@ -162,7 +174,8 @@ class AllFestivalCollectionsPage extends StatelessWidget {
           itemBuilder: (context, index) {
             final fest = festivals[index];
             return GestureDetector(
-              onTap: () => context.push(RouteNames.festivalCollectionPath(fest.key)),
+              onTap: () =>
+                  context.push(RouteNames.festivalCollectionPath(fest.key)),
               child: Container(
                 decoration: BoxDecoration(
                   color: fest.value,
@@ -172,7 +185,8 @@ class AllFestivalCollectionsPage extends StatelessWidget {
                 child: Stack(
                   children: [
                     const Positioned.fill(
-                      child: Icon(Icons.temple_hindu, color: Colors.white24, size: 50),
+                      child: Icon(Icons.temple_hindu,
+                          color: Colors.white24, size: 50),
                     ),
                     Positioned(
                       bottom: 12,
@@ -180,7 +194,9 @@ class AllFestivalCollectionsPage extends StatelessWidget {
                       right: 12,
                       child: Text('${fest.key} Collection',
                           style: const TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15)),
                     ),
                   ],
                 ),

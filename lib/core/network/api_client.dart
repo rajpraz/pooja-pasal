@@ -67,7 +67,8 @@ class ApiClient {
       }
       cleaned[key] = value.toString();
     });
-    return Uri.parse('$baseUrl$path').replace(queryParameters: cleaned.isEmpty ? null : cleaned);
+    return Uri.parse('$baseUrl$path')
+        .replace(queryParameters: cleaned.isEmpty ? null : cleaned);
   }
 
   Future<Map<String, String>> _headers({bool json = true}) async {
@@ -82,17 +83,22 @@ class ApiClient {
   Future<dynamic> get(String path, {Map<String, dynamic>? query}) =>
       _send('GET', path, query: query);
 
-  Future<dynamic> post(String path, [Object? body]) => _send('POST', path, body: body);
+  Future<dynamic> post(String path, [Object? body]) =>
+      _send('POST', path, body: body);
 
-  Future<dynamic> put(String path, [Object? body]) => _send('PUT', path, body: body);
+  Future<dynamic> put(String path, [Object? body]) =>
+      _send('PUT', path, body: body);
 
-  Future<dynamic> patch(String path, [Object? body]) => _send('PATCH', path, body: body);
+  Future<dynamic> patch(String path, [Object? body]) =>
+      _send('PATCH', path, body: body);
 
-  Future<dynamic> delete(String path, [Object? body]) => _send('DELETE', path, body: body);
+  Future<dynamic> delete(String path, [Object? body]) =>
+      _send('DELETE', path, body: body);
 
   Future<dynamic> _send(String method, String path,
       {Map<String, dynamic>? query, Object? body}) async {
-    final request = http.Request(method, _uri(path, query))..headers.addAll(await _headers());
+    final request = http.Request(method, _uri(path, query))
+      ..headers.addAll(await _headers());
     if (body != null) request.body = jsonEncode(body);
     return _run(() => _http.send(request).timeout(timeout));
   }
@@ -115,11 +121,11 @@ class ApiClient {
       throw const AppFunctionException('deadline-exceeded',
           'The request timed out. Please check your connection and try again.');
     } on SocketException {
-      throw const AppFunctionException(
-          'unavailable', 'Could not connect. Please check your internet connection and try again.');
+      throw const AppFunctionException('unavailable',
+          'Could not connect. Please check your internet connection and try again.');
     } on http.ClientException {
-      throw const AppFunctionException(
-          'unavailable', 'Could not connect. Please check your internet connection and try again.');
+      throw const AppFunctionException('unavailable',
+          'Could not connect. Please check your internet connection and try again.');
     }
     return _decode(response);
   }
@@ -153,7 +159,8 @@ class ApiClient {
   ///
   /// Overlapping re-fetches keep only the newest result, so a slow earlier
   /// response never overwrites a fresher one.
-  Stream<T> watch<T>(Set<String> topics, Future<T> Function() fetch, {Duration? pollEvery}) {
+  Stream<T> watch<T>(Set<String> topics, Future<T> Function() fetch,
+      {Duration? pollEvery}) {
     late final StreamController<T> controller;
     StreamSubscription<String>? changeSub;
     Timer? timer;
@@ -163,17 +170,22 @@ class ApiClient {
       final requestId = ++latestRequest;
       try {
         final value = await fetch();
-        if (!controller.isClosed && requestId == latestRequest) controller.add(value);
+        if (!controller.isClosed && requestId == latestRequest)
+          controller.add(value);
       } catch (e, st) {
-        if (!controller.isClosed && requestId == latestRequest) controller.addError(e, st);
+        if (!controller.isClosed && requestId == latestRequest)
+          controller.addError(e, st);
       }
     }
 
     controller = StreamController<T>(
       onListen: () {
         unawaited(load());
-        changeSub = _changes.stream.where(topics.contains).listen((_) => unawaited(load()));
-        if (pollEvery != null) timer = Timer.periodic(pollEvery, (_) => unawaited(load()));
+        changeSub = _changes.stream
+            .where(topics.contains)
+            .listen((_) => unawaited(load()));
+        if (pollEvery != null)
+          timer = Timer.periodic(pollEvery, (_) => unawaited(load()));
       },
       // The listener is gone for good (single-subscription stream): stop
       // polling and release the controller.
@@ -195,7 +207,8 @@ class ApiClient {
 /// Builds the [AppFunctionException] for a failed API response. Validation
 /// failures (422) show the first field message, which is the most specific.
 AppFunctionException apiErrorFrom(int statusCode, dynamic payload) {
-  final map = payload is Map<String, dynamic> ? payload : const <String, dynamic>{};
+  final map =
+      payload is Map<String, dynamic> ? payload : const <String, dynamic>{};
   final errors = map['errors'];
   String? message;
   if (errors is Map && errors.isNotEmpty) {
@@ -224,7 +237,8 @@ AppFunctionException apiErrorFrom(int statusCode, dynamic payload) {
 final tokenStoreProvider = Provider<TokenStore>((ref) => TokenStore());
 
 final apiClientProvider = Provider<ApiClient>((ref) {
-  final client = ApiClient(baseUrl: ApiConfig.baseUrl, tokenStore: ref.watch(tokenStoreProvider));
+  final client = ApiClient(
+      baseUrl: ApiConfig.baseUrl, tokenStore: ref.watch(tokenStoreProvider));
   ref.onDispose(client.dispose);
   return client;
 });

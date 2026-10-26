@@ -25,7 +25,8 @@ final currentUserDocProvider = StreamProvider<AppUser?>((ref) {
 /// Any user's profile by uid — the caller's own, or (for an admin, which
 /// the API enforces) someone else's. A non-admin asking for another uid
 /// gets a permission-denied stream error, not silently empty data.
-final userDocProvider = StreamProvider.autoDispose.family<AppUser?, String>((ref, uid) {
+final userDocProvider =
+    StreamProvider.autoDispose.family<AppUser?, String>((ref, uid) {
   return ref.watch(authRepositoryProvider).userDocStream(uid);
 });
 

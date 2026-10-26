@@ -22,11 +22,13 @@ class UploadService {
 
   /// Uploads [file] into [folder] and returns its public URL.
   Future<String> uploadImage(File file, {required String folder}) async {
-    final payload = await _api.upload('/uploads', file: file, fields: {'folder': folder});
+    final payload =
+        await _api.upload('/uploads', file: file, fields: {'folder': folder});
     return (payload as Map<String, dynamic>)['url'] as String;
   }
 
-  Future<List<String>> uploadImages(List<File> files, {required String folder}) async {
+  Future<List<String>> uploadImages(List<File> files,
+      {required String folder}) async {
     final urls = <String>[];
     for (final file in files) {
       urls.add(await uploadImage(file, folder: folder));
@@ -35,5 +37,5 @@ class UploadService {
   }
 }
 
-final uploadServiceProvider =
-    Provider<UploadService>((ref) => UploadService(ref.watch(apiClientProvider)));
+final uploadServiceProvider = Provider<UploadService>(
+    (ref) => UploadService(ref.watch(apiClientProvider)));

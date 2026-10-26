@@ -46,7 +46,11 @@ class Address {
   }
 
   Address copyWith(
-      {String? label, String? recipientName, String? phone, String? fullAddress, bool? isDefault}) {
+      {String? label,
+      String? recipientName,
+      String? phone,
+      String? fullAddress,
+      bool? isDefault}) {
     return Address(
       id: id,
       label: label ?? this.label,

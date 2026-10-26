@@ -9,5 +9,6 @@ class ProductPage {
   final Object? cursor;
   final bool hasMore;
 
-  const ProductPage({required this.items, required this.cursor, required this.hasMore});
+  const ProductPage(
+      {required this.items, required this.cursor, required this.hasMore});
 }

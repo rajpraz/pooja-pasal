@@ -10,10 +10,12 @@ import 'package:pooja_pasal/features/auth/domain/entities/app_user.dart';
 import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
 
 final adminSellerRepositoryProvider = Provider<AdminSellerRepository>((ref) {
-  return AdminSellerRepositoryImpl(AdminSellerRemoteDataSource(ref.watch(apiClientProvider)));
+  return AdminSellerRepositoryImpl(
+      AdminSellerRemoteDataSource(ref.watch(apiClientProvider)));
 });
 
-final pendingSellerApplicationsProvider = StreamProvider<List<SellerApplication>>((ref) {
+final pendingSellerApplicationsProvider =
+    StreamProvider<List<SellerApplication>>((ref) {
   if (!watchSignedIn(ref)) return const Stream.empty();
   return ref.watch(adminSellerRepositoryProvider).streamPendingApplications();
 });
@@ -38,7 +40,8 @@ class AdminSellerController extends AsyncNotifier<void> {
       _run(() => _repository.rejectApplication(applicantUid, reason: reason));
 
   /// Demote/promote a user. See [AdminSellerRepository.setUserRole].
-  Future<void> setRole(String uid, String role) => _run(() => _repository.setUserRole(uid, role));
+  Future<void> setRole(String uid, String role) =>
+      _run(() => _repository.setUserRole(uid, role));
 
   /// Tracks the action in [state] and rethrows failures, so callers'
   /// try/catch can show the error instead of a false "done" message.
@@ -55,4 +58,5 @@ class AdminSellerController extends AsyncNotifier<void> {
 }
 
 final adminSellerControllerProvider =
-    AsyncNotifierProvider<AdminSellerController, void>(AdminSellerController.new);
+    AsyncNotifierProvider<AdminSellerController, void>(
+        AdminSellerController.new);

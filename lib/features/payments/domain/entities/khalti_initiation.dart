@@ -6,7 +6,8 @@ class KhaltiInitiation {
 
   const KhaltiInitiation({required this.pidx, required this.paymentUrl});
 
-  factory KhaltiInitiation.fromMap(Map<String, dynamic> map) => KhaltiInitiation(
+  factory KhaltiInitiation.fromMap(Map<String, dynamic> map) =>
+      KhaltiInitiation(
         pidx: map['pidx'] as String? ?? '',
         paymentUrl: map['paymentUrl'] as String? ?? '',
       );

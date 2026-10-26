@@ -24,5 +24,6 @@ class AdminSellerRepositoryImpl implements AdminSellerRepository {
   Stream<List<AppUser>> streamSellers() => _dataSource.streamSellers();
 
   @override
-  Future<void> setUserRole(String uid, String role) => _dataSource.setUserRole(uid, role);
+  Future<void> setUserRole(String uid, String role) =>
+      _dataSource.setUserRole(uid, role);
 }

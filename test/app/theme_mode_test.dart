@@ -7,7 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('follows the system until the buyer chooses, then remembers it', () async {
+  test('follows the system until the buyer chooses, then remembers it',
+      () async {
     SharedPreferences.setMockInitialValues({});
     final container = ProviderContainer();
     addTearDown(container.dispose);

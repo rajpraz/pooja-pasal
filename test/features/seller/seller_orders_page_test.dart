@@ -21,8 +21,18 @@ PoojaOrder _order(
       buyerId: 'b1',
       sellerIds: const ['s1', 's2'],
       items: const [
-        OrderItem(productId: 'p1', name: 'Brass Diya', price: 500, qty: 2, sellerId: 's1'),
-        OrderItem(productId: 'p2', name: "Someone else's item", price: 99, qty: 1, sellerId: 's2'),
+        OrderItem(
+            productId: 'p1',
+            name: 'Brass Diya',
+            price: 500,
+            qty: 2,
+            sellerId: 's1'),
+        OrderItem(
+            productId: 'p2',
+            name: "Someone else's item",
+            price: 99,
+            qty: 1,
+            sellerId: 's2'),
       ],
       totalAmount: 1179,
       status: status,
@@ -41,16 +51,19 @@ void main() {
     orders = FakeOrderRepository()..sellerOrders = sellerOrders;
     await tester.pumpWidget(ProviderScope(
       overrides: [
-        authRepositoryProvider.overrideWithValue(
-            FakeAuthRepository(const AuthSession(uid: 's1', email: 's@example.com'))),
+        authRepositoryProvider.overrideWithValue(FakeAuthRepository(
+            const AuthSession(uid: 's1', email: 's@example.com'))),
         orderRepositoryProvider.overrideWithValue(orders),
       ],
-      child: MaterialApp(theme: AppTheme.light(), home: const Scaffold(body: SellerOrdersPage())),
+      child: MaterialApp(
+          theme: AppTheme.light(),
+          home: const Scaffold(body: SellerOrdersPage())),
     ));
     await tester.pumpAndSettle();
   }
 
-  testWidgets('shows only this seller\'s lines, with the address to ship to', (tester) async {
+  testWidgets('shows only this seller\'s lines, with the address to ship to',
+      (tester) async {
     await pump(tester, [_order('o1aaaaaaaa')]);
     expect(find.textContaining('Brass Diya × 2'), findsOneWidget);
     expect(find.textContaining("Someone else's item"), findsNothing);
@@ -64,15 +77,19 @@ void main() {
     expect(orders.statusChanges, ['o1aaaaaaaa→confirmed']);
   });
 
-  testWidgets('an unpaid Khalti order is confirmed by its payment, not by hand', (tester) async {
+  testWidgets('an unpaid Khalti order is confirmed by its payment, not by hand',
+      (tester) async {
     await pump(tester, [_order('o2bbbbbbbb', method: 'khalti')]);
     expect(find.text('Mark as Confirmed'), findsNothing);
-    expect(find.text('Cancel Order'), findsOneWidget, reason: 'the seller can still cancel');
+    expect(find.text('Cancel Order'), findsOneWidget,
+        reason: 'the seller can still cancel');
   });
 
-  testWidgets('asks to confirm cash only once a COD order is delivered', (tester) async {
+  testWidgets('asks to confirm cash only once a COD order is delivered',
+      (tester) async {
     await pump(tester, [_order('o3cccccccc', status: 'delivered')]);
     expect(find.text('Confirm Cash Payment Collected'), findsOneWidget);
-    expect(find.text('Cancel Order'), findsNothing, reason: 'too late to cancel');
+    expect(find.text('Cancel Order'), findsNothing,
+        reason: 'too late to cancel');
   });
 }

@@ -24,7 +24,8 @@ class ManualAddressChoice extends AddressChoice {
 
 /// Lets the buyer pick a saved address, detect their location, or type
 /// one in. Completes with null if dismissed.
-Future<AddressChoice?> showAddressPicker(BuildContext context, {required String? uid}) {
+Future<AddressChoice?> showAddressPicker(BuildContext context,
+    {required String? uid}) {
   return showModalBottomSheet<AddressChoice>(
     context: context,
     isScrollControlled: true,
@@ -40,7 +41,9 @@ Future<AddressChoice?> showAddressPicker(BuildContext context, {required String?
             const SizedBox(height: 12),
             if (uid != null)
               Consumer(
-                builder: (context, ref, _) => ref.watch(addressesProvider(uid)).when(
+                builder: (context, ref, _) => ref
+                    .watch(addressesProvider(uid))
+                    .when(
                       loading: () => const Padding(
                         padding: EdgeInsets.symmetric(vertical: 12),
                         child: Center(child: CircularProgressIndicator()),
@@ -51,12 +54,19 @@ Future<AddressChoice?> showAddressPicker(BuildContext context, {required String?
                           for (final address in addresses)
                             ListTile(
                               contentPadding: EdgeInsets.zero,
-                              leading: Icon(Icons.location_on_outlined, color: AppColors.accent),
-                              title: Text(address.label.isEmpty ? 'Address' : address.label,
-                                  style: const TextStyle(fontWeight: FontWeight.w600)),
-                              subtitle: Text('${address.recipientName}\n${address.fullAddress}'),
+                              leading: Icon(Icons.location_on_outlined,
+                                  color: AppColors.accent),
+                              title: Text(
+                                  address.label.isEmpty
+                                      ? 'Address'
+                                      : address.label,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600)),
+                              subtitle: Text(
+                                  '${address.recipientName}\n${address.fullAddress}'),
                               isThreeLine: true,
-                              onTap: () => Navigator.pop(sheetContext, SavedAddressChoice(address)),
+                              onTap: () => Navigator.pop(
+                                  sheetContext, SavedAddressChoice(address)),
                             ),
                           if (addresses.isNotEmpty) const Divider(),
                         ],
@@ -67,13 +77,16 @@ Future<AddressChoice?> showAddressPicker(BuildContext context, {required String?
               contentPadding: EdgeInsets.zero,
               leading: Icon(Icons.my_location, color: AppColors.accent),
               title: const Text('Use my current location'),
-              onTap: () => Navigator.pop(sheetContext, const CurrentLocationChoice()),
+              onTap: () =>
+                  Navigator.pop(sheetContext, const CurrentLocationChoice()),
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: Icon(Icons.edit_location_alt_outlined, color: AppColors.accent),
+              leading: Icon(Icons.edit_location_alt_outlined,
+                  color: AppColors.accent),
               title: const Text('Enter address manually'),
-              onTap: () => Navigator.pop(sheetContext, const ManualAddressChoice()),
+              onTap: () =>
+                  Navigator.pop(sheetContext, const ManualAddressChoice()),
             ),
           ],
         ),
@@ -92,13 +105,15 @@ Future<String?> showContactDetailsSheet(
   required TextEditingController address,
 }) {
   final formKey = GlobalKey<FormState>();
-  String? required(String? value) => (value ?? '').trim().isEmpty ? 'Required' : null;
+  String? required(String? value) =>
+      (value ?? '').trim().isEmpty ? 'Required' : null;
 
   return showModalBottomSheet<String>(
     context: context,
     isScrollControlled: true,
     builder: (sheetContext) => Padding(
-      padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + MediaQuery.of(sheetContext).viewInsets.bottom),
+      padding: EdgeInsets.fromLTRB(
+          16, 0, 16, 16 + MediaQuery.of(sheetContext).viewInsets.bottom),
       child: Form(
         key: formKey,
         child: Column(
@@ -135,7 +150,8 @@ Future<String?> showContactDetailsSheet(
                   if (!formKey.currentState!.validate()) return;
                   Navigator.pop(
                     sheetContext,
-                    [name.text.trim(), address.text.trim(), phone.text.trim()].join(', '),
+                    [name.text.trim(), address.text.trim(), phone.text.trim()]
+                        .join(', '),
                   );
                 },
                 child: const Text('Use this address'),

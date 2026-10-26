@@ -35,8 +35,8 @@ class StatCard extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration:
-                BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(10)),
+            decoration: BoxDecoration(
+                color: AppColors.card, borderRadius: BorderRadius.circular(10)),
             child: Icon(icon, color: color ?? AppColors.primary, size: 20),
           ),
           const SizedBox(width: 10),
@@ -49,7 +49,9 @@ class StatCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.text)),
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.text)),
                 Text(label,
                     style: TextStyle(fontSize: 11, color: AppColors.muted),
                     maxLines: 1,

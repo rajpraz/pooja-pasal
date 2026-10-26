@@ -16,7 +16,8 @@ import 'package:pooja_pasal/features/payments/presentation/providers/payment_pro
 /// the buyer closed the Khalti page without paying, and throws if starting
 /// or verifying the payment failed. Nothing the SDK reports is trusted as
 /// proof of payment — only the backend's verification.
-Future<bool> payWithKhalti(BuildContext context, WidgetRef ref, String orderId) async {
+Future<bool> payWithKhalti(
+    BuildContext context, WidgetRef ref, String orderId) async {
   final payments = ref.read(paymentControllerProvider.notifier);
   final initiation = await payments.initiateKhalti(orderId);
   if (!context.mounted) return false;
@@ -45,7 +46,8 @@ Future<bool> payWithKhalti(BuildContext context, WidgetRef ref, String orderId) 
       environment: KhaltiKeys.environment,
     ),
     onPaymentResult: (_, khalti) => verify(khalti),
-    onMessage: (khalti, {description, statusCode, event, needsPaymentConfirmation}) async {
+    onMessage: (khalti,
+        {description, statusCode, event, needsPaymentConfirmation}) async {
       if (needsPaymentConfirmation == true) {
         // The SDK couldn't confirm the result itself; our backend asks
         // Khalti directly either way.

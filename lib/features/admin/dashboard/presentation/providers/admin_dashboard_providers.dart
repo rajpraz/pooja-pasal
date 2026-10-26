@@ -5,17 +5,25 @@ import 'package:pooja_pasal/features/admin/dashboard/data/repositories/admin_das
 import 'package:pooja_pasal/features/admin/dashboard/domain/entities/admin_dashboard_stats.dart';
 import 'package:pooja_pasal/features/admin/dashboard/domain/repositories/admin_dashboard_repository.dart';
 
-final adminDashboardRepositoryProvider = Provider<AdminDashboardRepository>((ref) {
-  return AdminDashboardRepositoryImpl(AdminDashboardDataSource(ref.watch(apiClientProvider)));
+final adminDashboardRepositoryProvider =
+    Provider<AdminDashboardRepository>((ref) {
+  return AdminDashboardRepositoryImpl(
+      AdminDashboardDataSource(ref.watch(apiClientProvider)));
 });
 
 /// Dashboard counts (computed in SQL by the API). Re-fetched whenever the
 /// admin changes something they summarise — approving a seller, moving an
 /// order, toggling a product — and on pull-to-refresh.
-final adminDashboardStatsProvider = StreamProvider.autoDispose<AdminDashboardStats>((ref) {
+final adminDashboardStatsProvider =
+    StreamProvider.autoDispose<AdminDashboardStats>((ref) {
   final repository = ref.watch(adminDashboardRepositoryProvider);
   return ref.watch(apiClientProvider).watch(
-    {ApiTopics.orders, ApiTopics.users, ApiTopics.sellerApplications, ApiTopics.products},
+    {
+      ApiTopics.orders,
+      ApiTopics.users,
+      ApiTopics.sellerApplications,
+      ApiTopics.products
+    },
     repository.fetchStats,
     pollEvery: const Duration(minutes: 1),
   );

@@ -23,7 +23,8 @@ void main() {
     expect(await layoutWidthAt(tester, 400), 400);
   });
 
-  testWidgets('wide screens get a centred column the app sees as its width', (tester) async {
+  testWidgets('wide screens get a centred column the app sees as its width',
+      (tester) async {
     expect(await layoutWidthAt(tester, 1400), ResponsiveFrame.maxWidth);
   });
 }

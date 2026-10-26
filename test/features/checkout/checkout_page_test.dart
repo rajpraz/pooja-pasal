@@ -21,7 +21,8 @@ import 'package:pooja_pasal/features/payments/presentation/providers/payment_pro
 import '../../support/fakes.dart';
 
 class _FakeCoupons extends CouponRemoteDataSource {
-  _FakeCoupons() : super(ApiClient(baseUrl: 'http://unused', tokenStore: TokenStore()));
+  _FakeCoupons()
+      : super(ApiClient(baseUrl: 'http://unused', tokenStore: TokenStore()));
 
   @override
   Future<CouponQuote> validate(String code, double subtotal) async =>
@@ -48,7 +49,13 @@ void main() {
 
     orders = FakeOrderRepository();
     cart = FakeCartRepository(const [
-      CartItem(productId: 'p1', name: 'Brass Diya', price: 500, qty: 2, image: '', sellerId: 's1'),
+      CartItem(
+          productId: 'p1',
+          name: 'Brass Diya',
+          price: 500,
+          qty: 2,
+          image: '',
+          sellerId: 's1'),
     ]);
     final router = GoRouter(routes: [
       GoRoute(path: '/', builder: (_, __) => const CheckoutPage(price: 1000)),
@@ -56,10 +63,11 @@ void main() {
     ]);
     await tester.pumpWidget(ProviderScope(
       overrides: [
-        authRepositoryProvider.overrideWithValue(
-            FakeAuthRepository(const AuthSession(uid: 'u1', email: 'sita@example.com'))),
+        authRepositoryProvider.overrideWithValue(FakeAuthRepository(
+            const AuthSession(uid: 'u1', email: 'sita@example.com'))),
         cartRepositoryProvider.overrideWithValue(cart),
-        addressRepositoryProvider.overrideWithValue(FakeAddressRepository(const [_home])),
+        addressRepositoryProvider
+            .overrideWithValue(FakeAddressRepository(const [_home])),
         orderRepositoryProvider.overrideWithValue(orders),
         couponDataSourceProvider.overrideWithValue(_FakeCoupons()),
         // The server only offers Cash on Delivery here.
@@ -70,7 +78,8 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('uses the default saved address and only offers what the server accepts',
+  testWidgets(
+      'uses the default saved address and only offers what the server accepts',
       (tester) async {
     await pumpCheckout(tester);
 
@@ -79,20 +88,24 @@ void main() {
     expect(find.text('Khalti (Unavailable)'), findsOneWidget);
     expect(find.text('eSewa (Unavailable)'), findsOneWidget);
     expect(find.text('Cash on Delivery'), findsOneWidget);
-    expect(find.textContaining('Rs.1080.00'), findsWidgets, reason: '1000 + 80 delivery');
+    expect(find.textContaining('Rs.1080.00'), findsWidgets,
+        reason: '1000 + 80 delivery');
   });
 
-  testWidgets('asks for a payment method before placing anything', (tester) async {
+  testWidgets('asks for a payment method before placing anything',
+      (tester) async {
     await pumpCheckout(tester);
 
     await tester.tap(find.textContaining('Place Order'));
     await tester.pump();
 
-    expect(find.text('Please choose a delivery address and payment method'), findsOneWidget);
+    expect(find.text('Please choose a delivery address and payment method'),
+        findsOneWidget);
     expect(orders.placed, isEmpty);
   });
 
-  testWidgets('places a cash-on-delivery order and tells the buyer what to pay', (tester) async {
+  testWidgets('places a cash-on-delivery order and tells the buyer what to pay',
+      (tester) async {
     await pumpCheckout(tester);
 
     await tester.tap(find.text('Cash on Delivery'));
@@ -112,7 +125,8 @@ void main() {
         reason: "the server's total, not the preview");
   });
 
-  testWidgets('applies a coupon to the preview and sends it with the order', (tester) async {
+  testWidgets('applies a coupon to the preview and sends it with the order',
+      (tester) async {
     await pumpCheckout(tester);
 
     await tester.enterText(find.byType(TextField), 'dashain10');
@@ -120,7 +134,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Discount (DASHAIN10)'), findsOneWidget);
-    expect(find.textContaining('Rs.980.00'), findsWidgets, reason: '1000 - 100 + 80');
+    expect(find.textContaining('Rs.980.00'), findsWidgets,
+        reason: '1000 - 100 + 80');
     expect(find.text('Remove'), findsOneWidget);
 
     await tester.tap(find.text('Cash on Delivery'));

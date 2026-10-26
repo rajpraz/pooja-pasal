@@ -83,7 +83,8 @@ class NotificationsPage extends ConsumerWidget {
     return '${diff.inDays}d ago';
   }
 
-  void _onTap(BuildContext context, WidgetRef ref, String uid, AppNotification n) {
+  void _onTap(
+      BuildContext context, WidgetRef ref, String uid, AppNotification n) {
     if (!n.read) {
       ref.read(notificationRepositoryProvider).markRead(uid, n.id);
     }
@@ -103,17 +104,20 @@ class NotificationsPage extends ConsumerWidget {
           ? const Center(child: Text('Please log in to view notifications'))
           : ref.watch(notificationsProvider(uid)).when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, st) => Center(child: Text('Could not load notifications: $err')),
+                error: (err, st) =>
+                    Center(child: Text('Could not load notifications: $err')),
                 data: (notifications) {
                   if (notifications.isEmpty) {
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.notifications_none, size: 56, color: AppColors.muted),
+                          Icon(Icons.notifications_none,
+                              size: 56, color: AppColors.muted),
                           const SizedBox(height: 12),
                           const Text('No notifications yet',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w600)),
                           const SizedBox(height: 4),
                           Text('Order updates and offers will show up here.',
                               style: TextStyle(color: AppColors.muted)),
@@ -143,7 +147,8 @@ class NotificationsPage extends ConsumerWidget {
                             children: [
                               CircleAvatar(
                                 backgroundColor: AppColors.surface,
-                                child: Icon(_iconFor(n.type), color: _colorFor(n.type), size: 20),
+                                child: Icon(_iconFor(n.type),
+                                    color: _colorFor(n.type), size: 20),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -154,24 +159,31 @@ class NotificationsPage extends ConsumerWidget {
                                       children: [
                                         Expanded(
                                           child: Text(n.title,
-                                              style: const TextStyle(fontWeight: FontWeight.bold)),
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold)),
                                         ),
                                         if (!n.read)
                                           Container(
                                             width: 8,
                                             height: 8,
-                                            margin: const EdgeInsets.only(left: 6),
+                                            margin:
+                                                const EdgeInsets.only(left: 6),
                                             decoration: BoxDecoration(
-                                                color: AppColors.accent, shape: BoxShape.circle),
+                                                color: AppColors.accent,
+                                                shape: BoxShape.circle),
                                           ),
                                       ],
                                     ),
                                     const SizedBox(height: 4),
                                     Text(n.body,
-                                        style: TextStyle(color: AppColors.muted, fontSize: 13)),
+                                        style: TextStyle(
+                                            color: AppColors.muted,
+                                            fontSize: 13)),
                                     const SizedBox(height: 6),
                                     Text(_timeAgo(n.createdAt),
-                                        style: TextStyle(color: AppColors.muted, fontSize: 11)),
+                                        style: TextStyle(
+                                            color: AppColors.muted,
+                                            fontSize: 11)),
                                   ],
                                 ),
                               ),

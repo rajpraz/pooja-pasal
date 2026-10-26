@@ -16,7 +16,8 @@ class PricingService {
   static double subtotal(List<CartItem> items) =>
       items.fold<double>(0, (sum, item) => sum + item.subtotal);
 
-  static double total(List<CartItem> items) => subtotal(items) + deliveryFee - discount;
+  static double total(List<CartItem> items) =>
+      subtotal(items) + deliveryFee - discount;
 
   /// Same idea, but only over lines that are actually purchasable right
   /// now (see `CartLineValidation`) and priced at their *current* value —

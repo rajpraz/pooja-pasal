@@ -16,7 +16,8 @@ class ThemeModeController extends Notifier<ThemeMode> {
   Future<void> _load() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final saved = ThemeMode.values.where((m) => m.name == prefs.getString(_key));
+      final saved =
+          ThemeMode.values.where((m) => m.name == prefs.getString(_key));
       if (saved.isNotEmpty) state = saved.first;
     } catch (_) {
       // Storage unavailable: keep following the system.
@@ -32,4 +33,5 @@ class ThemeModeController extends Notifier<ThemeMode> {
   }
 }
 
-final themeModeProvider = NotifierProvider<ThemeModeController, ThemeMode>(ThemeModeController.new);
+final themeModeProvider =
+    NotifierProvider<ThemeModeController, ThemeMode>(ThemeModeController.new);

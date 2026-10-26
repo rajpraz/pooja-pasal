@@ -9,12 +9,14 @@ import 'package:pooja_pasal/features/payments/domain/entities/khalti_initiation.
 import 'package:pooja_pasal/features/payments/domain/repositories/payment_repository.dart';
 
 final paymentRepositoryProvider = Provider<PaymentRepository>((ref) {
-  return PaymentRepositoryImpl(PaymentRemoteDataSource(ref.watch(apiClientProvider)));
+  return PaymentRepositoryImpl(
+      PaymentRemoteDataSource(ref.watch(apiClientProvider)));
 });
 
 /// Payment methods checkout may offer; falls back to Cash on Delivery
 /// alone when the server can't be asked.
-final availablePaymentMethodsProvider = FutureProvider<List<String>>((ref) async {
+final availablePaymentMethodsProvider =
+    FutureProvider<List<String>>((ref) async {
   try {
     return await ref.watch(paymentRepositoryProvider).availableMethods();
   } catch (_) {
@@ -46,7 +48,8 @@ class PaymentController extends AsyncNotifier<void> {
     }
   }
 
-  Future<void> verifyKhalti({required String orderId, required String pidx}) async {
+  Future<void> verifyKhalti(
+      {required String orderId, required String pidx}) async {
     state = const AsyncLoading();
     try {
       await _repository.verifyKhalti(orderId: orderId, pidx: pidx);

@@ -9,9 +9,12 @@ class WishlistRemoteDataSource {
   final ApiClient _api;
 
   Future<List<WishlistItem>> _fetch() async =>
-      asJsonList(await _api.get('/wishlist')).map(WishlistItem.fromJson).toList();
+      asJsonList(await _api.get('/wishlist'))
+          .map(WishlistItem.fromJson)
+          .toList();
 
-  Stream<List<WishlistItem>> streamWishlist(String uid) => _api.watch({ApiTopics.wishlist}, _fetch);
+  Stream<List<WishlistItem>> streamWishlist(String uid) =>
+      _api.watch({ApiTopics.wishlist}, _fetch);
 
   /// Adds or removes [productId]; returns whether it's now saved.
   Future<bool> toggle(String uid, String productId) async {

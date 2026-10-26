@@ -45,8 +45,8 @@ Future<void> showReviewDialog(
                 TextField(
                   controller: textController,
                   maxLines: 3,
-                  decoration:
-                      const InputDecoration(hintText: 'Share your experience with this product'),
+                  decoration: const InputDecoration(
+                      hintText: 'Share your experience with this product'),
                 ),
               ],
             ),
@@ -68,8 +68,8 @@ Future<void> showReviewDialog(
 
   if (submitted != true || !context.mounted) return;
   if (textController.text.trim().isEmpty) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Please write a short review.')));
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please write a short review.')));
     return;
   }
 
@@ -85,6 +85,7 @@ Future<void> showReviewDialog(
         .showSnackBar(const SnackBar(content: Text('Thanks for your review!')));
   } catch (e) {
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
   }
 }

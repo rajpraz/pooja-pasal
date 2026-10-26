@@ -5,15 +5,21 @@ import 'package:pooja_pasal/app/router/route_names.dart';
 import 'package:pooja_pasal/features/auth/domain/entities/app_user.dart';
 import 'package:pooja_pasal/features/auth/domain/entities/auth_session.dart';
 
-AppUser _profile(String uid, String role) =>
-    AppUser(uid: uid, name: 'X', email: 'x@example.com', phone: '', role: role, address: '');
+AppUser _profile(String uid, String role) => AppUser(
+    uid: uid,
+    name: 'X',
+    email: 'x@example.com',
+    phone: '',
+    role: role,
+    address: '');
 
 void main() {
   const seller = AuthSession(uid: 's1', email: 's@example.com');
   const signedIn = AsyncData<AuthSession?>(seller);
   const signedOut = AsyncData<AuthSession?>(null);
 
-  String? go(String path, AsyncValue<AuthSession?> session, [AppUser? profile]) =>
+  String? go(String path, AsyncValue<AuthSession?> session,
+          [AppUser? profile]) =>
       redirectFor(path: path, session: session, profile: profile);
 
   group('signed out', () {
@@ -26,33 +32,42 @@ void main() {
 
     test('nothing moves while the saved session is still being restored', () {
       expect(go(RouteNames.cart, const AsyncLoading()), isNull);
-      expect(go(RouteNames.splash, signedOut), isNull, reason: 'splash decides for itself');
+      expect(go(RouteNames.splash, signedOut), isNull,
+          reason: 'splash decides for itself');
     });
   });
 
   group('signed in', () {
     test('auth screens send each role to its own start screen', () {
-      expect(go(RouteNames.login, signedIn, _profile('s1', 'seller')), RouteNames.sellerDashboard);
-      expect(go(RouteNames.login, signedIn, _profile('s1', 'admin')), RouteNames.adminDashboard);
-      expect(go(RouteNames.signup, signedIn, _profile('s1', 'buyer')), RouteNames.home);
+      expect(go(RouteNames.login, signedIn, _profile('s1', 'seller')),
+          RouteNames.sellerDashboard);
+      expect(go(RouteNames.login, signedIn, _profile('s1', 'admin')),
+          RouteNames.adminDashboard);
+      expect(go(RouteNames.signup, signedIn, _profile('s1', 'buyer')),
+          RouteNames.home);
     });
 
     test('until the profile loads, splash works out the role', () {
       expect(go(RouteNames.login, signedIn), RouteNames.splash);
     });
 
-    test("a previous account's profile never decides where the new one goes", () {
+    test("a previous account's profile never decides where the new one goes",
+        () {
       // Switching from a buyer to this seller: the buyer's profile is still
       // the loaded one for a moment.
       final stale = _profile('b1', 'buyer');
       expect(go(RouteNames.login, signedIn, stale), RouteNames.splash);
-      expect(go('/seller/dashboard', signedIn, stale), isNull, reason: 'wait, do not bounce');
+      expect(go('/seller/dashboard', signedIn, stale), isNull,
+          reason: 'wait, do not bounce');
     });
 
     test('role areas are guarded', () {
-      expect(go('/seller/dashboard', signedIn, _profile('s1', 'seller')), isNull);
-      expect(go('/seller/dashboard', signedIn, _profile('s1', 'buyer')), RouteNames.home);
-      expect(go('/admin/dashboard', signedIn, _profile('s1', 'seller')), RouteNames.home);
+      expect(
+          go('/seller/dashboard', signedIn, _profile('s1', 'seller')), isNull);
+      expect(go('/seller/dashboard', signedIn, _profile('s1', 'buyer')),
+          RouteNames.home);
+      expect(go('/admin/dashboard', signedIn, _profile('s1', 'seller')),
+          RouteNames.home);
       expect(go('/admin/dashboard', signedIn, _profile('s1', 'admin')), isNull);
       expect(go(RouteNames.cart, signedIn, _profile('s1', 'buyer')), isNull);
     });

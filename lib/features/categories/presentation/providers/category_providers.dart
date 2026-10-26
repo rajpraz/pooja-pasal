@@ -10,7 +10,8 @@ import 'package:pooja_pasal/features/categories/domain/repositories/category_rep
 import 'package:pooja_pasal/features/products/presentation/providers/product_providers.dart';
 
 final categoryRepositoryProvider = Provider<CategoryRepository>((ref) {
-  return CategoryRepositoryImpl(CategoryRemoteDataSource(ref.watch(apiClientProvider)));
+  return CategoryRepositoryImpl(
+      CategoryRemoteDataSource(ref.watch(apiClientProvider)));
 });
 
 final categoriesProvider = StreamProvider<List<Category>>((ref) {
@@ -46,7 +47,8 @@ class CategoryController extends AsyncNotifier<void> {
     _repository = ref.watch(categoryRepositoryProvider);
   }
 
-  Future<void> create(Category category) => _run(() => _repository.createCategory(category));
+  Future<void> create(Category category) =>
+      _run(() => _repository.createCategory(category));
 
   Future<void> editCategory(String id, Map<String, dynamic> updates) =>
       _run(() => _repository.updateCategory(id, updates));

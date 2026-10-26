@@ -8,18 +8,22 @@ class CategoryRepositoryImpl implements CategoryRepository {
   CategoryRepositoryImpl(this._dataSource);
 
   @override
-  Stream<List<Category>> streamActiveCategories() => _dataSource.streamActiveCategories();
+  Stream<List<Category>> streamActiveCategories() =>
+      _dataSource.streamActiveCategories();
 
   @override
-  Stream<List<Category>> streamAllCategories() => _dataSource.streamAllCategories();
+  Stream<List<Category>> streamAllCategories() =>
+      _dataSource.streamAllCategories();
 
   @override
-  Future<void> createCategory(Category category) => _dataSource.createCategory(category);
+  Future<void> createCategory(Category category) =>
+      _dataSource.createCategory(category);
 
   @override
   Future<void> updateCategory(String id, Map<String, dynamic> updates) =>
       _dataSource.updateCategory(id, updates);
 
   @override
-  Future<void> setActive(String id, bool isActive) => _dataSource.setActive(id, isActive);
+  Future<void> setActive(String id, bool isActive) =>
+      _dataSource.setActive(id, isActive);
 }

@@ -48,8 +48,10 @@ class AdminDashboardPage extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             children: [
               Text('Overview',
-                  style:
-                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.text)),
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.text)),
               const SizedBox(height: 10),
               GridView(
                 shrinkWrap: true,
@@ -75,7 +77,9 @@ class AdminDashboardPage extends ConsumerWidget {
                       icon: Icons.pending_actions_outlined,
                       label: 'Pending Applications',
                       value: '${stats.pendingSellerApplications}',
-                      color: stats.pendingSellerApplications > 0 ? AppColors.accent : null),
+                      color: stats.pendingSellerApplications > 0
+                          ? AppColors.accent
+                          : null),
                   StatCard(
                       icon: Icons.inventory_2_outlined,
                       label: 'Total Products',
@@ -88,7 +92,8 @@ class AdminDashboardPage extends ConsumerWidget {
                       icon: Icons.warning_amber_outlined,
                       label: 'Low Stock',
                       value: '${stats.lowStockProducts}',
-                      color: stats.lowStockProducts > 0 ? AppColors.error : null),
+                      color:
+                          stats.lowStockProducts > 0 ? AppColors.error : null),
                   StatCard(
                       icon: Icons.receipt_long_outlined,
                       label: 'Total Orders',
@@ -119,13 +124,17 @@ class AdminDashboardPage extends ConsumerWidget {
                 padding: const EdgeInsets.only(top: 4, bottom: 16),
                 child: Text(
                   '"Recent Revenue" is paid orders from the last 30 days, not an all-time total.',
-                  style:
-                      TextStyle(fontSize: 11, color: AppColors.muted, fontStyle: FontStyle.italic),
+                  style: TextStyle(
+                      fontSize: 11,
+                      color: AppColors.muted,
+                      fontStyle: FontStyle.italic),
                 ),
               ),
               Text('Manage',
-                  style:
-                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.text)),
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.text)),
               const SizedBox(height: 10),
               _menuTile(
                 context,
@@ -191,13 +200,16 @@ class AdminDashboardPage extends ConsumerWidget {
       child: ListTile(
         leading: Icon(icon, color: AppColors.primary),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text(subtitle, style: TextStyle(color: AppColors.muted, fontSize: 12)),
+        subtitle: Text(subtitle,
+            style: TextStyle(color: AppColors.muted, fontSize: 12)),
         trailing: badge > 0
             ? Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration:
-                    BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(20)),
-                child: Text('$badge', style: const TextStyle(color: Colors.white, fontSize: 11)),
+                decoration: BoxDecoration(
+                    color: AppColors.accent,
+                    borderRadius: BorderRadius.circular(20)),
+                child: Text('$badge',
+                    style: const TextStyle(color: Colors.white, fontSize: 11)),
               )
             : Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.muted),
         onTap: onTap,

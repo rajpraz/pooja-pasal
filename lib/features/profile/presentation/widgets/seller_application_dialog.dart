@@ -6,14 +6,16 @@ import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.
 
 /// Lets a buyer apply to sell (or apply again after a rejection). The
 /// account stays a buyer until an admin approves the application.
-Future<void> showSellerApplicationDialog(BuildContext context, WidgetRef ref, AppUser user) async {
+Future<void> showSellerApplicationDialog(
+    BuildContext context, WidgetRef ref, AppUser user) async {
   final shopName = TextEditingController(text: user.shopName ?? '');
   final phone = TextEditingController(text: user.phone);
   final reason = TextEditingController();
   final formKey = GlobalKey<FormState>();
   var submitting = false;
 
-  String? required(String? value) => (value ?? '').trim().isEmpty ? 'Required' : null;
+  String? required(String? value) =>
+      (value ?? '').trim().isEmpty ? 'Required' : null;
 
   await showDialog<void>(
     context: context,
@@ -26,7 +28,8 @@ Future<void> showSellerApplicationDialog(BuildContext context, WidgetRef ref, Ap
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('Tell us about your shop. An admin reviews every application.'),
+                const Text(
+                    'Tell us about your shop. An admin reviews every application.'),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: shopName,
@@ -42,7 +45,8 @@ Future<void> showSellerApplicationDialog(BuildContext context, WidgetRef ref, Ap
                 TextFormField(
                   controller: reason,
                   maxLines: 3,
-                  decoration: const InputDecoration(labelText: 'What will you sell? (optional)'),
+                  decoration: const InputDecoration(
+                      labelText: 'What will you sell? (optional)'),
                 ),
               ],
             ),
@@ -68,12 +72,13 @@ Future<void> showSellerApplicationDialog(BuildContext context, WidgetRef ref, Ap
                       if (!dialogContext.mounted) return;
                       Navigator.pop(dialogContext);
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text("Application sent. We'll notify you once it's reviewed.")));
+                          content: Text(
+                              "Application sent. We'll notify you once it's reviewed.")));
                     } catch (e) {
                       setState(() => submitting = false);
                       if (!context.mounted) return;
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(friendlyErrorMessage(e))));
                     }
                   },
             child: Text(submitting ? 'Sending…' : 'Apply'),

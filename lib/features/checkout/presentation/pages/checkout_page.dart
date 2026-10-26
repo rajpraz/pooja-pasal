@@ -114,7 +114,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       return;
     }
     try {
-      final items = await ref.read(cartRepositoryProvider).streamCart(uid).first;
+      final items =
+          await ref.read(cartRepositoryProvider).streamCart(uid).first;
       if (!mounted) return;
       setState(() {
         _cartItems = items;
@@ -137,8 +138,12 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       try {
         // Read the repository directly (as the cart does): awaiting an
         // unwatched provider's future can stall while Riverpod pauses it.
-        final addresses = await ref.read(addressRepositoryProvider).streamAddresses(uid).first;
-        final preferred = addresses.where((a) => a.isDefault).firstOrNull ?? addresses.firstOrNull;
+        final addresses = await ref
+            .read(addressRepositoryProvider)
+            .streamAddresses(uid)
+            .first;
+        final preferred = addresses.where((a) => a.isDefault).firstOrNull ??
+            addresses.firstOrNull;
         if (preferred != null && mounted) {
           _useAddress(preferred.formatted, saved: preferred);
           return;
@@ -195,7 +200,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
-    if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
       throw const _LocationUnavailable(
           'Location permission denied. Enter your address manually instead.');
     }
@@ -209,7 +215,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     final parts = [place.subLocality, place.locality, place.country]
         .whereType<String>()
         .where((part) => part.isNotEmpty);
-    if (parts.isEmpty) throw const _LocationUnavailable('Enter your address manually.');
+    if (parts.isEmpty)
+      throw const _LocationUnavailable('Enter your address manually.');
     return parts.join(', ');
   }
 
@@ -239,11 +246,13 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     if (code.isEmpty || _applyingCoupon) return;
     setState(() => _applyingCoupon = true);
     try {
-      final quote = await ref.read(couponDataSourceProvider).validate(code, _totals.subtotal);
+      final quote = await ref
+          .read(couponDataSourceProvider)
+          .validate(code, _totals.subtotal);
       if (!mounted) return;
       setState(() => _coupon = quote);
-      showMessage(
-          context, 'Coupon ${quote.code} applied: Rs.${quote.discount.toStringAsFixed(0)} off');
+      showMessage(context,
+          'Coupon ${quote.code} applied: Rs.${quote.discount.toStringAsFixed(0)} off');
     } catch (e) {
       if (!mounted) return;
       setState(() => _coupon = null);
@@ -263,7 +272,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   Future<void> _placeOrder() async {
     final method = _paymentMethod;
     if (_deliveryAddress.isEmpty || method == null) {
-      showMessage(context, 'Please choose a delivery address and payment method');
+      showMessage(
+          context, 'Please choose a delivery address and payment method');
       return;
     }
     if (_cartItems.isEmpty) {
@@ -324,7 +334,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   /// The eSewa page only returns true after the API verified the payment.
   Future<void> _payWithEsewa(CreateOrderResult order) async {
     setState(() => _placingOrder = false);
-    final paid = await context.push<bool>(RouteNames.esewaPaymentPath(order.orderId));
+    final paid =
+        await context.push<bool>(RouteNames.esewaPaymentPath(order.orderId));
     if (!mounted) return;
     if (paid ?? false) {
       await _finish(paid: true);
@@ -337,7 +348,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   /// total, so a COD buyer is told exactly what they'll pay.
   Future<void> _finish({required bool paid, double? totalAmount}) async {
     final uid = _uid;
-    if (uid != null) await ref.read(cartControllerProvider.notifier).clearCart(uid);
+    if (uid != null)
+      await ref.read(cartControllerProvider.notifier).clearCart(uid);
     if (!mounted) return;
     // Done: drop the busy overlay before confirming (not after the dialog
     // closes, or it would spin behind it).
@@ -392,7 +404,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                     ),
                     const CheckoutSection(
                       title: 'Delivery Time',
-                      child: DeliveryOptionCard(fee: PricingService.deliveryFee),
+                      child:
+                          DeliveryOptionCard(fee: PricingService.deliveryFee),
                     ),
                     CheckoutSection(
                       title: 'Coupon',
@@ -413,7 +426,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                               method: method,
                               selected: _paymentMethod == method,
                               enabled: available.contains(method.apiValue),
-                              onSelected: (method) => setState(() => _paymentMethod = method),
+                              onSelected: (method) =>
+                                  setState(() => _paymentMethod = method),
                             ),
                         ],
                       ),
@@ -423,10 +437,12 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                     CheckoutSection(
                       title: 'Items in your order',
                       child: _cartItems.isEmpty
-                          ? Text('Your cart is empty', style: TextStyle(color: AppColors.muted))
+                          ? Text('Your cart is empty',
+                              style: TextStyle(color: AppColors.muted))
                           : Column(
                               children: [
-                                for (final item in _cartItems) CheckoutItemTile(item: item),
+                                for (final item in _cartItems)
+                                  CheckoutItemTile(item: item),
                               ],
                             ),
                     ),
@@ -435,8 +451,10 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                       height: 52,
                       child: ElevatedButton(
                         onPressed: _placingOrder ? null : _placeOrder,
-                        child: Text('Place Order • Rs.${totals.total.toStringAsFixed(2)}',
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                        child: Text(
+                            'Place Order • Rs.${totals.total.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w600)),
                       ),
                     ),
                   ],

@@ -5,8 +5,8 @@ import 'package:pooja_pasal/features/products/data/datasources/search_history_lo
 import 'package:pooja_pasal/features/products/domain/entities/product.dart';
 import 'package:pooja_pasal/features/products/presentation/providers/product_providers.dart';
 
-final searchHistoryDataSourceProvider =
-    Provider<SearchHistoryLocalDataSource>((ref) => SearchHistoryLocalDataSource());
+final searchHistoryDataSourceProvider = Provider<SearchHistoryLocalDataSource>(
+    (ref) => SearchHistoryLocalDataSource());
 
 /// Raw text as the user types; debounces writes into
 /// [debouncedSearchQueryProvider] (400ms) so [searchResultsProvider] only
@@ -46,12 +46,14 @@ class DebouncedSearchQueryController extends Notifier<String> {
 }
 
 final debouncedSearchQueryProvider =
-    NotifierProvider<DebouncedSearchQueryController, String>(DebouncedSearchQueryController.new);
+    NotifierProvider<DebouncedSearchQueryController, String>(
+        DebouncedSearchQueryController.new);
 
 /// Search results from the API (`GET /products/search`), which matches
 /// name, category, festival and description in SQL — no need to load the
 /// whole catalog onto the device.
-final searchResultsProvider = FutureProvider.autoDispose<List<Product>>((ref) async {
+final searchResultsProvider =
+    FutureProvider.autoDispose<List<Product>>((ref) async {
   final query = ref.watch(debouncedSearchQueryProvider);
   if (query.isEmpty) return const [];
   return ref.watch(productRepositoryProvider).search(query);
@@ -78,4 +80,5 @@ class SearchHistoryController extends AsyncNotifier<List<String>> {
 }
 
 final searchHistoryProvider =
-    AsyncNotifierProvider<SearchHistoryController, List<String>>(SearchHistoryController.new);
+    AsyncNotifierProvider<SearchHistoryController, List<String>>(
+        SearchHistoryController.new);

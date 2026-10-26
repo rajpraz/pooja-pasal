@@ -24,7 +24,10 @@ class CategoriesPage extends ConsumerWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: Image.network(category.imageUrl,
-          width: 52, height: 52, fit: BoxFit.cover, errorBuilder: (_, __, ___) => badge),
+          width: 52,
+          height: 52,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => badge),
     );
   }
 
@@ -40,7 +43,8 @@ class CategoriesPage extends ConsumerWidget {
       ),
       body: categoriesAsync.when(
         loading: () => const LoadingView(),
-        error: (err, st) => Center(child: Text('Could not load categories: $err')),
+        error: (err, st) =>
+            Center(child: Text('Could not load categories: $err')),
         data: (categories) {
           if (categories.isEmpty) {
             return const EmptyView(
@@ -63,7 +67,8 @@ class CategoriesPage extends ConsumerWidget {
                 final Category category = categories[index];
                 final count = counts[category.name] ?? 0;
                 return GestureDetector(
-                  onTap: () => context.push(RouteNames.categoryProductsPath(category.name)),
+                  onTap: () => context
+                      .push(RouteNames.categoryProductsPath(category.name)),
                   child: Container(
                     decoration: BoxDecoration(
                       color: AppColors.surface,
@@ -97,7 +102,8 @@ class CategoriesPage extends ConsumerWidget {
                         if (count > 0) ...[
                           const SizedBox(height: 2),
                           Text('$count item${count == 1 ? '' : 's'}',
-                              style: TextStyle(fontSize: 10, color: AppColors.muted)),
+                              style: TextStyle(
+                                  fontSize: 10, color: AppColors.muted)),
                         ],
                       ],
                     ),
@@ -129,7 +135,8 @@ class CategoryProductsPage extends ConsumerWidget {
       ),
       body: productsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, st) => Center(child: Text('Could not load products: $err')),
+        error: (err, st) =>
+            Center(child: Text('Could not load products: $err')),
         data: (products) {
           final items = products.where((p) => p.category == category).toList();
 
@@ -153,7 +160,8 @@ class CategoryProductsPage extends ConsumerWidget {
             itemBuilder: (context, index) {
               final product = items[index];
               return GestureDetector(
-                onTap: () => context.push(RouteNames.productDetailPath(product.id)),
+                onTap: () =>
+                    context.push(RouteNames.productDetailPath(product.id)),
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
@@ -179,7 +187,8 @@ class CategoryProductsPage extends ConsumerWidget {
                                 width: 110,
                                 height: 110,
                                 color: AppColors.card,
-                                child: Icon(Icons.temple_hindu, color: AppColors.primary),
+                                child: Icon(Icons.temple_hindu,
+                                    color: AppColors.primary),
                               )
                             : Image.network(
                                 product.image,
@@ -190,7 +199,8 @@ class CategoryProductsPage extends ConsumerWidget {
                                   width: 110,
                                   height: 110,
                                   color: AppColors.card,
-                                  child: Icon(Icons.temple_hindu, color: AppColors.primary),
+                                  child: Icon(Icons.temple_hindu,
+                                      color: AppColors.primary),
                                 ),
                               ),
                       ),
@@ -209,7 +219,8 @@ class CategoryProductsPage extends ConsumerWidget {
                               Text(product.description,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(color: AppColors.muted, fontSize: 13)),
+                                  style: TextStyle(
+                                      color: AppColors.muted, fontSize: 13)),
                               const SizedBox(height: 8),
                               Text('Rs.${product.price.toStringAsFixed(2)}',
                                   style: TextStyle(

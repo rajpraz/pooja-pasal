@@ -87,15 +87,20 @@ class _AdminUsersPageState extends ConsumerState<AdminUsersPage> {
                 child: ListTile(
                   leading: CircleAvatar(
                     backgroundColor: AppColors.card,
-                    backgroundImage: user.photoUrl.isNotEmpty ? NetworkImage(user.photoUrl) : null,
-                    child:
-                        user.photoUrl.isEmpty ? Icon(Icons.person, color: AppColors.primary) : null,
+                    backgroundImage: user.photoUrl.isNotEmpty
+                        ? NetworkImage(user.photoUrl)
+                        : null,
+                    child: user.photoUrl.isEmpty
+                        ? Icon(Icons.person, color: AppColors.primary)
+                        : null,
                   ),
                   title: Text(user.name.isEmpty ? '(no name)' : user.name,
                       style: const TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: Text(user.email, style: TextStyle(color: AppColors.muted)),
+                  subtitle: Text(user.email,
+                      style: TextStyle(color: AppColors.muted)),
                   trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: _roleColor(user.role).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
@@ -106,7 +111,8 @@ class _AdminUsersPageState extends ConsumerState<AdminUsersPage> {
                             fontWeight: FontWeight.w600,
                             fontSize: 11)),
                   ),
-                  onTap: () => context.push(RouteNames.adminUserDetailPath(user.uid)),
+                  onTap: () =>
+                      context.push(RouteNames.adminUserDetailPath(user.uid)),
                 ),
               );
             },

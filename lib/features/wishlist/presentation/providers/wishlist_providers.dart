@@ -9,12 +9,14 @@ import 'package:pooja_pasal/features/wishlist/domain/entities/wishlist_item.dart
 import 'package:pooja_pasal/features/wishlist/domain/repositories/wishlist_repository.dart';
 
 final wishlistRepositoryProvider = Provider<WishlistRepository>((ref) {
-  return WishlistRepositoryImpl(WishlistRemoteDataSource(ref.watch(apiClientProvider)));
+  return WishlistRepositoryImpl(
+      WishlistRemoteDataSource(ref.watch(apiClientProvider)));
 });
 
 /// Live wishlist for one signed-in user. Mirrors `cartProvider`'s
 /// per-uid `StreamProvider.family` shape.
-final wishlistProvider = StreamProvider.family<List<WishlistItem>, String>((ref, uid) {
+final wishlistProvider =
+    StreamProvider.family<List<WishlistItem>, String>((ref, uid) {
   if (!watchSignedIn(ref)) return const Stream.empty();
   return ref.watch(wishlistRepositoryProvider).streamWishlist(uid);
 });

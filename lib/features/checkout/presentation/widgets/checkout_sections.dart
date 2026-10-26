@@ -22,7 +22,9 @@ class CheckoutSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(title,
+              style:
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
           child,
         ],
@@ -87,7 +89,10 @@ class DeliveryAddressCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(hasError ? Icons.location_off_outlined : Icons.location_on_outlined,
+              Icon(
+                  hasError
+                      ? Icons.location_off_outlined
+                      : Icons.location_on_outlined,
                   color: hasError ? AppColors.error : AppColors.accent),
               const SizedBox(width: 10),
               Expanded(
@@ -112,12 +117,16 @@ class DeliveryAddressCard extends StatelessWidget {
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.accent)),
                           Text(
-                            address.isEmpty ? (error ?? 'No address set') : address,
+                            address.isEmpty
+                                ? (error ?? 'No address set')
+                                : address,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                                 fontWeight: FontWeight.w600,
-                                color: hasError ? AppColors.error : AppColors.text),
+                                color: hasError
+                                    ? AppColors.error
+                                    : AppColors.text),
                           ),
                         ],
                       ),
@@ -160,7 +169,8 @@ class DeliveryOptionCard extends StatelessWidget {
           Icon(Icons.local_shipping_outlined, color: AppColors.accent),
           const SizedBox(width: 10),
           const Expanded(child: Text('Standard Delivery (1-2 Days)')),
-          Text('Rs.${fee.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text('Rs.${fee.toStringAsFixed(0)}',
+              style: const TextStyle(fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -196,7 +206,8 @@ class CouponField extends StatelessWidget {
             textCapitalization: TextCapitalization.characters,
             onSubmitted: (_) => onApply(),
             decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.local_offer_outlined), hintText: 'Enter coupon code'),
+                prefixIcon: Icon(Icons.local_offer_outlined),
+                hintText: 'Enter coupon code'),
           ),
         ),
         const SizedBox(width: 10),
@@ -207,7 +218,9 @@ class CouponField extends StatelessWidget {
             onPressed: applying ? null : onApply,
             child: applying
                 ? const SizedBox(
-                    width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Apply'),
           ),
       ],
@@ -231,7 +244,10 @@ class PaymentMethodTile extends StatelessWidget {
   });
 
   (IconData, Color) get _look => switch (method) {
-        PaymentMethod.khalti => (Icons.account_balance_wallet, AppColors.khaltiPurple),
+        PaymentMethod.khalti => (
+            Icons.account_balance_wallet,
+            AppColors.khaltiPurple
+          ),
         PaymentMethod.esewa => (Icons.payments_outlined, AppColors.success),
         PaymentMethod.cod => (Icons.money, AppColors.muted),
       };
@@ -247,7 +263,9 @@ class PaymentMethodTile extends StatelessWidget {
           color: AppColors.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: selected ? AppColors.accent : AppColors.border, width: 1.4),
+            side: BorderSide(
+                color: selected ? AppColors.accent : AppColors.border,
+                width: 1.4),
           ),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
@@ -259,16 +277,22 @@ class PaymentMethodTile extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                        color: color.withAlpha(30), borderRadius: BorderRadius.circular(8)),
+                        color: color.withAlpha(30),
+                        borderRadius: BorderRadius.circular(8)),
                     child: Icon(icon, color: color, size: 20),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(enabled ? method.label : '${method.label} (Unavailable)',
+                    child: Text(
+                        enabled
+                            ? method.label
+                            : '${method.label} (Unavailable)',
                         style: const TextStyle(fontWeight: FontWeight.w600)),
                   ),
                   Icon(
-                    selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                    selected
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_unchecked,
                     color: selected ? AppColors.accent : AppColors.muted,
                   ),
                 ],
@@ -289,14 +313,18 @@ class OrderSummaryCard extends StatelessWidget {
   const OrderSummaryCard({super.key, required this.totals, this.couponCode});
 
   Widget _row(String label, String value, {bool emphasised = false}) {
-    final style =
-        emphasised ? TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary) : null;
+    final style = emphasised
+        ? TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary)
+        : null;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: emphasised ? const TextStyle(fontWeight: FontWeight.bold) : null),
+          Text(label,
+              style: emphasised
+                  ? const TextStyle(fontWeight: FontWeight.bold)
+                  : null),
           Text(value, style: style),
         ],
       ),
@@ -309,7 +337,8 @@ class OrderSummaryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Order Summary', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const Text('Order Summary',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           _row('Subtotal', 'Rs.${totals.subtotal.toStringAsFixed(2)}'),
           if (totals.discount > 0)
@@ -317,7 +346,8 @@ class OrderSummaryCard extends StatelessWidget {
                 '- Rs.${totals.discount.toStringAsFixed(2)}'),
           _row('Delivery', 'Rs.${totals.deliveryFee.toStringAsFixed(0)}'),
           const Divider(height: 18),
-          _row('Total Payable', 'Rs.${totals.total.toStringAsFixed(2)}', emphasised: true),
+          _row('Total Payable', 'Rs.${totals.total.toStringAsFixed(2)}',
+              emphasised: true),
         ],
       ),
     );

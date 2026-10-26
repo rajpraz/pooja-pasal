@@ -12,18 +12,21 @@ class PaymentRepositoryImpl implements PaymentRepository {
   Future<List<String>> availableMethods() => _dataSource.availableMethods();
 
   @override
-  Future<KhaltiInitiation> initiateKhalti(String orderId) => _dataSource.initiateKhalti(orderId);
+  Future<KhaltiInitiation> initiateKhalti(String orderId) =>
+      _dataSource.initiateKhalti(orderId);
 
   @override
   Future<void> verifyKhalti({required String orderId, required String pidx}) =>
       _dataSource.verifyKhalti(orderId: orderId, pidx: pidx);
 
   @override
-  Future<EsewaInitiation> initiateEsewa(String orderId) => _dataSource.initiateEsewa(orderId);
+  Future<EsewaInitiation> initiateEsewa(String orderId) =>
+      _dataSource.initiateEsewa(orderId);
 
   @override
   Future<void> verifyEsewa(String orderId) => _dataSource.verifyEsewa(orderId);
 
   @override
-  Future<void> confirmCodPayment(String orderId) => _dataSource.confirmCodPayment(orderId);
+  Future<void> confirmCodPayment(String orderId) =>
+      _dataSource.confirmCodPayment(orderId);
 }

@@ -16,7 +16,8 @@ class _OnboardingSlide {
   final String title;
   final String description;
 
-  const _OnboardingSlide({required this.icon, required this.title, required this.description});
+  const _OnboardingSlide(
+      {required this.icon, required this.title, required this.description});
 }
 
 class _OnboardingPageState extends State<OnboardingPage> {
@@ -32,12 +33,14 @@ class _OnboardingPageState extends State<OnboardingPage> {
     _OnboardingSlide(
       icon: Icons.local_shipping_outlined,
       title: 'Fast & Reliable Delivery',
-      description: 'Get your pooja essentials delivered right on time, every time.',
+      description:
+          'Get your pooja essentials delivered right on time, every time.',
     ),
     _OnboardingSlide(
       icon: Icons.volunteer_activism_outlined,
       title: 'Trusted by Devotees',
-      description: 'Thousands of happy customers trust us for their rituals and festivals.',
+      description:
+          'Thousands of happy customers trust us for their rituals and festivals.',
     ),
   ];
 
@@ -52,7 +55,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
     if (_index == _slides.length - 1) {
       _finishOnboarding();
     } else {
-      _controller.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+      _controller.nextPage(
+          duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
     }
   }
 
@@ -97,7 +101,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
                             ),
                           ),
                           alignment: Alignment.center,
-                          child: Icon(slide.icon, size: 90, color: AppColors.primary),
+                          child: Icon(slide.icon,
+                              size: 90, color: AppColors.primary),
                         ),
                         const SizedBox(height: 32),
                         Text(slide.title,
@@ -109,7 +114,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
                         const SizedBox(height: 12),
                         Text(slide.description,
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 15, color: AppColors.muted)),
+                            style: TextStyle(
+                                fontSize: 15, color: AppColors.muted)),
                       ],
                     ),
                   );
@@ -139,7 +145,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 height: 52,
                 child: ElevatedButton(
                   onPressed: _next,
-                  child: Text(_index == _slides.length - 1 ? 'Get Started' : 'Next'),
+                  child: Text(
+                      _index == _slides.length - 1 ? 'Get Started' : 'Next'),
                 ),
               ),
             ),

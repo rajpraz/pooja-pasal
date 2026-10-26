@@ -45,15 +45,17 @@ class _EsewaPaymentPageState extends ConsumerState<EsewaPaymentPage> {
 
   Future<void> _initiate() async {
     try {
-      final EsewaInitiation fields =
-          await ref.read(paymentControllerProvider.notifier).initiateEsewa(widget.orderId);
+      final EsewaInitiation fields = await ref
+          .read(paymentControllerProvider.notifier)
+          .initiateEsewa(widget.orderId);
       if (!mounted) return;
       final controller = WebViewController();
       await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
       await controller.setNavigationDelegate(NavigationDelegate(
         onNavigationRequest: _handleNavigation,
       ));
-      await controller.loadHtmlString(_buildAutoSubmitHtml(fields), baseUrl: fields.formUrl);
+      await controller.loadHtmlString(_buildAutoSubmitHtml(fields),
+          baseUrl: fields.formUrl);
       if (!mounted) return;
       setState(() {
         _fields = fields;
@@ -97,16 +99,19 @@ class _EsewaPaymentPageState extends ConsumerState<EsewaPaymentPage> {
   }
 
   /// Escapes a value for an HTML attribute.
-  static String _attr(String value) => const HtmlEscape(HtmlEscapeMode.attribute).convert(value);
+  static String _attr(String value) =>
+      const HtmlEscape(HtmlEscapeMode.attribute).convert(value);
 
   NavigationDecision _handleNavigation(NavigationRequest request) {
     final fields = _fields;
     if (fields == null) return NavigationDecision.navigate;
-    if (fields.successUrl.isNotEmpty && request.url.startsWith(fields.successUrl)) {
+    if (fields.successUrl.isNotEmpty &&
+        request.url.startsWith(fields.successUrl)) {
       _onRedirectSucceeded();
       return NavigationDecision.prevent;
     }
-    if (fields.failureUrl.isNotEmpty && request.url.startsWith(fields.failureUrl)) {
+    if (fields.failureUrl.isNotEmpty &&
+        request.url.startsWith(fields.failureUrl)) {
       Navigator.of(context).pop(false);
       return NavigationDecision.prevent;
     }
@@ -120,7 +125,9 @@ class _EsewaPaymentPageState extends ConsumerState<EsewaPaymentPage> {
       // eSewa's redirect claiming success is never trusted on its own —
       // this call independently confirms with eSewa's server-to-server
       // status API before the order is ever marked paid.
-      await ref.read(paymentControllerProvider.notifier).verifyEsewa(widget.orderId);
+      await ref
+          .read(paymentControllerProvider.notifier)
+          .verifyEsewa(widget.orderId);
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } catch (e) {
@@ -158,7 +165,8 @@ class _EsewaPaymentPageState extends ConsumerState<EsewaPaymentPage> {
             )
           : Stack(
               children: [
-                if (_controller != null) WebViewWidget(controller: _controller!),
+                if (_controller != null)
+                  WebViewWidget(controller: _controller!),
                 if (_initiating || _verifying)
                   ColoredBox(
                     color: Colors.black26,
@@ -169,7 +177,9 @@ class _EsewaPaymentPageState extends ConsumerState<EsewaPaymentPage> {
                           const CircularProgressIndicator(),
                           const SizedBox(height: 12),
                           Text(
-                            _verifying ? 'Confirming payment...' : 'Connecting to eSewa...',
+                            _verifying
+                                ? 'Confirming payment...'
+                                : 'Connecting to eSewa...',
                             style: const TextStyle(color: Colors.white),
                           ),
                         ],

@@ -14,30 +14,32 @@ import 'package:pooja_pasal/features/cart/presentation/providers/cart_providers.
 class CartPage extends ConsumerWidget {
   const CartPage({super.key});
 
-  Future<void> _updateQty(
-      BuildContext context, WidgetRef ref, String uid, CartLineValidation line, int delta) async {
+  Future<void> _updateQty(BuildContext context, WidgetRef ref, String uid,
+      CartLineValidation line, int delta) async {
     try {
       await ref
           .read(cartControllerProvider.notifier)
           .updateQty(uid, line.item.productId, line.item.qty + delta);
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not update cart: ${friendlyErrorMessage(e)}')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Could not update cart: ${friendlyErrorMessage(e)}')));
     }
   }
 
   Future<void> _removeItem(
       BuildContext context, WidgetRef ref, String uid, String productId) async {
     try {
-      await ref.read(cartControllerProvider.notifier).removeItem(uid, productId);
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Item removed from cart')));
-    } catch (e) {
+      await ref
+          .read(cartControllerProvider.notifier)
+          .removeItem(uid, productId);
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not remove item: ${friendlyErrorMessage(e)}')));
+          const SnackBar(content: Text('Item removed from cart')));
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Could not remove item: ${friendlyErrorMessage(e)}')));
     }
   }
 
@@ -48,7 +50,9 @@ class CartPage extends ConsumerWidget {
         title: const Text('Clear cart?'),
         content: const Text('This will remove all items from your cart.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
@@ -74,7 +78,8 @@ class CartPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final uid = ref.watch(authRepositoryProvider).currentUser?.uid;
     if (uid == null) {
-      return const Scaffold(body: Center(child: Text('Please log in to view your cart')));
+      return const Scaffold(
+          body: Center(child: Text('Please log in to view your cart')));
     }
 
     final validationAsync = ref.watch(cartValidationProvider(uid));
@@ -106,10 +111,12 @@ class CartPage extends ConsumerWidget {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.shopping_cart_outlined, size: 60, color: AppColors.accent),
+                            Icon(Icons.shopping_cart_outlined,
+                                size: 60, color: AppColors.accent),
                             const SizedBox(height: 10),
                             const Text('Your cart is empty',
-                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                                style: TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.w600)),
                             const SizedBox(height: 4),
                             Text('Add puja essentials to start your order.',
                                 style: TextStyle(color: AppColors.muted)),
@@ -127,9 +134,12 @@ class CartPage extends ConsumerWidget {
                           final line = lines[index];
                           return _CartLineTile(
                             line: line,
-                            onIncrease: () => _updateQty(context, ref, uid, line, 1),
-                            onDecrease: () => _updateQty(context, ref, uid, line, -1),
-                            onRemove: () => _removeItem(context, ref, uid, line.item.productId),
+                            onIncrease: () =>
+                                _updateQty(context, ref, uid, line, 1),
+                            onDecrease: () =>
+                                _updateQty(context, ref, uid, line, -1),
+                            onRemove: () => _removeItem(
+                                context, ref, uid, line.item.productId),
                           );
                         },
                       ),
@@ -152,66 +162,89 @@ class CartPage extends ConsumerWidget {
                       if (hasBlockingIssue)
                         Container(
                           margin: const EdgeInsets.only(bottom: 10),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
                             color: AppColors.error.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.error_outline, color: AppColors.error, size: 18),
+                              Icon(Icons.error_outline,
+                                  color: AppColors.error, size: 18),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                     'Some items are unavailable or low on stock. Remove or adjust them to continue.',
-                                    style: TextStyle(color: AppColors.error, fontSize: 12)),
+                                    style: TextStyle(
+                                        color: AppColors.error, fontSize: 12)),
                               ),
                             ],
                           ),
                         ),
                       Row(
                         children: [
-                          Icon(Icons.local_shipping_outlined, size: 16, color: AppColors.muted),
+                          Icon(Icons.local_shipping_outlined,
+                              size: 16, color: AppColors.muted),
                           const SizedBox(width: 6),
                           Text('Estimated delivery: 2-4 days',
-                              style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                              style: TextStyle(
+                                  fontSize: 12, color: AppColors.muted)),
                         ],
                       ),
                       const SizedBox(height: 10),
-                      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                        const Text('Subtotal', style: TextStyle(fontSize: 16)),
-                        Text('Rs.${totalPrice.toStringAsFixed(2)}',
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600))
-                      ]),
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Subtotal',
+                                style: TextStyle(fontSize: 16)),
+                            Text('Rs.${totalPrice.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w600))
+                          ]),
                       // Coupons are applied at checkout; only show a row here
                       // when there is something to take off.
                       if (PricingService.discount > 0) ...[
                         const SizedBox(height: 6),
-                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                          const Text('Discount', style: TextStyle(fontSize: 16)),
-                          Text('- Rs.${PricingService.discount.toStringAsFixed(0)}',
-                              style: const TextStyle(fontSize: 16))
-                        ]),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Discount',
+                                  style: TextStyle(fontSize: 16)),
+                              Text(
+                                  '- Rs.${PricingService.discount.toStringAsFixed(0)}',
+                                  style: const TextStyle(fontSize: 16))
+                            ]),
                       ],
                       const SizedBox(height: 6),
-                      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                        const Text('Delivery Charge', style: TextStyle(fontSize: 16)),
-                        Text('Rs.${PricingService.deliveryFee.toStringAsFixed(0)}',
-                            style: const TextStyle(fontSize: 16))
-                      ]),
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Delivery Charge',
+                                style: TextStyle(fontSize: 16)),
+                            Text(
+                                'Rs.${PricingService.deliveryFee.toStringAsFixed(0)}',
+                                style: const TextStyle(fontSize: 16))
+                          ]),
                       const Divider(height: 16),
-                      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                        const Text('Total',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        Text('Rs.${PricingService.totalFromValidated(lines).toStringAsFixed(2)}',
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))
-                      ]),
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Total',
+                                style: TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold)),
+                            Text(
+                                'Rs.${PricingService.totalFromValidated(lines).toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold))
+                          ]),
                       const SizedBox(height: 10),
                       SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                              onPressed:
-                                  hasBlockingIssue ? null : () => _checkout(context, totalPrice),
+                              onPressed: hasBlockingIssue
+                                  ? null
+                                  : () => _checkout(context, totalPrice),
                               child: const Text('Proceed to Checkout'))),
                     ],
                   ),
@@ -261,7 +294,9 @@ class _CartLineTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(14),
-        border: issue != null ? Border.all(color: AppColors.error.withValues(alpha: 0.4)) : null,
+        border: issue != null
+            ? Border.all(color: AppColors.error.withValues(alpha: 0.4))
+            : null,
         boxShadow: [BoxShadow(color: AppColors.shadow, blurRadius: 8)],
       ),
       child: Row(
@@ -277,12 +312,15 @@ class _CartLineTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(line.item.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(line.item.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
                 Row(
                   children: [
                     Text('Rs.${line.effectivePrice.toStringAsFixed(0)}',
-                        style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+                        style: TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600)),
                     if (line.priceChanged) ...[
                       const SizedBox(width: 6),
                       Text('(was Rs.${line.item.price.toStringAsFixed(0)})',
@@ -298,7 +336,9 @@ class _CartLineTile extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(issue,
                         style: TextStyle(
-                            color: AppColors.error, fontSize: 12, fontWeight: FontWeight.w600)),
+                            color: AppColors.error,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600)),
                   ),
                 const SizedBox(height: 8),
                 Row(
@@ -317,7 +357,9 @@ class _CartLineTile extends StatelessWidget {
                       child: Text('${line.item.qty}'),
                     ),
                     IconButton(
-                      onPressed: (line.exists && line.item.qty >= stock) ? null : onIncrease,
+                      onPressed: (line.exists && line.item.qty >= stock)
+                          ? null
+                          : onIncrease,
                       icon: const Icon(Icons.add, size: 16),
                       tooltip: 'Increase quantity',
                       style: IconButton.styleFrom(

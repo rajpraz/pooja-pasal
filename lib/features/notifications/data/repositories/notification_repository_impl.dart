@@ -16,9 +16,11 @@ class NotificationRepositoryImpl implements NotificationRepository {
       _dataSource.markRead(uid, notificationId);
 
   @override
-  Future<void> registerDevice({required String token, required String platform}) =>
+  Future<void> registerDevice(
+          {required String token, required String platform}) =>
       _dataSource.registerDevice(token: token, platform: platform);
 
   @override
-  Future<void> unregisterDevice(String token) => _dataSource.unregisterDevice(token);
+  Future<void> unregisterDevice(String token) =>
+      _dataSource.unregisterDevice(token);
 }

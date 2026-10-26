@@ -9,7 +9,8 @@ import 'package:pooja_pasal/features/products/presentation/widgets/product_card.
 
 import '../../support/fakes.dart';
 
-Product _product({int stock = 10, String festival = '', int ratingCount = 0}) => Product(
+Product _product({int stock = 10, String festival = '', int ratingCount = 0}) =>
+    Product(
       id: 'p1',
       name: 'Brass Diya',
       description: '',
@@ -62,14 +63,18 @@ void main() {
   testWidgets('a sold-out product says so and cannot be added', (tester) async {
     await _pump(tester, _product(stock: 0));
     expect(find.text('Sold out'), findsOneWidget);
-    final button = tester.widget<IconButton>(
-        find.ancestor(of: find.byTooltip('Sold out'), matching: find.byType(IconButton)));
+    final button = tester.widget<IconButton>(find.ancestor(
+        of: find.byTooltip('Sold out'), matching: find.byType(IconButton)));
     expect(button.onPressed, isNull);
   });
 
-  testWidgets('fits its grid cell at narrow and wide widths without overflowing', (tester) async {
+  testWidgets(
+      'fits its grid cell at narrow and wide widths without overflowing',
+      (tester) async {
     for (final width in [150.0, 180.0, 240.0]) {
-      await _pump(tester, _product(stock: 3, festival: 'Dashain', ratingCount: 2), width: width);
+      await _pump(
+          tester, _product(stock: 3, festival: 'Dashain', ratingCount: 2),
+          width: width);
       expect(tester.takeException(), isNull, reason: 'width $width');
     }
   });

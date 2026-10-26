@@ -9,12 +9,14 @@ import 'package:pooja_pasal/features/addresses/domain/repositories/address_repos
 import 'package:pooja_pasal/features/auth/presentation/providers/auth_providers.dart';
 
 final addressRepositoryProvider = Provider<AddressRepository>((ref) {
-  return AddressRepositoryImpl(AddressRemoteDataSource(ref.watch(apiClientProvider)));
+  return AddressRepositoryImpl(
+      AddressRemoteDataSource(ref.watch(apiClientProvider)));
 });
 
 /// Live saved-address list for one signed-in user. Mirrors `cartProvider`/
 /// `wishlistProvider`'s per-uid `StreamProvider.family` shape.
-final addressesProvider = StreamProvider.family<List<Address>, String>((ref, uid) {
+final addressesProvider =
+    StreamProvider.family<List<Address>, String>((ref, uid) {
   if (!watchSignedIn(ref)) return const Stream.empty();
   return ref.watch(addressRepositoryProvider).streamAddresses(uid);
 });

@@ -37,8 +37,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   }
 
   void _shareProduct(Product product) {
-    Clipboard.setData(
-        ClipboardData(text: 'Check out ${product.name} on Pooja Pasal - Rs.${product.price}'));
+    Clipboard.setData(ClipboardData(
+        text:
+            'Check out ${product.name} on Pooja Pasal - Rs.${product.price}'));
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Product details copied to clipboard')),
     );
@@ -52,7 +53,10 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
           height: 260,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            boxShadow: [BoxShadow(color: AppColors.shadow, blurRadius: 16, spreadRadius: 1)],
+            boxShadow: [
+              BoxShadow(
+                  color: AppColors.shadow, blurRadius: 16, spreadRadius: 1)
+            ],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(18),
@@ -96,7 +100,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
     final uid = ref.read(authRepositoryProvider).currentUser?.uid;
     if (uid == null) return;
     try {
-      await ref.read(cartControllerProvider.notifier).addToCart(uid, product, qty: quantity);
+      await ref
+          .read(cartControllerProvider.notifier)
+          .addToCart(uid, product, qty: quantity);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Added $quantity ${product.name} to cart')),
@@ -104,7 +110,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not add to cart: ${friendlyErrorMessage(e)}')),
+        SnackBar(
+            content: Text('Could not add to cart: ${friendlyErrorMessage(e)}')),
       );
     }
   }
@@ -112,14 +119,18 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   Future<void> _toggleWishlist(String productId) async {
     final uid = ref.read(authRepositoryProvider).currentUser?.uid;
     if (uid == null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Please sign in to save items.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please sign in to save items.')));
       return;
     }
-    final isSaved = await ref.read(wishlistControllerProvider.notifier).toggle(uid, productId);
+    final isSaved = await ref
+        .read(wishlistControllerProvider.notifier)
+        .toggle(uid, productId);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(isSaved ? 'Added to wishlist' : 'Removed from wishlist')),
+      SnackBar(
+          content:
+              Text(isSaved ? 'Added to wishlist' : 'Removed from wishlist')),
     );
   }
 
@@ -150,16 +161,18 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   }
 
   Widget _buildBody(Product product) {
-    final description =
-        product.description.isEmpty ? 'No description available' : product.description;
-    final shortDescription =
-        description.length > 90 && !_expanded ? '${description.substring(0, 90)}...' : description;
+    final description = product.description.isEmpty
+        ? 'No description available'
+        : product.description;
+    final shortDescription = description.length > 90 && !_expanded
+        ? '${description.substring(0, 90)}...'
+        : description;
 
     final uid = ref.watch(authRepositoryProvider).currentUser?.uid;
     final saved = uid == null
         ? false
-        : ref.watch(wishlistProvider(uid)
-            .select((state) => state.value?.any((e) => e.productId == product.id) ?? false));
+        : ref.watch(wishlistProvider(uid).select((state) =>
+            state.value?.any((e) => e.productId == product.id) ?? false));
     final inStock = product.stock > 0;
 
     return SingleChildScrollView(
@@ -175,7 +188,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                 Expanded(
                   child: Text(product.name,
                       style: TextStyle(
-                          fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.text)),
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.text)),
                 ),
                 IconButton(
                     icon: Icon(saved ? Icons.favorite : Icons.favorite_border,
@@ -195,7 +210,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                   ...List.generate(
                     5,
                     (i) => Icon(
-                      i < product.ratingAverage.round() ? Icons.star : Icons.star_border,
+                      i < product.ratingAverage.round()
+                          ? Icons.star
+                          : Icons.star_border,
                       size: 16,
                       color: AppColors.accent,
                     ),
@@ -214,21 +231,26 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
             const SizedBox(height: 8),
             if (product.category.isNotEmpty)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.card,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(product.category,
                     style: TextStyle(
-                        color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.w600)),
+                        color: AppColors.primary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600)),
               ),
             const SizedBox(height: 12),
             Row(
               children: [
                 Text('Rs.${product.price.toStringAsFixed(0)}',
                     style: TextStyle(
-                        fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary)),
                 const Spacer(),
                 Text(inStock ? 'In Stock' : 'Out of Stock',
                     style: TextStyle(
@@ -246,8 +268,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                   Row(
                     children: [
                       IconButton(
-                          onPressed: () =>
-                              setState(() => quantity = quantity > 1 ? quantity - 1 : 1),
+                          onPressed: () => setState(
+                              () => quantity = quantity > 1 ? quantity - 1 : 1),
                           icon: const Icon(Icons.remove, size: 18),
                           tooltip: 'Decrease quantity',
                           style: IconButton.styleFrom(
@@ -257,7 +279,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 14),
                         child: Text('$quantity',
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold)),
                       ),
                       IconButton(
                           onPressed: quantity >= product.stock
@@ -275,10 +298,14 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
               ),
             const SizedBox(height: 20),
             Text('Product Details',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.text)),
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.text)),
             const SizedBox(height: 8),
             Text(shortDescription,
-                style: TextStyle(fontSize: 14, color: AppColors.muted, height: 1.5)),
+                style: TextStyle(
+                    fontSize: 14, color: AppColors.muted, height: 1.5)),
             if (description.length > 90)
               GestureDetector(
                 onTap: () => setState(() => _expanded = !_expanded),
@@ -286,7 +313,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                   padding: const EdgeInsets.only(top: 4.0),
                   child: Text(_expanded ? 'Show less' : 'Read More',
                       style: TextStyle(
-                          color: AppColors.accent, fontWeight: FontWeight.w600, fontSize: 13)),
+                          color: AppColors.accent,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13)),
                 ),
               ),
             const SizedBox(height: 24),
@@ -309,7 +338,10 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
             ),
             const SizedBox(height: 28),
             Text('Ratings & Reviews',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.text)),
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.text)),
             const SizedBox(height: 10),
             ReviewList(productId: product.id),
             const SizedBox(height: 20),

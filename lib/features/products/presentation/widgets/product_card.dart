@@ -51,7 +51,8 @@ class ProductCard extends ConsumerWidget {
   /// Total card height for a tile [width] wide: a near-square image plus
   /// the text block. The image is the flexible part, so larger system
   /// fonts shrink it rather than overflowing the card.
-  static double heightFor(double width) => (width - 16) * 0.92 + _infoHeight + 16;
+  static double heightFor(double width) =>
+      (width - 16) * 0.92 + _infoHeight + 16;
 
   Future<void> _addToCart(BuildContext context, WidgetRef ref) async {
     final uid = ref.read(authRepositoryProvider).currentUser?.uid;
@@ -59,12 +60,12 @@ class ProductCard extends ConsumerWidget {
     try {
       await ref.read(cartControllerProvider.notifier).addToCart(uid, product);
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('${product.name} added to cart')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${product.name} added to cart')));
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not add to cart: ${friendlyErrorMessage(e)}')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Could not add to cart: ${friendlyErrorMessage(e)}')));
     }
   }
 
@@ -73,8 +74,8 @@ class ProductCard extends ConsumerWidget {
     final uid = ref.watch(authRepositoryProvider).currentUser?.uid;
     final saved = uid == null
         ? false
-        : ref.watch(wishlistProvider(uid)
-            .select((state) => state.value?.any((e) => e.productId == product.id) ?? false));
+        : ref.watch(wishlistProvider(uid).select((state) =>
+            state.value?.any((e) => e.productId == product.id) ?? false));
     final soldOut = product.isOutOfStock;
 
     return Material(
@@ -97,7 +98,9 @@ class ProductCard extends ConsumerWidget {
                   fit: StackFit.expand,
                   children: [
                     ProductImage(
-                        url: product.image, category: product.category, name: product.name),
+                        url: product.image,
+                        category: product.category,
+                        name: product.name),
                     if (soldOut)
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12),
@@ -116,14 +119,16 @@ class ProductCard extends ConsumerWidget {
                       Positioned(
                         left: 6,
                         top: 6,
-                        child: _Badge(label: product.festivalTag, color: AppColors.brand),
+                        child: _Badge(
+                            label: product.festivalTag, color: AppColors.brand),
                       ),
                     if (product.isLowStock)
                       Positioned(
                         left: 6,
                         bottom: 6,
-                        child:
-                            _Badge(label: 'Only ${product.stock} left', color: AppColors.saffron),
+                        child: _Badge(
+                            label: 'Only ${product.stock} left',
+                            color: AppColors.saffron),
                       ),
                     Positioned(
                       top: 2,
@@ -132,21 +137,29 @@ class ProductCard extends ConsumerWidget {
                         onPressed: () {
                           if (uid == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Please sign in to save items.')));
+                                const SnackBar(
+                                    content:
+                                        Text('Please sign in to save items.')));
                             return;
                           }
-                          ref.read(wishlistControllerProvider.notifier).toggle(uid, product.id);
+                          ref
+                              .read(wishlistControllerProvider.notifier)
+                              .toggle(uid, product.id);
                         },
-                        tooltip: saved ? 'Remove from wishlist' : 'Add to wishlist',
+                        tooltip:
+                            saved ? 'Remove from wishlist' : 'Add to wishlist',
                         style: IconButton.styleFrom(
-                          backgroundColor: AppColors.surface.withValues(alpha: 0.92),
+                          backgroundColor:
+                              AppColors.surface.withValues(alpha: 0.92),
                           minimumSize: const Size(36, 36),
                           fixedSize: const Size(36, 36),
                           padding: EdgeInsets.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
-                        icon: Icon(saved ? Icons.favorite : Icons.favorite_border,
-                            size: 18, color: AppColors.accent),
+                        icon: Icon(
+                            saved ? Icons.favorite : Icons.favorite_border,
+                            size: 18,
+                            color: AppColors.accent),
                       ),
                     ),
                   ],
@@ -163,7 +176,9 @@ class ProductCard extends ConsumerWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                              fontSize: 13.5, fontWeight: FontWeight.w600, color: AppColors.text)),
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.text)),
                       const SizedBox(height: 2),
                       Text(
                           product.sellerName.isEmpty
@@ -171,16 +186,19 @@ class ProductCard extends ConsumerWidget {
                               : 'by ${product.sellerName}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 11, color: AppColors.muted)),
+                          style:
+                              TextStyle(fontSize: 11, color: AppColors.muted)),
                       const SizedBox(height: 3),
                       if (product.ratingCount > 0)
                         Row(
                           children: [
-                            Icon(Icons.star_rounded, size: 14, color: AppColors.accent),
+                            Icon(Icons.star_rounded,
+                                size: 14, color: AppColors.accent),
                             const SizedBox(width: 2),
                             Text(
                                 '${product.ratingAverage.toStringAsFixed(1)} · ${product.ratingCount}',
-                                style: TextStyle(fontSize: 11, color: AppColors.muted)),
+                                style: TextStyle(
+                                    fontSize: 11, color: AppColors.muted)),
                           ],
                         )
                       else
@@ -189,7 +207,8 @@ class ProductCard extends ConsumerWidget {
                       Row(
                         children: [
                           Expanded(
-                            child: Text('Rs.${product.price.toStringAsFixed(0)}',
+                            child: Text(
+                                'Rs.${product.price.toStringAsFixed(0)}',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
@@ -198,7 +217,8 @@ class ProductCard extends ConsumerWidget {
                                     color: AppColors.primary)),
                           ),
                           IconButton.filled(
-                            onPressed: soldOut ? null : () => _addToCart(context, ref),
+                            onPressed:
+                                soldOut ? null : () => _addToCart(context, ref),
                             tooltip: soldOut ? 'Sold out' : 'Add to cart',
                             style: IconButton.styleFrom(
                               backgroundColor: AppColors.accent,
@@ -209,7 +229,8 @@ class ProductCard extends ConsumerWidget {
                               padding: EdgeInsets.zero,
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
-                            icon: const Icon(Icons.add_shopping_cart_rounded, size: 18),
+                            icon: const Icon(Icons.add_shopping_cart_rounded,
+                                size: 18),
                           ),
                         ],
                       ),
@@ -235,9 +256,11 @@ class _Badge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(8)),
+      decoration:
+          BoxDecoration(color: color, borderRadius: BorderRadius.circular(8)),
       child: Text(label,
-          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600)),
+          style: const TextStyle(
+              color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600)),
     );
   }
 }

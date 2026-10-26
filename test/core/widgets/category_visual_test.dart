@@ -9,7 +9,8 @@ void main() {
   test('the real category decides when it is known', () {
     expect(iconFor('Incense', 'Himalayan Dhoop Sticks'), Icons.spa);
     expect(iconFor('Pooja Kits', 'Tihar Laxmi Pooja Kit'), Icons.card_giftcard);
-    expect(iconFor('Brass Items', 'Brass Panas Batti'), Icons.emoji_objects_outlined);
+    expect(iconFor('Brass Items', 'Brass Panas Batti'),
+        Icons.emoji_objects_outlined);
     expect(iconFor('Diyas'), Icons.local_fire_department);
   });
 

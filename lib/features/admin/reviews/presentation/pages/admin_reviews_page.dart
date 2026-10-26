@@ -15,7 +15,8 @@ import 'package:pooja_pasal/shared/widgets/loading_view.dart';
 class AdminReviewsPage extends ConsumerWidget {
   const AdminReviewsPage({super.key});
 
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref, Review review) async {
+  Future<void> _confirmDelete(
+      BuildContext context, WidgetRef ref, Review review) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -25,7 +26,8 @@ class AdminReviewsPage extends ConsumerWidget {
             'recalculated. This cannot be undone.'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text('Delete', style: TextStyle(color: AppColors.error)),
@@ -38,10 +40,12 @@ class AdminReviewsPage extends ConsumerWidget {
     try {
       await ref.read(reviewControllerProvider.notifier).deleteReview(review.id);
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Review deleted.')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Review deleted.')));
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
     }
   }
 
@@ -71,7 +75,8 @@ class AdminReviewsPage extends ConsumerWidget {
               itemCount: reviews.length,
               itemBuilder: (context, index) {
                 final review = reviews[index];
-                final productAsync = ref.watch(productProvider(review.productId));
+                final productAsync =
+                    ref.watch(productProvider(review.productId));
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
                   child: Padding(
@@ -84,15 +89,19 @@ class AdminReviewsPage extends ConsumerWidget {
                             Expanded(
                               child: Text(
                                 productAsync.value?.name ?? review.productId,
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             IconButton(
-                              icon: Icon(Icons.delete_outline, color: AppColors.error),
+                              icon: Icon(Icons.delete_outline,
+                                  color: AppColors.error),
                               tooltip: 'Delete review',
-                              onPressed: isBusy ? null : () => _confirmDelete(context, ref, review),
+                              onPressed: isBusy
+                                  ? null
+                                  : () => _confirmDelete(context, ref, review),
                             ),
                           ],
                         ),
@@ -101,7 +110,9 @@ class AdminReviewsPage extends ConsumerWidget {
                             ...List.generate(
                               5,
                               (i) => Icon(
-                                i < review.rating ? Icons.star : Icons.star_border,
+                                i < review.rating
+                                    ? Icons.star
+                                    : Icons.star_border,
                                 size: 14,
                                 color: AppColors.accent,
                               ),
@@ -109,12 +120,16 @@ class AdminReviewsPage extends ConsumerWidget {
                             if (review.verifiedPurchase) ...[
                               const SizedBox(width: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                    color: AppColors.success.withValues(alpha: 0.15),
+                                    color: AppColors.success
+                                        .withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(6)),
                                 child: Text('Verified Purchase',
-                                    style: TextStyle(fontSize: 10, color: AppColors.success)),
+                                    style: TextStyle(
+                                        fontSize: 10,
+                                        color: AppColors.success)),
                               ),
                             ],
                           ],

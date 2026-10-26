@@ -12,8 +12,8 @@ abstract final class ApiConfig {
   static String get baseUrl {
     if (_override.isNotEmpty) return _override;
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.0.2.2:8000/api';
+      return 'http://10.0.2.2:8001/api';
     }
-    return 'http://127.0.0.1:8000/api';
+    return 'http://127.0.0.1:8001/api';
   }
 }

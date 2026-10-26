@@ -76,5 +76,18 @@
 	<array>
 		<string>remote-notification</string>
 	</array>
+	<key>GIDClientID</key>
+	<string>64467931721-rrcuo2urp4saiug0qdql2nspleboumc7.apps.googleusercontent.com</string>
+	<key>GIDServerClientID</key>
+	<string>64467931721-h9qjlnnaldcpdh084235ogi1k61dt094.apps.googleusercontent.com</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.64467931721-rrcuo2urp4saiug0qdql2nspleboumc7</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

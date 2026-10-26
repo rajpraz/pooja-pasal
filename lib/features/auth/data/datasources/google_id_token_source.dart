@@ -2,11 +2,15 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:pooja_pasal/core/errors/app_exception.dart';
 
 /// Gets a Google ID token for the API to verify. The token is requested for
-/// the OAuth *web/server* client id passed at build time:
-/// `--dart-define=GOOGLE_SERVER_CLIENT_ID=<id>.apps.googleusercontent.com`
-/// (the same id must be in the API's `GOOGLE_CLIENT_IDS`).
+/// the OAuth *web/server* client id: the project's Web client by default, or
+/// `--dart-define=GOOGLE_SERVER_CLIENT_ID=<id>.apps.googleusercontent.com`.
+/// The same id must be in the API's `GOOGLE_CLIENT_IDS`.
 class GoogleIdTokenSource {
-  static const _serverClientId = String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID');
+  static const _serverClientId = String.fromEnvironment(
+    'GOOGLE_SERVER_CLIENT_ID',
+    // The project's Web OAuth client (a public identifier, not a secret).
+    defaultValue: '64467931721-h9qjlnnaldcpdh084235ogi1k61dt094.apps.googleusercontent.com',
+  );
 
   Future<void>? _initialized;
 

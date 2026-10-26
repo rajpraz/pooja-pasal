@@ -55,12 +55,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     setState(() => _isloading = true);
     final authRepository = ref.read(authRepositoryProvider);
     try {
-      final signedIn = await authRepository.signInWithGoogle(rememberMe: _rememberMe);
+      final signedIn =
+          await authRepository.signInWithGoogle(rememberMe: _rememberMe);
       if (signedIn && mounted) await goAfterSignIn(context, authRepository);
     } on AuthException catch (e) {
       if (mounted) showMessage(context, e.message);
     } catch (e) {
-      if (mounted) showMessage(context, 'Something went wrong. Please try again.');
+      if (mounted) {
+        showMessage(context, 'Something went wrong. Please try again.');
+      }
     } finally {
       if (mounted) setState(() => _isloading = false);
     }
@@ -89,13 +92,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final authRepository = ref.read(authRepositoryProvider);
 
     try {
-      await authRepository.signIn(email: email, password: password, rememberMe: _rememberMe);
+      await authRepository.signIn(
+          email: email, password: password, rememberMe: _rememberMe);
       final user = authRepository.currentUser;
-      final appUser = user == null ? null : await authRepository.getUserDoc(user.uid);
+      final appUser =
+          user == null ? null : await authRepository.getUserDoc(user.uid);
 
       if (!mounted) return;
       if (appUser == null) {
-        showMessage(context, 'Account profile not found. Please sign up again.');
+        showMessage(
+            context, 'Account profile not found. Please sign up again.');
         return;
       }
       _routeAfterLogin(appUser.role);
@@ -117,7 +123,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           const AuthBackdrop(),
           SafeArea(
             child: _isloading
-                ? Center(child: SpinKitCircle(color: AppColors.accent, size: 60))
+                ? Center(
+                    child: SpinKitCircle(color: AppColors.accent, size: 60))
                 : Center(
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
@@ -137,14 +144,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: 0.6,
                                   color: AppColors.primaryDark,
-                                  fontFeatures: const [FontFeature.enable('smcp')],
+                                  fontFeatures: const [
+                                    FontFeature.enable('smcp')
+                                  ],
                                 ),
                               ),
                               const SizedBox(height: 6),
                               Text(
                                 'Pure Puja Essentials Delivered to Your Doorstep',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 14, color: AppColors.text),
+                                style: TextStyle(
+                                    fontSize: 14, color: AppColors.text),
                               ),
                               const SizedBox(height: 24),
                               _formCard(),
@@ -194,7 +204,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 onTap: _forgetPassword,
                 child: Text(
                   'Forgot?',
-                  style: TextStyle(color: AppColors.accent, fontSize: 12.5, fontWeight: FontWeight.w700),
+                  style: TextStyle(
+                      color: AppColors.accent,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700),
                 ),
               ),
             ],
@@ -211,7 +224,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               suffixIcon: IconButton(
                 tooltip: _obsecure ? 'Show password' : 'Hide password',
                 onPressed: () => setState(() => _obsecure = !_obsecure),
-                icon: Icon(_obsecure ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+                icon: Icon(_obsecure
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined),
               ),
               hintText: 'Enter your password',
             ),
@@ -236,7 +251,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Text('Remember me', style: TextStyle(fontSize: 13.5, color: AppColors.text)),
+                  Text('Remember me',
+                      style: TextStyle(fontSize: 13.5, color: AppColors.text)),
                 ],
               ),
             ),
@@ -269,7 +285,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 child: _altButton(
                   icon: Text('G',
                       style: TextStyle(
-                          fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.error)),
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.error)),
                   label: 'Google',
                   onTap: _googleLogin,
                 ),
@@ -277,7 +295,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               const SizedBox(width: 12),
               Expanded(
                 child: _altButton(
-                  icon: Icon(Icons.phone_android, size: 18, color: AppColors.accent),
+                  icon: Icon(Icons.phone_android,
+                      size: 18, color: AppColors.accent),
                   label: 'OTP Login',
                   onTap: _otpLogin,
                 ),
@@ -289,7 +308,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     );
   }
 
-  Widget _altButton({required Widget icon, required String label, required VoidCallback onTap}) {
+  Widget _altButton(
+      {required Widget icon,
+      required String label,
+      required VoidCallback onTap}) {
     return Material(
       color: AppColors.background,
       borderRadius: BorderRadius.circular(14),
@@ -309,7 +331,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               const SizedBox(width: 8),
               Text(label,
                   style: TextStyle(
-                      fontSize: 13.5, fontWeight: FontWeight.w600, color: AppColors.text)),
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.text)),
             ],
           ),
         ),
@@ -323,14 +347,19 @@ class _TrustRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _tile(Icons.volunteer_activism_outlined, '100% Authentic', 'Puja Samagri'),
-        const SizedBox(width: 10),
-        _tile(Icons.local_shipping_outlined, 'Express', 'Temple Delivery'),
-        const SizedBox(width: 10),
-        _tile(Icons.shield_outlined, 'Sacred Quality', 'Purity Guaranteed'),
-      ],
+    // Stretch so every tile matches the tallest one.
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _tile(Icons.volunteer_activism_outlined, '100% Authentic',
+              'Puja Samagri'),
+          const SizedBox(width: 10),
+          _tile(Icons.local_shipping_outlined, 'Express', 'Temple Delivery'),
+          const SizedBox(width: 10),
+          _tile(Icons.shield_outlined, 'Sacred Quality', 'Purity Guaranteed'),
+        ],
+      ),
     );
   }
 
@@ -347,17 +376,25 @@ class _TrustRow extends StatelessWidget {
           children: [
             Icon(icon, size: 22, color: AppColors.accent),
             const SizedBox(height: 6),
-            Text(title,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: AppColors.text)),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(title,
+                  maxLines: 1,
+                  style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.text)),
+            ),
             const SizedBox(height: 2),
-            Text(subtitle,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 10, color: AppColors.muted)),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(subtitle,
+                  maxLines: 1,
+                  style: TextStyle(fontSize: 10, color: AppColors.muted)),
+            ),
           ],
         ),
       ),
     );
   }
 }
-
